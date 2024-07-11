@@ -57,6 +57,10 @@ impl<'a> Encounter<'a> {
                 }
                 Indeterminate
             }
+            ShowInventory => {
+                println!("{}", self.player.inventory);
+                Indeterminate
+            }
             Run => PlayerRan,
         }
     }
@@ -84,7 +88,7 @@ impl<'a> Encounter<'a> {
                         "There is a monster in front of you, with HP [{}/{}]",
                         self.monster.hp, MONSTER_HP
                     );
-                    println!("ATTACK or RUN?");
+                    println!("ATTACK or RUN or INVENTORY?");
                     match get_response(&mut buf, self.player.status()) {
                         Ok(()) => match buf.parse::<Action>() {
                             Ok(action) => {

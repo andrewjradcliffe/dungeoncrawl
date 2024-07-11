@@ -4,6 +4,7 @@ use std::str::FromStr;
 pub enum Action {
     Attack,
     Run,
+    ShowInventory,
 }
 pub use Action::*;
 
@@ -15,6 +16,8 @@ impl FromStr for Action {
             Ok(Attack)
         } else if s.eq_ignore_ascii_case("r") || s.eq_ignore_ascii_case("run") {
             Ok(Run)
+        } else if s.eq_ignore_ascii_case("i") || s.eq_ignore_ascii_case("inventory") {
+            Ok(ShowInventory)
         } else {
             Err(s.to_string())
         }

@@ -10,7 +10,7 @@ pub struct Player {
     pub(crate) max_hp: i64,
     pub(crate) current_mp: i64,
     pub(crate) max_mp: i64,
-    pub(crate) inventory: Vec<Item>,
+    pub(crate) inventory: Inventory,
 }
 
 impl Combatant for Player {
@@ -29,7 +29,7 @@ impl Player {
             max_hp: PLAYER_HP,
             current_mp: PLAYER_MP,
             max_mp: PLAYER_MP,
-            inventory: vec![],
+            inventory: Inventory::new(),
         }
     }
     fn restore_hp(&mut self, amount: i64) {
