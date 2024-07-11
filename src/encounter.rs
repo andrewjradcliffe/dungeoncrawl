@@ -58,7 +58,7 @@ impl<'a> Encounter<'a> {
                 Indeterminate
             }
             ShowInventory => {
-                println!("{}", self.player.inventory);
+                self.player.inventory_action();
                 Indeterminate
             }
             Run => PlayerRan,

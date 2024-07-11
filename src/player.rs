@@ -38,6 +38,13 @@ impl Player {
     fn restore_mp(&mut self, amount: i64) {
         self.current_mp = (self.current_mp + amount).clamp(0, self.max_mp);
     }
+
+    pub fn inventory_action(&mut self) {
+        match self.inventory.menu() {
+            Some(item) => self.consume(item),
+            None => (),
+        }
+    }
     pub fn consume(&mut self, item: Item) {
         match item {
             HealthPotion => self.restore_hp(25),
