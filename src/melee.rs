@@ -15,7 +15,7 @@ pub use Melee::*;
 impl Melee {
     pub fn cost(&self) -> i64 {
         match self {
-            Basic => -5,
+            Basic => -10,
             Power => 35,
             Super => 100,
         }
@@ -23,14 +23,14 @@ impl Melee {
 
     pub fn description(&self) -> &'static str {
         match self {
-            Basic => "Causes 5 damage",
+            Basic => "Causes 10 damage",
             Power => "Causes 35 damage",
             Super => "Causes 70 damage",
         }
     }
     pub fn damage(&self) -> i64 {
         match self {
-            Basic => 5,
+            Basic => 10,
             Power => 35,
             Super => 70,
         }
