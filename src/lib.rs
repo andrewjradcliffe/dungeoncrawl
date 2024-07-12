@@ -4,23 +4,38 @@ pub mod item;
 pub mod melee;
 pub mod monster;
 pub mod player;
+pub mod scoreboard;
 pub mod spell;
 
 use crate::combat::*;
 use crate::encounter::*;
 use crate::player::*;
+use crate::scoreboard::*;
 
 pub fn crawl() {
+    println!(
+        "\n\n\n================================================================================"
+    );
+    println!("Welcome to dungeon crawler!");
+    println!(
+        "================================================================================\n\n\n"
+    );
     let mut player = Player::new();
-    let mut i = 0;
+
+    let mut scoreboard = Scoreboard::new();
 
     while player.is_alive() {
         let mut enc = Encounter::new(&mut player);
+        let kind = enc.monster.kind.clone();
         match enc.progress() {
-            PlayerVictory => i += 1,
+            PlayerVictory => scoreboard.record(kind),
             MonsterVictory => break,
             _ => (),
         }
     }
-    println!("You defeated {} monsters!", i);
+    println!("================================================================================");
+    print!("{}", scoreboard);
+    println!(
+        "================================================================================\n\n\n"
+    );
 }
