@@ -15,17 +15,23 @@ pub use Melee::*;
 impl Melee {
     pub const fn cost(&self) -> i64 {
         match self {
-            Basic => -10,
+            Basic => 0,
             Power => 35,
             Super => 100,
+        }
+    }
+    pub const fn gain(&self) -> i64 {
+        match self {
+            Basic => 10,
+            Power | Super => 5,
         }
     }
 
     pub fn description(&self) -> &'static str {
         match self {
             Basic => "Causes 10 damage; gain 10 TP",
-            Power => "Causes 35 damage",
-            Super => "Causes 70 damage",
+            Power => "Causes 35 damage; gain 5 TP",
+            Super => "Causes 70 damage; gain 5 TP",
         }
     }
     pub const fn damage(&self) -> i64 {
@@ -82,19 +88,19 @@ pub(crate) fn melee_menu() -> Option<Melee> {
             "    {:<30} | {:<30} | cost: {} TP",
             format!("{}", Basic),
             Basic.description(),
-            0 // Basic.cost()
+            Basic.cost(),
         );
         println!(
-            "    {:<30} | {:<30} | cost: {} TP ",
+            "    {:<30} | {:<30} | cost: {} TP",
             format!("{}", Power),
             Power.description(),
-            Power.cost()
+            Power.cost(),
         );
         println!(
             "    {:<30} | {:<30} | cost: {} TP",
             format!("{}", Super),
             Super.description(),
-            Super.cost()
+            Super.cost(),
         );
 
         print!("🪓 ");

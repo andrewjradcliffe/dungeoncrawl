@@ -60,8 +60,9 @@ impl Player {
     }
     pub fn cast_melee(&mut self, melee: Melee) -> Option<Melee> {
         let cost = melee.cost();
+        let gain = melee.gain();
         if self.current_tp >= cost {
-            self.current_tp = (self.current_tp - cost).clamp(0, self.max_tp);
+            self.current_tp = (self.current_tp - cost + gain).clamp(0, self.max_tp);
             Some(melee)
         } else {
             None

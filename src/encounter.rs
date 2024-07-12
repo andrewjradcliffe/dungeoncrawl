@@ -126,11 +126,7 @@ impl<'a> Encounter<'a> {
                     break;
                 }
                 Indeterminate => {
-                    println!(
-                        // "There is a monster in front of you, with HP [{}/{}]",
-                        "The {kind} in front of you has {}",
-                        self.monster.status()
-                    );
+                    println!("The {kind} in front of you has {}", self.monster.status());
                     println!("ATTACK, CAST, RUN, INVENTORY, or DO NOTHING?");
                     match get_response(&mut buf, self.player.status()) {
                         Ok(()) => match buf.parse::<CombatAction>() {
