@@ -18,6 +18,8 @@ pub enum Item {
 }
 pub use Item::*;
 
+use crate::loot::Loot;
+
 impl Item {
     pub fn description(&self) -> &'static str {
         match self {
@@ -154,6 +156,17 @@ impl Inventory {
     }
     pub fn drop_item(&mut self, item: Item) {
         self.pop_item(item);
+    }
+    pub fn push_loot(&mut self, loot: Loot) {
+        self.sum += loot.amount;
+        match self.bag.entry(loot.item) {
+            Entry::Occupied(mut v) => {
+                *v.get_mut() += loot.amount;
+            }
+            Entry::Vacant(e) => {
+                e.insert(loot.amount);
+            }
+        }
     }
 }
 

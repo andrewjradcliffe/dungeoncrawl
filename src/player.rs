@@ -1,5 +1,6 @@
 use crate::combat::Combatant;
 use crate::item::*;
+use crate::loot::Loot;
 use crate::melee::Melee;
 use crate::spell::Spell;
 
@@ -84,6 +85,9 @@ impl Player {
                 self.restore_mp(10);
             }
         }
+    }
+    pub fn acquire(&mut self, loot: Loot) {
+        self.inventory.push_loot(loot)
     }
     pub fn status(&self) -> String {
         format!(

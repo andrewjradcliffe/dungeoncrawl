@@ -1,6 +1,7 @@
 pub mod combat;
 pub mod encounter;
 pub mod item;
+pub mod loot;
 pub mod melee;
 pub mod monster;
 pub mod player;

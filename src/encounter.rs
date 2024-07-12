@@ -1,4 +1,5 @@
 use crate::combat::*;
+use crate::loot::*;
 use crate::melee::*;
 use crate::monster::*;
 use crate::player::*;
@@ -116,6 +117,9 @@ impl<'a> Encounter<'a> {
             match res {
                 PlayerVictory => {
                     println!("---- The {kind} died! ----");
+                    let loot = Loot::rand();
+                    loot.announce();
+                    self.player.acquire(loot);
                     break;
                 }
                 PlayerRan => {
