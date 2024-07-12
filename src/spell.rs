@@ -14,7 +14,7 @@ pub enum Spell {
 pub use Spell::*;
 
 impl Spell {
-    pub fn cost(&self) -> i64 {
+    pub const fn cost(&self) -> i64 {
         match self {
             Cure1 => 10,
             Cure2 => 25,
@@ -31,14 +31,14 @@ impl Spell {
             Stone => "causes 25 damage",
         }
     }
-    pub fn damage(&self) -> i64 {
+    pub const fn damage(&self) -> i64 {
         match self {
             Cure1 | Cure2 => 0,
             Fire => 35,
             Stone => 25,
         }
     }
-    pub fn healing(&self) -> i64 {
+    pub const fn healing(&self) -> i64 {
         match self {
             Cure1 => 25,
             Cure2 => 50,

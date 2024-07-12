@@ -13,7 +13,7 @@ pub enum Melee {
 pub use Melee::*;
 
 impl Melee {
-    pub fn cost(&self) -> i64 {
+    pub const fn cost(&self) -> i64 {
         match self {
             Basic => -10,
             Power => 35,
@@ -23,12 +23,12 @@ impl Melee {
 
     pub fn description(&self) -> &'static str {
         match self {
-            Basic => "Causes 10 damage",
+            Basic => "Causes 10 damage; gain 10 TP",
             Power => "Causes 35 damage",
             Super => "Causes 70 damage",
         }
     }
-    pub fn damage(&self) -> i64 {
+    pub const fn damage(&self) -> i64 {
         match self {
             Basic => 10,
             Power => 35,
@@ -85,7 +85,7 @@ pub(crate) fn melee_menu() -> Option<Melee> {
             0 // Basic.cost()
         );
         println!(
-            "    {:<30} | {:<30} | cost: {} TP",
+            "    {:<30} | {:<30} | cost: {} TP ",
             format!("{}", Power),
             Power.description(),
             Power.cost()

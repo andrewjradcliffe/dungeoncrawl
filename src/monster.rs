@@ -64,7 +64,7 @@ pub enum MonsterKind {
 pub use MonsterKind::*;
 
 impl MonsterKind {
-    pub fn max_hp(&self) -> i64 {
+    pub const fn max_hp(&self) -> i64 {
         match self {
             Frog => 20,
             Bat => 25,
@@ -77,7 +77,7 @@ impl MonsterKind {
         }
     }
 
-    pub fn strength(&self) -> i64 {
+    pub const fn strength(&self) -> i64 {
         match self {
             Frog => 5,
             Bat => 7,
