@@ -27,7 +27,7 @@ pub fn crawl() {
     while player.is_alive() {
         let mut enc = Encounter::new(&mut player);
         let kind = enc.monster.kind.clone();
-        match enc.progress() {
+        match enc.run() {
             PlayerVictory => scoreboard.record(kind),
             MonsterVictory => break,
             _ => (),

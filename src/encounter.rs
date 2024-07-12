@@ -106,7 +106,7 @@ impl<'a> Encounter<'a> {
         }
     }
 
-    pub fn progress(&mut self) -> EncounterOutcome {
+    pub fn run(&mut self) -> EncounterOutcome {
         let kind = self.monster.kind.clone();
         println!("---- A wild {kind} appeared! ----");
         let mut buf = String::with_capacity(1 << 10);
