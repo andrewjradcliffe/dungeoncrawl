@@ -17,6 +17,16 @@ pub enum Item {
 }
 pub use Item::*;
 
+impl Item {
+    pub fn description(&self) -> &'static str {
+        match self {
+            HealthPotion => "restores 25 HP",
+            ManaPotion => "restores 25 MP",
+            Food => "restores 10 HP and 10 MP",
+        }
+    }
+}
+
 impl FromStr for Item {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -131,7 +141,13 @@ impl fmt::Display for Inventory {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Inventory:")?;
         for (item, count) in self.bag.iter().filter(|(_, count)| **count > 0) {
-            writeln!(f, "    {:<40} x{}", format!("{}", item), count)?;
+            writeln!(
+                f,
+                "    {:<30} x{} | {}",
+                format!("{}", item),
+                count,
+                item.description()
+            )?;
         }
         Ok(())
     }
