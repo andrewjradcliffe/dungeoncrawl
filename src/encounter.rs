@@ -1,6 +1,8 @@
 use crate::combat::*;
+use crate::melee::*;
 use crate::monster::*;
 use crate::player::*;
+use crate::spell::*;
 use std::io::{self, BufRead, Write};
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -44,24 +46,66 @@ impl<'a> Encounter<'a> {
     pub fn damage_player(&mut self) {
         self.player.receive_damage(5)
     }
-    pub fn consume(&mut self, action: Action) -> EncounterOutcome {
+    pub fn perform(&mut self, action: CombatAction) -> EncounterOutcome {
         match action {
             Attack => {
-                self.damage_monster();
-                if self.is_monster_dead() {
-                    return PlayerVictory;
+                if let Some(melee) = melee_menu() {
+                    match self.player.cast_melee(melee) {
+                        Some(melee) => self.monster.receive_damage(melee.damage()),
+                        None => {
+                            println!("Insufficient TP!");
+                            return Indeterminate;
+                        }
+                    }
+                    if self.is_monster_dead() {
+                        return PlayerVictory;
+                    }
+                    self.damage_player();
+                    if self.is_player_dead() {
+                        return MonsterVictory;
+                    }
+                    Indeterminate
+                } else {
+                    Indeterminate
                 }
-                self.damage_player();
-                if self.is_player_dead() {
-                    return MonsterVictory;
-                }
-                Indeterminate
+                // self.damage_monster();
+                // if self.is_monster_dead() {
+                //     return PlayerVictory;
+                // }
+                // self.damage_player();
+                // if self.is_player_dead() {
+                //     return MonsterVictory;
+                // }
+                // Indeterminate
             }
             ShowInventory => {
                 self.player.inventory_action();
                 Indeterminate
             }
             Run => PlayerRan,
+            Cast => {
+                if let Some(spell) = spell_menu() {
+                    match self.player.cast_spell(spell) {
+                        Some(Heal) => self.player.restore_hp(Heal.healing()),
+                        Some(Fire) => self.monster.receive_damage(Fire.damage()),
+                        Some(Stone) => self.monster.receive_damage(Stone.damage()),
+                        None => {
+                            println!("Insufficient MP!");
+                            return Indeterminate;
+                        }
+                    }
+                    if self.is_monster_dead() {
+                        return PlayerVictory;
+                    }
+                    self.damage_player();
+                    if self.is_player_dead() {
+                        return MonsterVictory;
+                    }
+                    Indeterminate
+                } else {
+                    Indeterminate
+                }
+            }
         }
     }
 
@@ -72,27 +116,28 @@ impl<'a> Encounter<'a> {
         loop {
             match res {
                 PlayerVictory => {
-                    println!("You are victorious!");
+                    println!("---- The monster died! ----");
                     break;
                 }
                 PlayerRan => {
-                    println!("You ran away!");
+                    println!("---- You ran away! ----");
                     break;
                 }
                 MonsterVictory => {
-                    println!("You died!");
+                    println!("---- You died! ----");
                     break;
                 }
                 Indeterminate => {
                     println!(
-                        "There is a monster in front of you, with HP [{}/{}]",
-                        self.monster.hp, MONSTER_HP
+                        // "There is a monster in front of you, with HP [{}/{}]",
+                        "The monster in front of you has {}",
+                        self.monster.status()
                     );
-                    println!("ATTACK or RUN or INVENTORY?");
+                    println!("ATTACK, CAST, RUN, or INVENTORY?");
                     match get_response(&mut buf, self.player.status()) {
-                        Ok(()) => match buf.parse::<Action>() {
+                        Ok(()) => match buf.parse::<CombatAction>() {
                             Ok(action) => {
-                                res = self.consume(action);
+                                res = self.perform(action);
                             }
                             Err(s) => println!("not a valid response: {}", s),
                         },

@@ -1,8 +1,10 @@
 pub mod combat;
 pub mod encounter;
 pub mod item;
+pub mod melee;
 pub mod monster;
 pub mod player;
+pub mod spell;
 
 use crate::combat::*;
 use crate::encounter::*;

@@ -1,14 +1,15 @@
 use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
-pub enum Action {
+pub enum CombatAction {
     Attack,
     Run,
     ShowInventory,
+    Cast,
 }
-pub use Action::*;
+pub use CombatAction::*;
 
-impl FromStr for Action {
+impl FromStr for CombatAction {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
@@ -18,6 +19,8 @@ impl FromStr for Action {
             Ok(Run)
         } else if s.eq_ignore_ascii_case("i") || s.eq_ignore_ascii_case("inventory") {
             Ok(ShowInventory)
+        } else if s.eq_ignore_ascii_case("c") || s.eq_ignore_ascii_case("cast") {
+            Ok(Cast)
         } else {
             Err(s.to_string())
         }

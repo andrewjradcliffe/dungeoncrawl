@@ -1,8 +1,11 @@
 use crate::combat::Combatant;
 use crate::item::*;
+use crate::melee::Melee;
+use crate::spell::Spell;
 
 pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
+pub(crate) const PLAYER_TP: i64 = 100;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -10,6 +13,8 @@ pub struct Player {
     pub(crate) max_hp: i64,
     pub(crate) current_mp: i64,
     pub(crate) max_mp: i64,
+    pub(crate) current_tp: i64,
+    pub(crate) max_tp: i64,
     pub(crate) inventory: Inventory,
 }
 
@@ -29,14 +34,38 @@ impl Player {
             max_hp: PLAYER_HP,
             current_mp: PLAYER_MP,
             max_mp: PLAYER_MP,
+            current_tp: 0,
+            max_tp: PLAYER_TP,
             inventory: Inventory::new(),
         }
     }
-    fn restore_hp(&mut self, amount: i64) {
+    pub fn restore_hp(&mut self, amount: i64) {
         self.current_hp = (self.current_hp + amount).clamp(0, self.max_hp);
     }
-    fn restore_mp(&mut self, amount: i64) {
+    pub fn restore_mp(&mut self, amount: i64) {
         self.current_mp = (self.current_mp + amount).clamp(0, self.max_mp);
+    }
+    pub fn restore_tp(&mut self, amount: i64) {
+        self.current_tp = (self.current_tp + amount).clamp(0, self.max_tp);
+    }
+
+    pub fn cast_spell(&mut self, spell: Spell) -> Option<Spell> {
+        let cost = spell.cost();
+        if self.current_mp >= cost {
+            self.current_mp -= cost;
+            Some(spell)
+        } else {
+            None
+        }
+    }
+    pub fn cast_melee(&mut self, melee: Melee) -> Option<Melee> {
+        let cost = melee.cost();
+        if self.current_tp >= cost {
+            self.current_tp -= cost;
+            Some(melee)
+        } else {
+            None
+        }
     }
 
     pub fn inventory_action(&mut self) {
@@ -57,8 +86,13 @@ impl Player {
     }
     pub fn status(&self) -> String {
         format!(
-            "HP[{}/{}] MP[{}/{}]",
-            self.current_hp, self.max_hp, self.current_mp, self.max_mp
+            "HP[{}/{}] MP[{}/{}] TP[{}/{}]",
+            self.current_hp,
+            self.max_hp,
+            self.current_mp,
+            self.max_mp,
+            self.current_tp,
+            self.max_tp,
         )
     }
 }

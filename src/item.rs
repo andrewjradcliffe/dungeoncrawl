@@ -68,6 +68,9 @@ impl Inventory {
             }
             buf.clear();
             println!("{}", self);
+
+            print!("👜 ");
+            io::Write::flush(&mut io::stdout()).unwrap();
             let stdin = io::stdin();
             let mut handle = stdin.lock();
             match handle.read_line(&mut buf) {
