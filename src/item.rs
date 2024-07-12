@@ -6,7 +6,7 @@ use std::hash::Hash;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, Hash, PartialOrd, Ord)]
 pub enum Item {
     /// Restores 25 HP
     HealthPotion,

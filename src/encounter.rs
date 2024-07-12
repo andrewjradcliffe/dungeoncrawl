@@ -16,8 +16,8 @@ pub use EncounterOutcome::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Encounter<'a> {
-    player: &'a mut Player,
-    monster: Monster,
+    pub(crate) player: &'a mut Player,
+    pub(crate) monster: Monster,
 }
 
 impl<'a> Encounter<'a> {
@@ -31,7 +31,7 @@ impl<'a> Encounter<'a> {
     pub fn new(player: &'a mut Player) -> Self {
         Self {
             player,
-            monster: Monster::new(),
+            monster: Monster::rand(),
         }
     }
     pub fn is_monster_dead(&self) -> bool {
@@ -39,12 +39,6 @@ impl<'a> Encounter<'a> {
     }
     pub fn is_player_dead(&self) -> bool {
         !self.player.is_alive()
-    }
-    pub fn damage_monster(&mut self) {
-        self.monster.receive_damage(7)
-    }
-    pub fn damage_player(&mut self) {
-        self.player.receive_damage(5)
     }
     pub fn perform(&mut self, action: CombatAction) -> EncounterOutcome {
         match action {
@@ -60,7 +54,7 @@ impl<'a> Encounter<'a> {
                     if self.is_monster_dead() {
                         return PlayerVictory;
                     }
-                    self.damage_player();
+                    self.player.receive_damage(self.monster.strength);
                     if self.is_player_dead() {
                         return MonsterVictory;
                     }
@@ -68,15 +62,6 @@ impl<'a> Encounter<'a> {
                 } else {
                     Indeterminate
                 }
-                // self.damage_monster();
-                // if self.is_monster_dead() {
-                //     return PlayerVictory;
-                // }
-                // self.damage_player();
-                // if self.is_player_dead() {
-                //     return MonsterVictory;
-                // }
-                // Indeterminate
             }
             ShowInventory => {
                 self.player.inventory_action();
@@ -86,9 +71,8 @@ impl<'a> Encounter<'a> {
             Cast => {
                 if let Some(spell) = spell_menu() {
                     match self.player.cast_spell(spell) {
-                        Some(Heal) => self.player.restore_hp(Heal.healing()),
-                        Some(Fire) => self.monster.receive_damage(Fire.damage()),
-                        Some(Stone) => self.monster.receive_damage(Stone.damage()),
+                        Some(Cure1 | Cure2) => self.player.restore_hp(spell.healing()),
+                        Some(Fire | Stone) => self.monster.receive_damage(spell.damage()),
                         None => {
                             println!("Insufficient MP!");
                             return Indeterminate;
@@ -97,7 +81,7 @@ impl<'a> Encounter<'a> {
                     if self.is_monster_dead() {
                         return PlayerVictory;
                     }
-                    self.damage_player();
+                    self.player.receive_damage(self.monster.strength);
                     if self.is_player_dead() {
                         return MonsterVictory;
                     }
@@ -110,13 +94,14 @@ impl<'a> Encounter<'a> {
     }
 
     pub fn progress(&mut self) -> EncounterOutcome {
-        println!("---- A wild monster appeared! ----");
+        let kind = self.monster.kind.clone();
+        println!("---- A wild {kind} appeared! ----");
         let mut buf = String::with_capacity(1 << 10);
         let mut res = Indeterminate;
         loop {
             match res {
                 PlayerVictory => {
-                    println!("---- The monster died! ----");
+                    println!("---- The {kind} died! ----");
                     break;
                 }
                 PlayerRan => {
@@ -130,7 +115,7 @@ impl<'a> Encounter<'a> {
                 Indeterminate => {
                     println!(
                         // "There is a monster in front of you, with HP [{}/{}]",
-                        "The monster in front of you has {}",
+                        "The {kind} in front of you has {}",
                         self.monster.status()
                     );
                     println!("ATTACK, CAST, RUN, or INVENTORY?");
