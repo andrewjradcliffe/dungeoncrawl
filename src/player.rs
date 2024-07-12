@@ -52,7 +52,7 @@ impl Player {
     pub fn cast_spell(&mut self, spell: Spell) -> Option<Spell> {
         let cost = spell.cost();
         if self.current_mp >= cost {
-            self.current_mp -= cost;
+            self.current_mp = (self.current_mp - cost).clamp(0, self.max_mp);
             Some(spell)
         } else {
             None
@@ -61,7 +61,7 @@ impl Player {
     pub fn cast_melee(&mut self, melee: Melee) -> Option<Melee> {
         let cost = melee.cost();
         if self.current_tp >= cost {
-            self.current_tp -= cost;
+            self.current_tp = (self.current_tp - cost).clamp(0, self.max_tp);
             Some(melee)
         } else {
             None
