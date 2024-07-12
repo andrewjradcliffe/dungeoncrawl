@@ -63,11 +63,6 @@ impl<'a> Encounter<'a> {
                     Indeterminate
                 }
             }
-            ShowInventory => {
-                self.player.inventory_action();
-                Indeterminate
-            }
-            Run => PlayerRan,
             Cast => {
                 if let Some(spell) = spell_menu() {
                     match self.player.cast_spell(spell) {
@@ -89,6 +84,18 @@ impl<'a> Encounter<'a> {
                 } else {
                     Indeterminate
                 }
+            }
+            ShowInventory => {
+                self.player.inventory_action();
+                Indeterminate
+            }
+            Run => PlayerRan,
+            DoNothing => {
+                self.player.receive_damage(self.monster.strength);
+                if self.is_player_dead() {
+                    return MonsterVictory;
+                }
+                Indeterminate
             }
         }
     }
