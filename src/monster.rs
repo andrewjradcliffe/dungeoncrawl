@@ -32,20 +32,11 @@ impl Monster {
     pub fn status(&self) -> String {
         format!("HP[{}/{}]", self.current_hp, self.max_hp,)
     }
+
     pub fn rand() -> Self {
         let mut rng = rand::thread_rng();
         let i = rng.gen_range(0u8..8u8);
-        let kind = match i {
-            0 => Frog,
-            1 => Bat,
-            2 => Wolf,
-            3 => Goblin,
-            4 => Bear,
-            5 => Orc,
-            6 => Dragon,
-            7 => Fairy,
-            _ => panic!(),
-        };
+        let kind = MonsterKind::from_index(i);
         Monster::new(kind)
     }
 }
@@ -87,6 +78,29 @@ impl MonsterKind {
             Orc => 15,
             Dragon => 20,
             Fairy => -20,
+        }
+    }
+
+    pub(crate) const fn from_index(i: u8) -> Self {
+        const FROG: u8 = Frog as u8;
+        const BAT: u8 = Bat as u8;
+        const WOLF: u8 = Wolf as u8;
+        const GOBLIN: u8 = Goblin as u8;
+        const BEAR: u8 = Bear as u8;
+        const ORC: u8 = Orc as u8;
+        const DRAGON: u8 = Dragon as u8;
+        const FAIRY: u8 = Fairy as u8;
+
+        match i {
+            FROG => Frog,
+            BAT => Bat,
+            WOLF => Wolf,
+            GOBLIN => Goblin,
+            BEAR => Bear,
+            ORC => Orc,
+            DRAGON => Dragon,
+            FAIRY => Fairy,
+            _ => panic!(),
         }
     }
 }
