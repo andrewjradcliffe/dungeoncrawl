@@ -21,7 +21,8 @@ impl FromStr for CombatAction {
         static RE_RUN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:run|r)$").unwrap());
         static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
         static RE_CAST: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:cast|c)$").unwrap());
-        static RE_NOOP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:nothing|n)$").unwrap());
+        static RE_NOOP: Lazy<Regex> =
+            Lazy::new(|| Regex::new(r"(?i)^(:?do\s*)?(?:nothing|n)$").unwrap());
         if RE_ATTACK.is_match(s) {
             Ok(Attack)
         } else if RE_CAST.is_match(s) {

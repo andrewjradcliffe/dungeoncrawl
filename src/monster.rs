@@ -16,7 +16,7 @@ impl Combatant for Monster {
         self.current_hp > 0
     }
     fn receive_damage(&mut self, amount: i64) {
-        self.current_hp -= amount;
+        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
 }
 
@@ -34,7 +34,7 @@ impl Monster {
     }
     pub fn rand() -> Self {
         let mut rng = rand::thread_rng();
-        let i = rng.gen_range(0u8..7u8);
+        let i = rng.gen_range(0u8..8u8);
         let kind = match i {
             0 => Frog,
             1 => Bat,
@@ -43,6 +43,7 @@ impl Monster {
             4 => Bear,
             5 => Orc,
             6 => Dragon,
+            7 => Fairy,
             _ => panic!(),
         };
         Monster::new(kind)
@@ -58,6 +59,7 @@ pub enum MonsterKind {
     Bear,
     Orc,
     Dragon,
+    Fairy,
 }
 pub use MonsterKind::*;
 
@@ -71,6 +73,7 @@ impl MonsterKind {
             Bear => 75,
             Orc => 100,
             Dragon => 250,
+            Fairy => 1,
         }
     }
 
@@ -83,6 +86,7 @@ impl MonsterKind {
             Bear => 12,
             Orc => 15,
             Dragon => 20,
+            Fairy => -20,
         }
     }
 }
@@ -97,6 +101,7 @@ impl fmt::Display for MonsterKind {
             Bear => write!(f, "bear"),
             Orc => write!(f, "orc"),
             Dragon => write!(f, "dragon"),
+            Fairy => write!(f, "fairy"),
         }
     }
 }

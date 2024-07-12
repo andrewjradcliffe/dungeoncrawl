@@ -89,7 +89,13 @@ impl<'a> Encounter<'a> {
                 self.player.inventory_action();
                 Indeterminate
             }
-            Run => PlayerRan,
+            Run => {
+                self.player.receive_damage(self.monster.strength);
+                if self.is_player_dead() {
+                    return MonsterVictory;
+                }
+                PlayerRan
+            }
             DoNothing => {
                 self.player.receive_damage(self.monster.strength);
                 if self.is_player_dead() {
@@ -125,7 +131,7 @@ impl<'a> Encounter<'a> {
                         "The {kind} in front of you has {}",
                         self.monster.status()
                     );
-                    println!("ATTACK, CAST, RUN, or INVENTORY?");
+                    println!("ATTACK, CAST, RUN, INVENTORY, or DO NOTHING?");
                     match get_response(&mut buf, self.player.status()) {
                         Ok(()) => match buf.parse::<CombatAction>() {
                             Ok(action) => {
