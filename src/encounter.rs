@@ -68,6 +68,7 @@ impl<'a> Encounter<'a> {
                     match self.player.cast_spell(spell) {
                         Some(Cure1 | Cure2) => self.player.restore_hp(spell.healing()),
                         Some(Fire | Stone) => self.monster.receive_damage(spell.damage()),
+                        Some(Meditate) => self.player.restore_mp(spell.mana_restore()),
                         None => {
                             println!("Insufficient MP!");
                             return Indeterminate;

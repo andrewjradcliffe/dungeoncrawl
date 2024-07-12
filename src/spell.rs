@@ -10,6 +10,7 @@ pub enum Spell {
     Cure2,
     Fire,
     Stone,
+    Meditate,
 }
 pub use Spell::*;
 
@@ -20,6 +21,7 @@ impl Spell {
             Cure2 => 25,
             Fire => 15,
             Stone => 10,
+            Meditate => 0,
         }
     }
 
@@ -29,11 +31,12 @@ impl Spell {
             Cure2 => "restores 50 HP",
             Fire => "causes 35 damage",
             Stone => "causes 25 damage",
+            Meditate => "restores 25 MP",
         }
     }
     pub const fn damage(&self) -> i64 {
         match self {
-            Cure1 | Cure2 => 0,
+            Cure1 | Cure2 | Meditate => 0,
             Fire => 35,
             Stone => 25,
         }
@@ -42,9 +45,22 @@ impl Spell {
         match self {
             Cure1 => 25,
             Cure2 => 50,
-            Fire => 0,
-            Stone => 0,
+            Fire | Stone | Meditate => 0,
         }
+    }
+    pub const fn mana_restore(&self) -> i64 {
+        match self {
+            Meditate => 25,
+            _ => 0,
+        }
+    }
+    pub(crate) fn print_menu_item(&self) {
+        println!(
+            "    {:<30} | {:<30} | cost: {} MP",
+            format!("{}", self),
+            self.description(),
+            self.cost()
+        );
     }
 }
 
@@ -62,6 +78,8 @@ impl FromStr for Spell {
 
         static RE_STONE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stone|s)$").unwrap());
 
+        static RE_MED: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:meditate|m)$").unwrap());
+
         if RE_CURE1.is_match(s) {
             Ok(Cure1)
         } else if RE_CURE2.is_match(s) {
@@ -70,6 +88,8 @@ impl FromStr for Spell {
             Ok(Fire)
         } else if RE_STONE.is_match(s) {
             Ok(Stone)
+        } else if RE_MED.is_match(s) {
+            Ok(Meditate)
         } else {
             Err(s.to_string())
         }
@@ -83,6 +103,7 @@ impl fmt::Display for Spell {
             Cure2 => write!(f, "Cure II"),
             Fire => write!(f, "Fire"),
             Stone => write!(f, "Stone"),
+            Meditate => write!(f, "Meditate"),
         }
     }
 }
@@ -94,30 +115,11 @@ pub(crate) fn spell_menu() -> Option<Spell> {
     println!("---- Entering spell menu... ----");
     loop {
         buf.clear();
-        println!(
-            "    {:<30} | {:<30} | cost: {} MP",
-            format!("{}", Cure1),
-            Cure1.description(),
-            Cure1.cost()
-        );
-        println!(
-            "    {:<30} | {:<30} | cost: {} MP",
-            format!("{}", Cure2),
-            Cure2.description(),
-            Cure2.cost()
-        );
-        println!(
-            "    {:<30} | {:<30} | cost: {} MP",
-            format!("{}", Fire),
-            Fire.description(),
-            Fire.cost()
-        );
-        println!(
-            "    {:<30} | {:<30} | cost: {} MP",
-            format!("{}", Stone),
-            Stone.description(),
-            Stone.cost()
-        );
+        Cure1.print_menu_item();
+        Cure2.print_menu_item();
+        Fire.print_menu_item();
+        Stone.print_menu_item();
+        Meditate.print_menu_item();
 
         print!("🪄 ");
         io::Write::flush(&mut io::stdout()).unwrap();
