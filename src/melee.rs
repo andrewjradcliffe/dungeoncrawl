@@ -41,6 +41,14 @@ impl Melee {
             Super => 70,
         }
     }
+    pub(crate) fn print_menu_item(&self) {
+        println!(
+            "    {:<30} | {:<30} | cost: {} TP",
+            format!("{}", self),
+            self.description(),
+            self.cost(),
+        );
+    }
 }
 
 impl FromStr for Melee {
@@ -84,24 +92,9 @@ pub(crate) fn melee_menu() -> Option<Melee> {
     println!("---- Entering melee menu... ----");
     loop {
         buf.clear();
-        println!(
-            "    {:<30} | {:<30} | cost: {} TP",
-            format!("{}", Basic),
-            Basic.description(),
-            Basic.cost(),
-        );
-        println!(
-            "    {:<30} | {:<30} | cost: {} TP",
-            format!("{}", Power),
-            Power.description(),
-            Power.cost(),
-        );
-        println!(
-            "    {:<30} | {:<30} | cost: {} TP",
-            format!("{}", Super),
-            Super.description(),
-            Super.cost(),
-        );
+        Basic.print_menu_item();
+        Power.print_menu_item();
+        Super.print_menu_item();
 
         print!("🪓 ");
         io::Write::flush(&mut io::stdout()).unwrap();
