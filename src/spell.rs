@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::fmt::{self, Write};
 use std::io::{self, BufRead};
 use std::str::FromStr;
@@ -46,11 +48,18 @@ impl FromStr for Spell {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-        if s.eq_ignore_ascii_case("heal") {
+
+        static RE_HEAL: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^h(?:eal|ea|e)?$").unwrap());
+
+        static RE_FIRE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^f(?:ire|ir|i)?$").unwrap());
+
+        static RE_STONE: Lazy<Regex> =
+            Lazy::new(|| Regex::new("(?i)^s(?:tone|ton|to|t)?$").unwrap());
+        if RE_HEAL.is_match(s) {
             Ok(Heal)
-        } else if s.eq_ignore_ascii_case("fire") {
+        } else if RE_FIRE.is_match(s) {
             Ok(Fire)
-        } else if s.eq_ignore_ascii_case("stone") {
+        } else if RE_STONE.is_match(s) {
             Ok(Stone)
         } else {
             Err(s.to_string())

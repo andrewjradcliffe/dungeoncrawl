@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -13,14 +15,19 @@ impl FromStr for CombatAction {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-        if s.eq_ignore_ascii_case("a") || s.eq_ignore_ascii_case("attack") {
+
+        static RE_ATTACK: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:attack|a)$").unwrap());
+        static RE_RUN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:run|r)$").unwrap());
+        static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
+        static RE_CAST: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:cast|c)$").unwrap());
+        if RE_ATTACK.is_match(s) {
             Ok(Attack)
-        } else if s.eq_ignore_ascii_case("r") || s.eq_ignore_ascii_case("run") {
-            Ok(Run)
-        } else if s.eq_ignore_ascii_case("i") || s.eq_ignore_ascii_case("inventory") {
-            Ok(ShowInventory)
-        } else if s.eq_ignore_ascii_case("c") || s.eq_ignore_ascii_case("cast") {
+        } else if RE_CAST.is_match(s) {
             Ok(Cast)
+        } else if RE_INV.is_match(s) {
+            Ok(ShowInventory)
+        } else if RE_RUN.is_match(s) {
+            Ok(Run)
         } else {
             Err(s.to_string())
         }

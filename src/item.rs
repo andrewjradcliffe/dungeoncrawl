@@ -1,4 +1,6 @@
 use indexmap::{map::Entry, IndexMap};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::fmt::{self, Write};
 use std::hash::Hash;
 use std::io::{self, BufRead};
@@ -19,11 +21,17 @@ impl FromStr for Item {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-        if s.eq_ignore_ascii_case("hp") || s.eq_ignore_ascii_case("health potion") {
+
+        static RE_HP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:hp|health potion)$").unwrap());
+        static RE_MP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:mp|mana potion)$").unwrap());
+
+        static RE_FOOD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^food$").unwrap());
+
+        if RE_HP.is_match(s) {
             Ok(HealthPotion)
-        } else if s.eq_ignore_ascii_case("mp") || s.eq_ignore_ascii_case("mana potion") {
+        } else if RE_MP.is_match(s) {
             Ok(ManaPotion)
-        } else if s.eq_ignore_ascii_case("food") {
+        } else if RE_FOOD.is_match(s) {
             Ok(Food)
         } else {
             Err(s.to_string())
@@ -140,11 +148,18 @@ impl FromStr for InventoryAction {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-        if s.eq_ignore_ascii_case("u") || s.eq_ignore_ascii_case("use") {
+
+        static RE_USE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:use|u)$").unwrap());
+
+        static RE_DROP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:drop|d)$").unwrap());
+
+        static RE_QUIT: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:quit|q)$").unwrap());
+
+        if RE_USE.is_match(s) {
             Ok(InventoryAction::Use)
-        } else if s.eq_ignore_ascii_case("d") || s.eq_ignore_ascii_case("drop") {
+        } else if RE_DROP.is_match(s) {
             Ok(InventoryAction::Drop)
-        } else if s.eq_ignore_ascii_case("q") || s.eq_ignore_ascii_case("quit") {
+        } else if RE_QUIT.is_match(s) {
             Ok(InventoryAction::Quit)
         } else {
             Err(s.to_string())

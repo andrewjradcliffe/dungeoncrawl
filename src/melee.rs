@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::fmt::{self, Write};
 use std::io::{self, BufRead};
 use std::str::FromStr;
@@ -39,11 +41,21 @@ impl FromStr for Melee {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-        if s.eq_ignore_ascii_case("b") || s.eq_ignore_ascii_case("basic") {
+
+        static RE_BASIC: Lazy<Regex> =
+            Lazy::new(|| Regex::new("(?i)^b(?:asic|asi|as|a)?$").unwrap());
+
+        static RE_POWER: Lazy<Regex> =
+            Lazy::new(|| Regex::new("(?i)^p(?:ower|owe|ow|o)?$").unwrap());
+
+        static RE_SUPER: Lazy<Regex> =
+            Lazy::new(|| Regex::new("(?i)^s(?:uper|upe|up|u)?$").unwrap());
+
+        if RE_BASIC.is_match(s) {
             Ok(Basic)
-        } else if s.eq_ignore_ascii_case("p") || s.eq_ignore_ascii_case("power") {
+        } else if RE_POWER.is_match(s) {
             Ok(Power)
-        } else if s.eq_ignore_ascii_case("s") || s.eq_ignore_ascii_case("super") {
+        } else if RE_SUPER.is_match(s) {
             Ok(Super)
         } else {
             Err(s.to_string())
