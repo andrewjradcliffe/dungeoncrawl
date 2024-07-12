@@ -1,5 +1,6 @@
 use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
+use rand::Rng;
 use regex::Regex;
 use std::fmt::{self, Write};
 use std::hash::Hash;
@@ -24,6 +25,25 @@ impl Item {
             ManaPotion => "restores 25 MP",
             Food => "restores 10 HP and 10 MP",
         }
+    }
+    pub(crate) fn from_index(i: u8) -> Self {
+        const HEALTHPOTION: u8 = HealthPotion as u8;
+        const MANAPOTION: u8 = ManaPotion as u8;
+        const FOOD: u8 = Food as u8;
+
+        match i {
+            HEALTHPOTION => HealthPotion,
+            MANAPOTION => ManaPotion,
+            FOOD => Food,
+            _ => panic!(),
+        }
+    }
+    pub fn gen<T: Rng>(rng: &mut T) -> Self {
+        Self::from_index(rng.gen_range(0u8..3u8))
+    }
+    pub fn rand() -> Self {
+        let mut rng = rand::thread_rng();
+        Self::gen(&mut rng)
     }
 }
 

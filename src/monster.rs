@@ -34,10 +34,7 @@ impl Monster {
     }
 
     pub fn rand() -> Self {
-        let mut rng = rand::thread_rng();
-        let i = rng.gen_range(0u8..8u8);
-        let kind = MonsterKind::from_index(i);
-        Monster::new(kind)
+        Monster::new(MonsterKind::rand())
     }
 }
 
@@ -102,6 +99,13 @@ impl MonsterKind {
             FAIRY => Fairy,
             _ => panic!(),
         }
+    }
+    pub fn gen<T: Rng>(rng: &mut T) -> Self {
+        Self::from_index(rng.gen_range(0u8..8u8))
+    }
+    pub fn rand() -> Self {
+        let mut rng = rand::thread_rng();
+        Self::gen(&mut rng)
     }
 }
 
