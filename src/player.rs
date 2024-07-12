@@ -23,7 +23,7 @@ impl Combatant for Player {
         self.current_hp > 0
     }
     fn receive_damage(&mut self, amount: i64) {
-        self.current_hp -= amount;
+        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
 }
 
