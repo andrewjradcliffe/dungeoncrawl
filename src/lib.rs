@@ -7,6 +7,7 @@ pub mod monster;
 pub mod player;
 pub mod scoreboard;
 pub mod spell;
+pub mod town;
 
 use crate::combat::*;
 use crate::encounter::*;
