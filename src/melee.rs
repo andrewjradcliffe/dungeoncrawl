@@ -56,9 +56,9 @@ impl FromStr for Melee {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_BASIC: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:basic|b)?$").unwrap());
-        static RE_POWER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:power|p)?$").unwrap());
-        static RE_SUPER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:super|s)?$").unwrap());
+        static RE_BASIC: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:basic|b)$").unwrap());
+        static RE_POWER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:power|p)$").unwrap());
+        static RE_SUPER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:super|s)$").unwrap());
 
         if RE_BASIC.is_match(s) {
             Ok(Basic)
