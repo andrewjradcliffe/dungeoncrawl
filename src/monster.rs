@@ -77,6 +77,9 @@ impl MonsterKind {
             Fairy => -20,
         }
     }
+    pub(crate) const fn loot_weight(&self) -> usize {
+        (self.max_hp() / 20) as usize
+    }
 
     pub(crate) const fn from_index(i: u8) -> Self {
         const FROG: u8 = Frog as u8;

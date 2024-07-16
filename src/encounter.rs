@@ -113,7 +113,7 @@ impl<'a> Encounter<'a> {
             match res {
                 PlayerVictory => {
                     println!("---- The {kind} died! ----");
-                    let loot = Loot::rand();
+                    let loot = Loot::rand_weighted(self.monster.kind);
                     loot.announce();
                     self.player.acquire(loot);
                     break;

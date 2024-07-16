@@ -1,5 +1,8 @@
 use crate::item::*;
+use crate::monster::MonsterKind;
 use rand::Rng;
+
+use MonsterKind::*;
 
 pub struct Loot {
     pub(crate) item: Item,
@@ -20,5 +23,16 @@ impl Loot {
             1 => println!("You found a {}!", self.item),
             x => println!("You found {} {}s!", x, self.item),
         }
+    }
+    pub fn rand_weighted(kind: MonsterKind) -> Self {
+        let mut rng = rand::thread_rng();
+        let item = Item::gen(&mut rng);
+
+        let amount = match kind {
+            Fairy => 0,
+            _ => rng.gen_range(0..kind.loot_weight()),
+        };
+
+        Self { item, amount }
     }
 }
