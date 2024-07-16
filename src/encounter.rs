@@ -41,6 +41,14 @@ impl<'a> Encounter<'a> {
     pub fn is_player_dead(&self) -> bool {
         !self.player.is_alive()
     }
+    #[inline]
+    fn monster_victory_or(&self, alternative: EncounterOutcome) -> EncounterOutcome {
+        if self.is_player_dead() {
+            MonsterVictory
+        } else {
+            alternative
+        }
+    }
     pub fn perform(&mut self, action: CombatAction) -> EncounterOutcome {
         match action {
             Attack => {
@@ -56,10 +64,7 @@ impl<'a> Encounter<'a> {
                         return PlayerVictory;
                     }
                     self.player.receive_damage(self.monster.strength);
-                    if self.is_player_dead() {
-                        return MonsterVictory;
-                    }
-                    Indeterminate
+                    self.monster_victory_or(Indeterminate)
                 } else {
                     Indeterminate
                 }
@@ -79,10 +84,7 @@ impl<'a> Encounter<'a> {
                         return PlayerVictory;
                     }
                     self.player.receive_damage(self.monster.strength);
-                    if self.is_player_dead() {
-                        return MonsterVictory;
-                    }
-                    Indeterminate
+                    self.monster_victory_or(Indeterminate)
                 } else {
                     Indeterminate
                 }
@@ -93,17 +95,11 @@ impl<'a> Encounter<'a> {
             }
             Run => {
                 self.player.receive_damage(self.monster.strength);
-                if self.is_player_dead() {
-                    return MonsterVictory;
-                }
-                PlayerRan
+                self.monster_victory_or(PlayerRan)
             }
             DoNothing => {
                 self.player.receive_damage(self.monster.strength);
-                if self.is_player_dead() {
-                    return MonsterVictory;
-                }
-                Indeterminate
+                self.monster_victory_or(Indeterminate)
             }
         }
     }
