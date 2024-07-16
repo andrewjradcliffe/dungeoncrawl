@@ -110,19 +110,35 @@ impl MonsterKind {
         let mut rng = rand::thread_rng();
         Self::gen(&mut rng)
     }
+
+    pub const fn singular(&self) -> &'static str {
+        match self {
+            Frog => "frog",
+            Wolf => "wolf",
+            Bat => "bat",
+            Goblin => "goblin",
+            Bear => "bear",
+            Orc => "orc",
+            Dragon => "dragon",
+            Fairy => "fairy",
+        }
+    }
+    pub const fn plural(&self) -> &'static str {
+        match self {
+            Frog => "frogs",
+            Wolf => "wolves",
+            Bat => "bats",
+            Goblin => "goblins",
+            Bear => "bears",
+            Orc => "orcs",
+            Dragon => "dragons",
+            Fairy => "fairies",
+        }
+    }
 }
 
 impl fmt::Display for MonsterKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Frog => write!(f, "frog"),
-            Wolf => write!(f, "wolf"),
-            Bat => write!(f, "bat"),
-            Goblin => write!(f, "goblin"),
-            Bear => write!(f, "bear"),
-            Orc => write!(f, "orc"),
-            Dragon => write!(f, "dragon"),
-            Fairy => write!(f, "fairy"),
-        }
+        write!(f, "{}", self.singular())
     }
 }

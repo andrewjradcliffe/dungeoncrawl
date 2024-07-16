@@ -21,7 +21,7 @@ pub use Item::*;
 use crate::loot::Loot;
 
 impl Item {
-    pub fn description(&self) -> &'static str {
+    pub const fn description(&self) -> &'static str {
         match self {
             HealthPotion => "restores 25 HP",
             ManaPotion => "restores 25 MP",

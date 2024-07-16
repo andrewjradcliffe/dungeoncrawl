@@ -29,9 +29,9 @@ impl fmt::Display for Scoreboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (kind, count) in self.0.iter().filter(|(_, count)| **count > 0) {
             if *count == 1 {
-                writeln!(f, "You defeated 1 {kind}!")?;
+                writeln!(f, "You defeated 1 {}!", kind.singular())?;
             } else {
-                writeln!(f, "You defeated {count} {kind}s!")?;
+                writeln!(f, "You defeated {count} {}!", kind.plural())?;
             }
         }
         Ok(())
