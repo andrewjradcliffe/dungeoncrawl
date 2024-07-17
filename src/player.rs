@@ -37,7 +37,7 @@ impl Player {
             max_mp: PLAYER_MP,
             current_tp: 0,
             max_tp: PLAYER_TP,
-            inventory: Inventory::new(),
+            inventory: Inventory::new_player(),
         }
     }
     pub fn restore_hp(&mut self, amount: i64) {
@@ -99,5 +99,10 @@ impl Player {
             self.current_tp,
             self.max_tp,
         )
+    }
+    pub fn sleep(&mut self) {
+        self.current_hp = self.max_hp;
+        self.current_mp = self.max_mp;
+        self.current_tp = 0;
     }
 }

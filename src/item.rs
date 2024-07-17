@@ -21,6 +21,9 @@ pub use Item::*;
 use crate::loot::Loot;
 
 impl Item {
+    pub(crate) const fn total_variants() -> usize {
+        3
+    }
     pub const fn description(&self) -> &'static str {
         match self {
             HealthPotion => "restores 25 HP",
@@ -80,6 +83,17 @@ impl fmt::Display for Item {
     }
 }
 
+pub struct DuplicatedItem {
+    pub(crate) kind: Item,
+    pub(crate) n: usize,
+}
+impl DuplicatedItem {
+    #[inline]
+    pub fn new(kind: Item, n: usize) -> Self {
+        Self { kind, n }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Inventory {
     bag: IndexMap<Item, usize>,
@@ -89,9 +103,14 @@ pub struct Inventory {
 impl Inventory {
     pub fn new() -> Self {
         Self {
-            bag: IndexMap::from([(HealthPotion, 1), (ManaPotion, 1), (Food, 2)]),
-            sum: 4,
+            bag: IndexMap::with_capacity(Item::total_variants()),
+            sum: 0,
         }
+    }
+    pub fn new_player() -> Self {
+        [(HealthPotion, 1), (ManaPotion, 1), (Food, 2)]
+            .into_iter()
+            .collect()
     }
     pub fn is_empty(&self) -> bool {
         self.sum == 0
@@ -153,19 +172,55 @@ impl Inventory {
             Entry::Vacant(_) => None,
         }
     }
+    pub fn pop_multiple(&mut self, item: Item, n: usize) -> Option<DuplicatedItem> {
+        match self.bag.entry(item) {
+            Entry::Occupied(mut v) => match *v.get() {
+                0 => None,
+                u if u >= n => {
+                    self.sum -= n;
+                    *v.get_mut() -= n;
+                    Some(DuplicatedItem::new(item, n))
+                }
+                u => {
+                    self.sum -= u;
+                    *v.get_mut() = 0;
+                    Some(DuplicatedItem::new(item, u))
+                }
+            },
+            Entry::Vacant(_) => None,
+        }
+    }
     pub fn drop_item(&mut self, item: Item) {
         self.pop_item(item);
     }
-    pub fn push_loot(&mut self, loot: Loot) {
-        self.sum += loot.amount;
-        match self.bag.entry(loot.item) {
+    pub fn push_multiple(&mut self, item: Item, count: usize) {
+        self.sum += count;
+        match self.bag.entry(item) {
             Entry::Occupied(mut v) => {
-                *v.get_mut() += loot.amount;
+                *v.get_mut() += count;
             }
             Entry::Vacant(e) => {
-                e.insert(loot.amount);
+                e.insert(count);
             }
         }
+    }
+    pub fn push(&mut self, item: Item) {
+        self.push_multiple(item, 1)
+    }
+    pub fn push_loot(&mut self, loot: Loot) {
+        self.push_multiple(loot.item, loot.amount)
+    }
+}
+impl FromIterator<(Item, usize)> for Inventory {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (Item, usize)>,
+    {
+        let mut inv = Self::new();
+        for (item, count) in iter {
+            inv.push_multiple(item, count);
+        }
+        inv
     }
 }
 
