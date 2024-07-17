@@ -30,11 +30,9 @@ impl Game {
 }
 
 pub fn game() {
-    // crate::readline::read_direction();
-    // crate::readline::read_direction_wasd();
     // crate::readline::read_line();
+    // crate::readline::read_direction();
     // crate::readline::progress_bar();
-    // crate::readline::multiline_progress_bar();
 
     println!(
         "\n\n\n================================================================================"
@@ -43,6 +41,8 @@ pub fn game() {
     println!(
         "================================================================================\n\n\n"
     );
+
+    // crate::map::demo_movement();
     let mut rng = rand::thread_rng();
 
     let mut game = Game::new();
@@ -59,7 +59,6 @@ pub fn game() {
                 TownAction::Gauntlet => {
                     game.state = State::Gauntlet;
                     println!("commence gauntlet");
-                    // crate::readline::clear_screen();
                 }
                 TownAction::Sleep => {
                     game.player.sleep();

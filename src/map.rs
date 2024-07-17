@@ -18,11 +18,11 @@ use Element::*;
 impl Element {
     pub const fn symbol(&self) -> char {
         match self {
-            Player => '@',
+            Player => '@',  // '🯆'
             Monster => 'm', // '👾',
             Tree => 't',    // '🌳',
             Rock => 'r',    // '🪨',
-            Empty => '.',
+            Empty => '.',   // '🪜',
         }
     }
 }
@@ -132,6 +132,6 @@ pub fn demo_movement() {
     loop {
         println!("{}", map.0);
         map.movement();
-        crate::readline::clear_screen();
+        let _ = crate::readline::clear_screen();
     }
 }
