@@ -3,6 +3,7 @@ pub mod combat;
 pub mod encounter;
 pub mod game;
 pub mod grid;
+pub mod inventory;
 pub mod item;
 pub mod loot;
 pub mod map;

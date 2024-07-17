@@ -1,3 +1,4 @@
+use crate::inventory::*;
 use crate::item::*;
 use once_cell::sync::Lazy;
 use regex::Regex;

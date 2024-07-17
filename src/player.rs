@@ -1,4 +1,5 @@
 use crate::combat::Combatant;
+use crate::inventory::*;
 use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::Melee;
@@ -7,6 +8,7 @@ use crate::spell::Spell;
 pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
+pub(crate) const PLAYER_GOLD: u64 = 10;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -17,6 +19,7 @@ pub struct Player {
     pub(crate) current_tp: i64,
     pub(crate) max_tp: i64,
     pub(crate) inventory: Inventory,
+    pub(crate) gold: u64,
 }
 
 impl Combatant for Player {
@@ -38,6 +41,7 @@ impl Player {
             current_tp: 0,
             max_tp: PLAYER_TP,
             inventory: Inventory::new_player(),
+            gold: PLAYER_GOLD,
         }
     }
     pub fn restore_hp(&mut self, amount: i64) {
