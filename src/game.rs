@@ -1,3 +1,4 @@
+use crate::adventure::*;
 use crate::combat::*;
 use crate::encounter::*;
 use crate::player::*;
@@ -75,10 +76,22 @@ pub fn game() {
                 game.state = State::Town;
                 gauntlet(&mut game, n_monster);
             }
-            State::Adventure => {
-                game.state = State::Town;
-                println!("Adventure is not yet implemented!");
-            }
+            State::Adventure => match adventure_menu() {
+                AdventureAction::Encounter => {
+                    let mut enc = Encounter::new(&mut game.player);
+                    match enc.run() {
+                        PlayerVictory => (),
+                        MonsterVictory => break,
+                        _ => (),
+                    }
+                }
+                AdventureAction::Town => {
+                    game.state = State::Town;
+                }
+                AdventureAction::Inventory => {
+                    game.player.inventory_action();
+                }
+            },
         }
     }
 }
