@@ -1,3 +1,4 @@
+use crate::loot::Loot;
 use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
 use rand::Rng;
@@ -17,8 +18,6 @@ pub enum Item {
     Food,
 }
 pub use Item::*;
-
-use crate::loot::Loot;
 
 impl Item {
     pub(crate) const fn total_variants() -> usize {
@@ -230,7 +229,7 @@ impl fmt::Display for Inventory {
         for (item, count) in self.bag.iter().filter(|(_, count)| **count > 0) {
             writeln!(
                 f,
-                "    {:<30} x{} | {}",
+                "    {:<30} x{:<4} | {}",
                 format!("{}", item),
                 count,
                 item.description()
