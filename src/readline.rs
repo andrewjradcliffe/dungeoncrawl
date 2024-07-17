@@ -171,3 +171,12 @@ pub fn read_direction_wasd() {
         }
     }
 }
+
+pub fn clear_screen() {
+    let mut stdout = io::stdout();
+    println!("clear screen: begin");
+    // println!("{}", 'J' as u8);
+    stdout.write_all(&[0x1B, 0x5B, 0x32, 'J' as u8, 0x0A]);
+    stdout.flush();
+    println!("clear screen: end");
+}

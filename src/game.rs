@@ -59,6 +59,7 @@ pub fn game() {
                 TownAction::Gauntlet => {
                     game.state = State::Gauntlet;
                     println!("commence gauntlet");
+                    // crate::readline::clear_screen();
                 }
                 TownAction::Sleep => {
                     game.player.sleep();
