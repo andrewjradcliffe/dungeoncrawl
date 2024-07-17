@@ -27,6 +27,14 @@ impl Item {
             Food => "restores 10 HP and 10 MP",
         }
     }
+    pub const fn cost(&self) -> usize {
+        match self {
+            HealthPotion => 2,
+            ManaPotion => 3,
+            Food => 1,
+        }
+    }
+
     pub(crate) fn from_index(i: u8) -> Self {
         const HEALTHPOTION: u8 = HealthPotion as u8;
         const MANAPOTION: u8 = ManaPotion as u8;

@@ -63,13 +63,8 @@ pub fn game() {
                 TownAction::Sleep => {
                     game.player.sleep();
                 }
-                TownAction::Trade => match merchant.menu() {
-                    Some(item) => {
-                        println!("You bought 1 {item}");
-                        game.player.inventory.push(item);
-                    }
-                    None => (),
-                },
+                TownAction::Trade => merchant.visit(&mut game.player),
+                TownAction::Inventory => game.player.visit_inventory(),
             },
             State::Gauntlet => {
                 let n_monster: usize = rng.gen_range(1..5);
@@ -88,9 +83,7 @@ pub fn game() {
                 AdventureAction::Town => {
                     game.state = State::Town;
                 }
-                AdventureAction::Inventory => {
-                    game.player.inventory_action();
-                }
+                AdventureAction::Inventory => game.player.visit_inventory(),
             },
         }
     }

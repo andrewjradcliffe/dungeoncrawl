@@ -1,5 +1,6 @@
 use crate::item::*;
 use crate::loot::Loot;
+use crate::player::*;
 use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -37,8 +38,8 @@ impl FromStr for InventoryAction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Inventory {
-    bag: IndexMap<Item, usize>,
-    sum: usize,
+    pub(crate) bag: IndexMap<Item, usize>,
+    pub(crate) sum: usize,
 }
 
 impl Inventory {
@@ -57,44 +58,43 @@ impl Inventory {
         self.sum == 0
     }
 
-    pub fn menu(&mut self) -> Option<Item> {
+    pub fn menu(&mut self, msg: &str) -> Option<Item> {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering inventory menu... ----");
-        loop {
-            if self.is_empty() {
-                println!("Inventory is empty!");
-                break None;
-            }
-            buf.clear();
-            println!("{}", self);
-
-            print!("👜 ");
-            io::Write::flush(&mut io::stdout()).unwrap();
-            let stdin = io::stdin();
-            let mut handle = stdin.lock();
-            match handle.read_line(&mut buf) {
-                Ok(_) => (),
-                Err(e) => println!("Error in inventory menu readline: {:#?}", e),
-            }
-            let s = buf.trim();
-            if let Some((lhs, rhs)) = s.split_once(' ') {
-                if let Ok(action) = lhs.parse::<InventoryAction>() {
-                    if let Ok(item) = rhs.parse::<Item>() {
-                        match action {
-                            InventoryAction::Drop => {
-                                self.drop_item(item);
-                                return None;
+        println!("{}", msg);
+        if self.is_empty() {
+            None
+        } else {
+            loop {
+                buf.clear();
+                print!("👜 ");
+                io::Write::flush(&mut io::stdout()).unwrap();
+                let stdin = io::stdin();
+                let mut handle = stdin.lock();
+                match handle.read_line(&mut buf) {
+                    Ok(_) => (),
+                    Err(e) => println!("Error in inventory menu readline: {:#?}", e),
+                }
+                let s = buf.trim();
+                if let Some((lhs, rhs)) = s.split_once(' ') {
+                    if let Ok(action) = lhs.parse::<InventoryAction>() {
+                        if let Ok(item) = rhs.parse::<Item>() {
+                            match action {
+                                InventoryAction::Drop => {
+                                    self.drop_item(item);
+                                    return None;
+                                }
+                                InventoryAction::Use => {
+                                    return self.pop_item(item);
+                                }
+                                InventoryAction::Quit => (),
                             }
-                            InventoryAction::Use => {
-                                return self.pop_item(item);
-                            }
-                            InventoryAction::Quit => (),
                         }
                     }
-                }
-            } else {
-                if let Ok(InventoryAction::Quit) = s.parse::<InventoryAction>() {
-                    break None;
+                } else {
+                    if let Ok(InventoryAction::Quit) = s.parse::<InventoryAction>() {
+                        break None;
+                    }
                 }
             }
         }
@@ -131,6 +131,9 @@ impl Inventory {
             Entry::Vacant(_) => None,
         }
     }
+    pub fn drop_multiple(&mut self, item: Item, n: usize) {
+        self.pop_multiple(item, n);
+    }
     pub fn drop_item(&mut self, item: Item) {
         self.pop_item(item);
     }
@@ -150,6 +153,12 @@ impl Inventory {
     }
     pub fn push_loot(&mut self, loot: Loot) {
         self.push_multiple(loot.item, loot.amount)
+    }
+    pub fn push_duplicated(&mut self, dup: DuplicatedItem) {
+        self.push_multiple(dup.kind, dup.n)
+    }
+    pub fn n_available(&self, item: &Item) -> usize {
+        self.bag.get(item).map(Clone::clone).unwrap_or(0)
     }
 }
 impl FromIterator<(Item, usize)> for Inventory {

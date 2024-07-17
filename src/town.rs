@@ -11,6 +11,7 @@ pub enum TownAction {
     Gauntlet,
     Sleep,
     Trade,
+    Inventory,
 }
 use TownAction::*;
 
@@ -21,6 +22,7 @@ impl TownAction {
             Gauntlet => "A dungeon filled with a random number of monsters",
             Sleep => "Restore all HP and MP; lose any stored TP",
             Trade => "Visit the village merchant",
+            Inventory => "Open inventory",
         }
     }
     pub(crate) fn print_menu_item(&self) {
@@ -39,6 +41,7 @@ impl fmt::Display for TownAction {
             Gauntlet => write!(f, "Gauntlet"),
             Sleep => write!(f, "Sleep"),
             Trade => write!(f, "Trade"),
+            Inventory => write!(f, "Inventory"),
         }
     }
 }
@@ -72,6 +75,7 @@ impl FromStr for TownAction {
         static RE_GAUNTLET: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:gauntlet|g)$").unwrap());
         static RE_SLEEP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:sleep|s)$").unwrap());
         static RE_TRADE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:trade|t)$").unwrap());
+        static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
 
         if RE_SLEEP.is_match(s) {
             Ok(Sleep)
@@ -81,6 +85,8 @@ impl FromStr for TownAction {
             Ok(Adventure)
         } else if RE_GAUNTLET.is_match(s) {
             Ok(Gauntlet)
+        } else if RE_INV.is_match(s) {
+            Ok(Inventory)
         } else {
             Err(s.to_string())
         }
@@ -96,6 +102,7 @@ pub fn town_menu() -> TownAction {
         Gauntlet.print_menu_item();
         Sleep.print_menu_item();
         Trade.print_menu_item();
+        Inventory.print_menu_item();
         print!("🌆 ");
         io::Write::flush(&mut io::stdout()).unwrap();
 

@@ -4,11 +4,12 @@ use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::Melee;
 use crate::spell::Spell;
+use std::fmt::Write;
 
 pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
-pub(crate) const PLAYER_GOLD: u64 = 10;
+pub(crate) const PLAYER_GOLD: usize = 10;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -19,7 +20,7 @@ pub struct Player {
     pub(crate) current_tp: i64,
     pub(crate) max_tp: i64,
     pub(crate) inventory: Inventory,
-    pub(crate) gold: u64,
+    pub(crate) gold: usize,
 }
 
 impl Combatant for Player {
@@ -74,10 +75,9 @@ impl Player {
         }
     }
 
-    pub fn inventory_action(&mut self) {
-        match self.inventory.menu() {
-            Some(item) => self.consume(item),
-            None => (),
+    pub fn visit_inventory(&mut self) {
+        if let Some(item) = self.inventory.menu(&self.inventory_message()) {
+            self.consume(item);
         }
     }
     pub fn consume(&mut self, item: Item) {
@@ -108,5 +108,25 @@ impl Player {
         self.current_hp = self.max_hp;
         self.current_mp = self.max_mp;
         self.current_tp = 0;
+    }
+    pub fn inventory_message(&self) -> String {
+        let mut s = String::with_capacity(1 << 10);
+        writeln!(s, "Gold: {}", self.gold).unwrap();
+        if self.inventory.is_empty() {
+            writeln!(s, "Inventory is empty!").unwrap();
+        } else {
+            writeln!(s, "Bag:").unwrap();
+            for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
+                writeln!(
+                    s,
+                    "    {:<30} x{:<4} | {}",
+                    format!("{}", item),
+                    count,
+                    item.description()
+                )
+                .unwrap();
+            }
+        }
+        s
     }
 }

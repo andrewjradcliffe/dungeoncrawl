@@ -90,7 +90,7 @@ impl<'a> Encounter<'a> {
                 }
             }
             ShowInventory => {
-                self.player.inventory_action();
+                self.player.visit_inventory();
                 Indeterminate
             }
             Run => {
