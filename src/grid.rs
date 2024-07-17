@@ -25,6 +25,10 @@ impl<T> Grid<T> {
         Self::cartesian_to_linear(self.n_cols, i, j)
     }
     #[inline]
+    pub fn cartesian_index(&self, l: usize) -> (usize, usize) {
+        Self::linear_to_cartesian(self.n_cols, l)
+    }
+    #[inline]
     pub fn n_rows(&self) -> usize {
         self.n_rows
     }
@@ -42,21 +46,21 @@ impl<T> Grid<T> {
     }
 }
 
-// impl<T: fmt::Display> fmt::Display for Grid<T> {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         let n_rows = self.n_rows();
-//         let n_cols = self.n_cols();
-//         for i in 0..n_rows {
-//             for j in 0..n_cols {
-//                 write!(f, "{}", self[(i, j)])?;
-//             }
-//             if i != n_rows - 1 {
-//                 write!(f, "{}", '\n')?;
-//             }
-//         }
-//         Ok(())
-//     }
-// }
+impl<T: fmt::Display> fmt::Display for Grid<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let n_rows = self.n_rows();
+        let n_cols = self.n_cols();
+        for i in 0..n_rows {
+            for j in 0..n_cols {
+                write!(f, "{}", self[(i, j)])?;
+            }
+            if i != n_rows - 1 {
+                write!(f, "{}", '\n')?;
+            }
+        }
+        Ok(())
+    }
+}
 
 impl<T> Index<(usize, usize)> for Grid<T> {
     type Output = T;

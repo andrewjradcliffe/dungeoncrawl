@@ -5,6 +5,7 @@ pub mod game;
 pub mod grid;
 pub mod item;
 pub mod loot;
+pub mod map;
 pub mod melee;
 pub mod monster;
 pub mod player;
