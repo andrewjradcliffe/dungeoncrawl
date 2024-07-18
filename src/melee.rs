@@ -1,3 +1,5 @@
+use crate::utils::*;
+use ansi_term::Style;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
@@ -15,11 +17,18 @@ pub use Melee::*;
 use crate::utils::is_quit;
 
 impl Melee {
+    pub const fn damage(&self) -> i64 {
+        match self {
+            Basic => 10,
+            Power => 35,
+            Super => 70,
+        }
+    }
     pub const fn cost(&self) -> i64 {
         match self {
             Basic => 0,
             Power => 35,
-            Super => 100,
+            Super => 60,
         }
     }
     pub const fn gain(&self) -> i64 {
@@ -28,28 +37,29 @@ impl Melee {
             Power | Super => 5,
         }
     }
-
-    pub fn description(&self) -> &'static str {
-        match self {
-            Basic => "Causes 10 damage; gain 10 TP",
-            Power => "Causes 35 damage; gain 5 TP",
-            Super => "Causes 70 damage; gain 5 TP",
-        }
+    pub(crate) fn description_imp(&self) -> String {
+        format!(
+            "{:>6} | {:>2} {} | {:>2} {}",
+            self.damage(),
+            self.gain(),
+            *ANSI_TP,
+            self.cost(),
+            *ANSI_TP,
+        )
     }
-    pub const fn damage(&self) -> i64 {
+
+    pub fn description(&self) -> &String {
+        static BASIC: Lazy<String> = Lazy::new(|| Basic.description_imp());
+        static POWER: Lazy<String> = Lazy::new(|| Power.description_imp());
+        static SUPER: Lazy<String> = Lazy::new(|| Super.description_imp());
         match self {
-            Basic => 10,
-            Power => 35,
-            Super => 70,
+            Basic => &*BASIC,
+            Power => &*POWER,
+            Super => &*SUPER,
         }
     }
     pub(crate) fn print_menu_item(&self) {
-        println!(
-            "    {:<30} | {:<30} | cost: {} TP",
-            format!("{}", self),
-            self.description(),
-            self.cost(),
-        );
+        println!("    {:<30} | {}", format!("{}", self), self.description(),);
     }
 }
 
@@ -87,6 +97,12 @@ impl fmt::Display for Melee {
 pub(crate) fn melee_menu() -> Option<Melee> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
+    println!(
+        "                                   | {} |  {} |  {}",
+        Style::new().underline().paint("damage"),
+        Style::new().underline().paint("gain"),
+        Style::new().underline().paint("cost"),
+    );
     Basic.print_menu_item();
     Power.print_menu_item();
     Super.print_menu_item();
