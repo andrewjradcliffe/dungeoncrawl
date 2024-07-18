@@ -83,12 +83,12 @@ impl Merchant {
             for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     s,
-                    "    {:<30} x{:<4} | {:>30} | price: {:>4} {}",
+                    "    {:<30} x{:<4} | price: {:>1} {} | {:<30}",
                     format!("{}", item),
                     count,
-                    item.description(),
                     item.cost(),
                     Yellow.bold().paint("gold"),
+                    item.description(),
                 )
                 .unwrap();
             }
