@@ -15,3 +15,5 @@ pub mod scoreboard;
 pub mod spell;
 pub mod town;
 pub mod trade;
+
+pub(crate) mod utils;

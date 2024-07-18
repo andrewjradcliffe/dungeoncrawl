@@ -64,12 +64,11 @@ impl FromStr for AdventureAction {
 pub fn adventure_menu() -> AdventureAction {
     let mut buf = String::with_capacity(1 << 10);
     println!("==== Entering the adventure... ====");
+    Encounter.print_menu_item();
+    Town.print_menu_item();
+    Inventory.print_menu_item();
     loop {
         buf.clear();
-        Encounter.print_menu_item();
-        Town.print_menu_item();
-        Inventory.print_menu_item();
-
         print!("🍁 ");
         io::Write::flush(&mut io::stdout()).unwrap();
 

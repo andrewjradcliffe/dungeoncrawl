@@ -96,13 +96,13 @@ impl FromStr for TownAction {
 pub fn town_menu() -> TownAction {
     let mut buf = String::with_capacity(1 << 10);
     println!("==== Entering the town... ====");
+    Adventure.print_menu_item();
+    Gauntlet.print_menu_item();
+    Sleep.print_menu_item();
+    Trade.print_menu_item();
+    Inventory.print_menu_item();
     loop {
         buf.clear();
-        Adventure.print_menu_item();
-        Gauntlet.print_menu_item();
-        Sleep.print_menu_item();
-        Trade.print_menu_item();
-        Inventory.print_menu_item();
         print!("🌆 ");
         io::Write::flush(&mut io::stdout()).unwrap();
 

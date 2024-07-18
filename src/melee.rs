@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::fmt::{self, Write};
+use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
@@ -11,6 +11,8 @@ pub enum Melee {
     Super,
 }
 pub use Melee::*;
+
+use crate::utils::is_quit;
 
 impl Melee {
     pub const fn cost(&self) -> i64 {
@@ -85,11 +87,11 @@ impl fmt::Display for Melee {
 pub(crate) fn melee_menu() -> Option<Melee> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
+    Basic.print_menu_item();
+    Power.print_menu_item();
+    Super.print_menu_item();
     loop {
         buf.clear();
-        Basic.print_menu_item();
-        Power.print_menu_item();
-        Super.print_menu_item();
 
         print!("🪓 ");
         io::Write::flush(&mut io::stdout()).unwrap();
@@ -103,7 +105,7 @@ pub(crate) fn melee_menu() -> Option<Melee> {
 
         let s = buf.trim();
 
-        if s.eq_ignore_ascii_case("q") || s.eq_ignore_ascii_case("quit") {
+        if is_quit(s) {
             break None;
         } else {
             if let Ok(melee) = s.parse::<Melee>() {

@@ -14,6 +14,8 @@ pub enum Spell {
 }
 pub use Spell::*;
 
+use crate::utils::is_quit;
+
 impl Spell {
     pub const fn cost(&self) -> i64 {
         match self {
@@ -106,17 +108,16 @@ impl fmt::Display for Spell {
 }
 
 pub(crate) fn spell_menu() -> Option<Spell> {
-    static RE_QUIT: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)^(?:quit|q)$").unwrap());
-
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering spell menu... ----");
+    Cure1.print_menu_item();
+    Cure2.print_menu_item();
+    Fire.print_menu_item();
+    Stone.print_menu_item();
+    Meditate.print_menu_item();
+
     loop {
         buf.clear();
-        Cure1.print_menu_item();
-        Cure2.print_menu_item();
-        Fire.print_menu_item();
-        Stone.print_menu_item();
-        Meditate.print_menu_item();
 
         print!("🪄 ");
         io::Write::flush(&mut io::stdout()).unwrap();
@@ -130,7 +131,7 @@ pub(crate) fn spell_menu() -> Option<Spell> {
 
         let s = buf.trim();
 
-        if RE_QUIT.is_match(s) {
+        if is_quit(s) {
             break None;
         } else {
             if let Ok(spell) = s.parse::<Spell>() {

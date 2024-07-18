@@ -1,6 +1,7 @@
 use crate::inventory::*;
 use crate::item::*;
 use crate::player::Player;
+use crate::utils::*;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt::Write;
@@ -26,13 +27,12 @@ impl FromStr for TradeAction {
 
         static RE_BUY: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:buy|b)$").unwrap());
         static RE_SELL: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:sell|s)$").unwrap());
-        static RE_QUIT: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:quit|q)$").unwrap());
 
         if RE_BUY.is_match(s) {
             Ok(TradeAction::Buy)
         } else if RE_SELL.is_match(s) {
             Ok(TradeAction::Sell)
-        } else if RE_QUIT.is_match(s) {
+        } else if is_quit(s) {
             Ok(TradeAction::Quit)
         } else {
             Err(s.to_string())

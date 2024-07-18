@@ -1,6 +1,6 @@
 use crate::item::*;
 use crate::loot::Loot;
-use crate::player::*;
+use crate::utils::*;
 use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -22,13 +22,12 @@ impl FromStr for InventoryAction {
 
         static RE_USE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:use|u)$").unwrap());
         static RE_DROP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:drop|d)$").unwrap());
-        static RE_QUIT: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:quit|q)$").unwrap());
 
         if RE_USE.is_match(s) {
             Ok(InventoryAction::Use)
         } else if RE_DROP.is_match(s) {
             Ok(InventoryAction::Drop)
-        } else if RE_QUIT.is_match(s) {
+        } else if is_quit(s) {
             Ok(InventoryAction::Quit)
         } else {
             Err(s.to_string())
