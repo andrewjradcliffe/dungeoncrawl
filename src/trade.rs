@@ -2,6 +2,8 @@ use crate::inventory::*;
 use crate::item::*;
 use crate::player::Player;
 use crate::utils::*;
+use ansi_term::Colour::Yellow;
+use ansi_term::Style;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt::Write;
@@ -77,15 +79,16 @@ impl Merchant {
         if self.inventory.is_empty() {
             writeln!(s, "Inventory is empty!").unwrap();
         } else {
-            writeln!(s, "Inventory:").unwrap();
+            writeln!(s, "{}:", Style::new().bold().underline().paint("Inventory")).unwrap();
             for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     s,
-                    "    {:<30} x{:<4} | {:>30} | price: {:>4} gold",
+                    "    {:<30} x{:<4} | {:>30} | price: {:>4} {}",
                     format!("{}", item),
                     count,
-                    item.description(),
-                    item.cost()
+                    item.description_fancy(),
+                    item.cost(),
+                    Yellow.bold().paint("gold"),
                 )
                 .unwrap();
             }
@@ -103,7 +106,7 @@ impl Merchant {
             loop {
                 buf.clear();
 
-                print!("🧞 ");
+                print!("🧞 ",);
                 io::Write::flush(&mut io::stdout()).unwrap();
 
                 let stdin = io::stdin();
@@ -162,7 +165,6 @@ impl Merchant {
                 TradeAction::Sell => {
                     let item = transaction.item;
                     let count = transaction.count;
-
                     let actual_count = count.clamp(0, player.inventory.n_available(&item));
                     let actual_cost = actual_count * item.cost();
                     player.inventory.drop_multiple(item, actual_count);

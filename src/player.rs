@@ -4,6 +4,8 @@ use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::Melee;
 use crate::spell::Spell;
+use ansi_term::Colour;
+use ansi_term::Style;
 use std::fmt::Write;
 
 pub(crate) const PLAYER_HP: i64 = 100;
@@ -98,18 +100,45 @@ impl Player {
         self.write_status(&mut buf);
         buf
     }
-    pub fn write_status(&self, buf: &mut String) {
+    pub fn write_hp(&self, buf: &mut String) {
+        let hp = format!("{}", self.current_hp);
         write!(
             buf,
-            "HP[{}/{}] MP[{}/{}] TP[{}/{}]",
-            self.current_hp,
-            self.max_hp,
-            self.current_mp,
-            self.max_mp,
-            self.current_tp,
-            self.max_tp,
+            "{}[{}/{}]",
+            Colour::Red.bold().paint("HP"),
+            Style::new().italic().paint(hp),
+            self.max_hp
         )
         .unwrap();
+    }
+    pub fn write_mp(&self, buf: &mut String) {
+        let mp = format!("{}", self.current_mp);
+        write!(
+            buf,
+            "{}[{}/{}]",
+            Colour::Green.bold().paint("MP"),
+            Style::new().italic().paint(mp),
+            self.max_mp
+        )
+        .unwrap();
+    }
+    pub fn write_tp(&self, buf: &mut String) {
+        let tp = format!("{}", self.current_tp);
+        write!(
+            buf,
+            "{}[{}/{}]",
+            Colour::Blue.bold().paint("TP"),
+            Style::new().italic().paint(tp),
+            self.max_tp
+        )
+        .unwrap();
+    }
+    pub fn write_status(&self, buf: &mut String) {
+        self.write_hp(buf);
+        write!(buf, " ").unwrap();
+        self.write_mp(buf);
+        write!(buf, " ").unwrap();
+        self.write_tp(buf);
     }
     pub fn sleep(&mut self) {
         self.current_hp = self.max_hp;
@@ -118,18 +147,24 @@ impl Player {
     }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
-        writeln!(s, "Gold: {}", self.gold).unwrap();
+        writeln!(
+            s,
+            "{}: {}",
+            Style::new().bold().underline().paint("Gold"),
+            self.gold
+        )
+        .unwrap();
         if self.inventory.is_empty() {
             writeln!(s, "Inventory is empty!").unwrap();
         } else {
-            writeln!(s, "Bag:").unwrap();
+            writeln!(s, "{}:", Style::new().bold().underline().paint("Bag")).unwrap();
             for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     s,
                     "    {:<30} x{:<4} | {}",
                     format!("{}", item),
                     count,
-                    item.description()
+                    item.description_fancy()
                 )
                 .unwrap();
             }

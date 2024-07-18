@@ -1,6 +1,8 @@
 use crate::combat::Combatant;
+use ansi_term::Colour;
+use ansi_term::Style;
 use rand::Rng;
-use std::fmt;
+use std::fmt::{self, Write};
 use std::hash::Hash;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -29,8 +31,24 @@ impl Monster {
             max_hp: kind.max_hp(),
         }
     }
+    pub fn write_hp(&self, buf: &mut String) {
+        let hp = format!("{}", self.current_hp);
+        write!(
+            buf,
+            "{}[{}/{}]",
+            Colour::Red.bold().paint("HP"),
+            Style::new().italic().paint(hp),
+            self.max_hp
+        )
+        .unwrap();
+    }
+    pub fn write_status(&self, buf: &mut String) {
+        self.write_hp(buf);
+    }
     pub fn status(&self) -> String {
-        format!("HP[{}/{}]", self.current_hp, self.max_hp,)
+        let mut buf = String::with_capacity(1 << 7);
+        self.write_status(&mut buf);
+        buf
     }
 
     pub fn rand() -> Self {
@@ -139,6 +157,6 @@ impl MonsterKind {
 
 impl fmt::Display for MonsterKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.singular())
+        write!(f, "{}", Colour::Cyan.paint(self.singular()))
     }
 }

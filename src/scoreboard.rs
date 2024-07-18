@@ -1,4 +1,5 @@
 use crate::monster::*;
+use ansi_term::Colour::Cyan;
 use indexmap::{map::Entry, IndexMap};
 use std::fmt;
 
@@ -30,9 +31,9 @@ impl fmt::Display for Scoreboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (kind, count) in self.0.iter().filter(|(_, count)| **count > 0) {
             if *count == 1 {
-                writeln!(f, "You defeated 1 {}!", kind.singular())?;
+                writeln!(f, "You defeated 1 {}!", Cyan.paint(kind.singular()))?;
             } else {
-                writeln!(f, "You defeated {count} {}!", kind.plural())?;
+                writeln!(f, "You defeated {count} {}!", Cyan.paint(kind.plural()))?;
             }
         }
         Ok(())

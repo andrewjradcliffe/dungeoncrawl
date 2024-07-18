@@ -1,3 +1,4 @@
+use ansi_term::{Colour::Green, Colour::Red};
 use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
@@ -25,6 +26,26 @@ impl Item {
             HealthPotion => "restores 25 HP",
             ManaPotion => "restores 25 MP",
             Food => "restores 10 HP and 10 MP",
+        }
+    }
+    pub fn description_fancy(&self) -> &String {
+        static HEALTH_POTION: Lazy<String> =
+            Lazy::new(|| format!("restores 25 {}", Red.bold().paint("HP")));
+
+        static MANA_POTION: Lazy<String> =
+            Lazy::new(|| format!("restores 25 {}", Green.bold().paint("MP")));
+
+        static FOOD: Lazy<String> = Lazy::new(|| {
+            format!(
+                "restores 10 {} and 10 {}",
+                Red.bold().paint("HP"),
+                Green.bold().paint("MP")
+            )
+        });
+        match self {
+            HealthPotion => &*HEALTH_POTION,
+            ManaPotion => &*MANA_POTION,
+            Food => &*FOOD,
         }
     }
     pub const fn cost(&self) -> usize {
