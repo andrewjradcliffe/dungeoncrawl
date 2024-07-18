@@ -1,6 +1,6 @@
 use crate::monster::*;
 use indexmap::{map::Entry, IndexMap};
-use std::fmt::{self, Write};
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Scoreboard(IndexMap<MonsterKind, usize>);

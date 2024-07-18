@@ -1,6 +1,6 @@
 use crate::combat::Combatant;
 use rand::Rng;
-use std::fmt::{self, Write};
+use std::fmt;
 use std::hash::Hash;
 
 #[derive(Debug, Clone, PartialEq)]

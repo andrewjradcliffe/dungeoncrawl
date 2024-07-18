@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
-use std::fmt::{self, Write};
+use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
 

@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::fmt::{self, Write};
+use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
