@@ -59,7 +59,7 @@ impl Melee {
         }
     }
     pub(crate) fn print_menu_item(&self) {
-        println!("    {:<30} | {}", format!("{}", self), self.description(),);
+        println!("    {:<30} | {}", format!("{}", self), self.description());
     }
 }
 

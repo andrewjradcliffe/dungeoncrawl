@@ -1,3 +1,5 @@
+use crate::utils::*;
+use ansi_term::Style;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
@@ -6,10 +8,10 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum Spell {
+    Stone,
+    Fire,
     Cure1,
     Cure2,
-    Fire,
-    Stone,
     Meditate,
 }
 pub use Spell::*;
@@ -19,28 +21,18 @@ use crate::utils::is_quit;
 impl Spell {
     pub const fn cost(&self) -> i64 {
         match self {
+            Stone => 10,
+            Fire => 15,
             Cure1 => 10,
             Cure2 => 25,
-            Fire => 15,
-            Stone => 10,
             Meditate => 0,
-        }
-    }
-
-    pub fn description(&self) -> &'static str {
-        match self {
-            Cure1 => "restores 25 HP",
-            Cure2 => "restores 50 HP",
-            Fire => "causes 35 damage",
-            Stone => "causes 25 damage",
-            Meditate => "restores 25 MP",
         }
     }
     pub const fn damage(&self) -> i64 {
         match self {
-            Cure1 | Cure2 | Meditate => 0,
-            Fire => 35,
             Stone => 25,
+            Fire => 35,
+            Cure1 | Cure2 | Meditate => 0,
         }
     }
     pub const fn healing(&self) -> i64 {
@@ -56,13 +48,43 @@ impl Spell {
             _ => 0,
         }
     }
+    pub(crate) fn offensive_imp(&self) -> String {
+        format!("{:>6} | {:>2} {}", self.damage(), self.cost(), *ANSI_MP,)
+    }
+    pub(crate) fn defensive_imp(&self) -> String {
+        format!(
+            "{:>6} {} | {:>2} {} | {:>2} {}",
+            self.healing(),
+            *ANSI_HP,
+            self.cost(),
+            *ANSI_MP,
+            self.mana_restore(),
+            *ANSI_MP,
+        )
+    }
+    pub(crate) fn description_imp(&self) -> String {
+        match self {
+            Stone | Fire => self.offensive_imp(),
+            Cure1 | Cure2 | Meditate => self.defensive_imp(),
+        }
+    }
+    pub fn description(&self) -> &String {
+        static STONE: Lazy<String> = Lazy::new(|| Stone.description_imp());
+        static FIRE: Lazy<String> = Lazy::new(|| Fire.description_imp());
+        static CURE1: Lazy<String> = Lazy::new(|| Cure1.description_imp());
+        static CURE2: Lazy<String> = Lazy::new(|| Cure2.description_imp());
+        static MEDITATE: Lazy<String> = Lazy::new(|| Meditate.description_imp());
+
+        match self {
+            Stone => &*STONE,
+            Fire => &*FIRE,
+            Cure1 => &*CURE1,
+            Cure2 => &*CURE2,
+            Meditate => &*MEDITATE,
+        }
+    }
     pub(crate) fn print_menu_item(&self) {
-        println!(
-            "    {:<30} | {:<30} | cost: {} MP",
-            format!("{}", self),
-            self.description(),
-            self.cost()
-        );
+        println!("    {:<30} | {}", format!("{}", self), self.description());
     }
 }
 
@@ -110,10 +132,24 @@ impl fmt::Display for Spell {
 pub(crate) fn spell_menu() -> Option<Spell> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering spell menu... ----");
+    println!("{}", Style::new().underline().italic().paint("Offensive"));
+    println!(
+        "                                   | {} |  {}",
+        Style::new().underline().paint("damage"),
+        Style::new().underline().paint("cost"),
+    );
+    Stone.print_menu_item();
+    Fire.print_menu_item();
+
+    println!("{}", Style::new().underline().italic().paint("Defensive"));
+    println!(
+        "                                   |   {} |  {} |  {}",
+        Style::new().underline().paint("healing"),
+        Style::new().underline().paint("cost"),
+        Style::new().underline().paint("gain"),
+    );
     Cure1.print_menu_item();
     Cure2.print_menu_item();
-    Fire.print_menu_item();
-    Stone.print_menu_item();
     Meditate.print_menu_item();
 
     loop {
