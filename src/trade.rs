@@ -79,12 +79,6 @@ impl Merchant {
             .collect();
         Self { inventory }
     }
-    pub fn buy(&mut self, item: Item) -> Option<Item> {
-        self.inventory.pop_item(item)
-    }
-    pub fn buy_multiple(&mut self, item: Item, n: usize) -> Option<DuplicatedItem> {
-        self.inventory.pop_multiple(item, n)
-    }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
         if self.inventory.is_empty() {
