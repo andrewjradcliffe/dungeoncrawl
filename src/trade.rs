@@ -91,10 +91,18 @@ impl Merchant {
             writeln!(s, "Inventory is empty!").unwrap();
         } else {
             writeln!(s, "{}:", Style::new().bold().underline().paint("Inventory")).unwrap();
+            writeln!(
+                s,
+                "                                   | {} |  {}  |  {}",
+                Style::new().underline().paint("available"),
+                Style::new().underline().paint("price"),
+                Style::new().underline().paint("effect"),
+            )
+            .unwrap();
             for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     s,
-                    "    {:<30} x{:<4} | price: {:>1} {} | {:<30}",
+                    "    {:<30} | {:^9} | {:>2} {} | {:<30}",
                     format!("{}", item),
                     count,
                     item.cost(),
@@ -137,7 +145,7 @@ impl Merchant {
             TradeAction::Quit => (),
         }
     }
-    pub fn menu(&self) -> Transaction {
+    pub fn menu(&self, gold: usize) -> Transaction {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Browsing merchant's wares... ----");
         if self.inventory.is_empty() {
@@ -148,7 +156,7 @@ impl Merchant {
             loop {
                 buf.clear();
 
-                print!("🧞 ",);
+                print!("(💰: {}) 🧞 ", gold);
                 io::Write::flush(&mut io::stdout()).unwrap();
 
                 let stdin = io::stdin();
@@ -185,10 +193,10 @@ impl Merchant {
             }
         }
     }
-    pub fn visit(&mut self, player: &mut Player) {
-        let transaction = self.menu();
+    pub fn visit(&mut self, player: &mut Player) -> bool {
+        let transaction = self.menu(player.gold.clone());
         match transaction.kind {
-            TradeAction::Quit => (),
+            TradeAction::Quit => false,
             TradeAction::Buy | TradeAction::Sell => {
                 if self.can_perform(&transaction) {
                     if player.can_perform(&transaction) {
@@ -200,37 +208,11 @@ impl Merchant {
                 } else {
                     self.describe_rejected_transaction(&transaction);
                 }
-            } // TradeAction::Buy => {
-              //     let item = transaction.item;
-              //     let count = transaction.count;
-              //     let actual_count = count.clamp(0, self.inventory.n_available(&item));
-              //     let actual_cost = actual_count * item.cost();
-              //     if actual_cost <= player.gold {
-              //         player.inventory.push_multiple(item, actual_count);
-              //         player.gold -= actual_cost;
-              //         match actual_count {
-              //             0 => (),
-              //             1 => println!("You bought 1 {} for {} gold.", item, actual_cost),
-              //             n => println!("You bought {n} {}s for {} gold.", item, actual_cost),
-              //         }
-              //         self.inventory.drop_multiple(item, actual_count);
-              //     }
-              // }
-              // TradeAction::Sell => {
-              //     let item = transaction.item;
-              //     let count = transaction.count;
-              //     let actual_count = count.clamp(0, player.inventory.n_available(&item));
-              //     let actual_cost = actual_count * item.cost();
-              //     player.inventory.drop_multiple(item, actual_count);
-              //     player.gold += actual_cost;
-              //     match actual_count {
-              //         0 => (),
-              //         1 => println!("You sold 1 {} for {} gold.", item, actual_cost),
-              //         n => println!("You sold {n} {}s for {} gold.", item, actual_cost),
-              //     }
-              //     self.inventory.push_multiple(item, actual_count);
-              // }
-              // _ => panic!(),
+                true
+            }
         }
+    }
+    pub fn trade(&mut self, player: &mut Player) {
+        while self.visit(player) {}
     }
 }

@@ -63,7 +63,7 @@ pub fn game() {
                 TownAction::Sleep => {
                     game.player.sleep();
                 }
-                TownAction::Trade => merchant.visit(&mut game.player),
+                TownAction::Trade => merchant.trade(&mut game.player),
                 TownAction::Inventory => game.player.visit_inventory(),
             },
             State::Gauntlet => {

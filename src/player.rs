@@ -12,7 +12,7 @@ use std::fmt::Write;
 pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
-pub(crate) const PLAYER_GOLD: usize = 10;
+pub(crate) const PLAYER_GOLD: usize = 25;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
