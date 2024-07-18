@@ -4,6 +4,7 @@ use crate::melee::*;
 use crate::monster::*;
 use crate::player::*;
 use crate::spell::*;
+use ansi_term::Style;
 use std::io::{self, BufRead, Write};
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -11,7 +12,6 @@ pub enum EncounterOutcome {
     PlayerVictory,
     MonsterVictory,
     PlayerRan,
-    Indeterminate,
 }
 pub use EncounterOutcome::*;
 
@@ -19,6 +19,8 @@ pub use EncounterOutcome::*;
 pub struct Encounter<'a> {
     pub(crate) player: &'a mut Player,
     pub(crate) monster: Monster,
+    buf: String,
+    status: String,
 }
 
 impl<'a> Encounter<'a> {
@@ -33,6 +35,8 @@ impl<'a> Encounter<'a> {
         Self {
             player,
             monster: Monster::rand(),
+            buf: String::with_capacity(1 << 7),
+            status: String::with_capacity(1 << 7),
         }
     }
     pub fn is_monster_dead(&self) -> bool {
@@ -41,120 +45,120 @@ impl<'a> Encounter<'a> {
     pub fn is_player_dead(&self) -> bool {
         !self.player.is_alive()
     }
-    #[inline]
-    fn monster_victory_or(&self, alternative: EncounterOutcome) -> EncounterOutcome {
-        if self.is_player_dead() {
-            MonsterVictory
-        } else {
-            alternative
-        }
-    }
-    pub fn perform(&mut self, action: CombatAction) -> EncounterOutcome {
-        match action {
-            Attack => {
-                if let Some(melee) = melee_menu() {
-                    match self.player.cast_melee(melee) {
-                        Some(melee) => self.monster.receive_damage(melee.damage()),
-                        None => {
-                            println!("Insufficient TP!");
-                            return Indeterminate;
-                        }
-                    }
-                    if self.is_monster_dead() {
-                        return PlayerVictory;
-                    }
-                    self.player.receive_damage(self.monster.strength);
-                    self.monster_victory_or(Indeterminate)
-                } else {
-                    Indeterminate
-                }
-            }
-            Cast => {
-                if let Some(spell) = spell_menu() {
-                    match self.player.cast_spell(spell) {
-                        Some(Cure1 | Cure2) => self.player.restore_hp(spell.healing()),
-                        Some(Fire | Stone) => self.monster.receive_damage(spell.damage()),
-                        Some(Meditate) => self.player.restore_mp(spell.mana_restore()),
-                        None => {
-                            println!("Insufficient MP!");
-                            return Indeterminate;
-                        }
-                    }
-                    if self.is_monster_dead() {
-                        return PlayerVictory;
-                    }
-                    self.player.receive_damage(self.monster.strength);
-                    self.monster_victory_or(Indeterminate)
-                } else {
-                    Indeterminate
-                }
-            }
-            ShowInventory => {
-                self.player.visit_inventory();
-                Indeterminate
-            }
-            Run => {
-                self.player.receive_damage(self.monster.strength);
-                self.monster_victory_or(PlayerRan)
-            }
-            DoNothing => {
-                self.player.receive_damage(self.monster.strength);
-                self.monster_victory_or(Indeterminate)
-            }
-        }
-    }
 
     pub fn run(&mut self) -> EncounterOutcome {
         let kind = self.monster.kind.clone();
         println!("---- A wild {kind} appeared! ----");
-        let mut buf = String::with_capacity(1 << 7);
-        let mut res = Indeterminate;
-        let mut status = String::with_capacity(1 << 7);
-        loop {
-            match res {
-                PlayerVictory => {
-                    println!("---- The {kind} died! ----");
-                    let loot = Loot::rand_weighted(self.monster.kind);
-                    loot.announce();
-                    self.player.acquire(loot);
-                    break;
-                }
-                PlayerRan => {
-                    println!("---- You ran away! ----");
-                    break;
-                }
-                MonsterVictory => {
-                    println!("---- You died! ----");
-                    break;
-                }
-                Indeterminate => {
-                    println!("The {kind} in front of you has {}", self.monster.status());
-                    println!("ATTACK, CAST, RUN, INVENTORY, or DO NOTHING?");
-                    status.clear();
-                    self.player.write_status(&mut status);
-                    match get_response(&mut buf, &status) {
-                        Ok(()) => match buf.parse::<CombatAction>() {
-                            Ok(action) => {
-                                res = self.perform(action);
-                            }
-                            Err(s) => println!("not a valid response: {}", s),
-                        },
-                        Err(e) => println!("Unable to read line: {:#?}", e),
-                    }
-                }
+        let res = self.dialogue();
+        match res {
+            PlayerVictory => {
+                println!("---- The {kind} died! ----");
+                let loot = Loot::rand_weighted(self.monster.kind);
+                loot.announce();
+                self.player.acquire(loot);
+            }
+            PlayerRan => {
+                println!("---- You ran away! ----");
+            }
+            MonsterVictory => {
+                println!("---- You died! ----");
             }
         }
         res
     }
-}
 
-pub fn get_response(buf: &mut String, status: &str) -> io::Result<()> {
-    buf.clear();
-    print!("{} > ", status);
-    io::stdout().flush()?;
+    pub fn dialogue(&mut self) -> EncounterOutcome {
+        macro_rules! damage_and_check {
+            () => {
+                self.player.receive_damage(self.monster.strength);
+                if self.is_player_dead() {
+                    return MonsterVictory;
+                }
+            };
+        }
+        loop {
+            match self.menu() {
+                Attack => {
+                    if let Some(melee) = melee_menu() {
+                        match self.player.cast_melee(melee) {
+                            Some(melee) => self.monster.receive_damage(melee.damage()),
+                            None => {
+                                println!("Insufficient TP!");
+                                continue;
+                            }
+                        }
+                        if self.is_monster_dead() {
+                            return PlayerVictory;
+                        }
+                        damage_and_check!();
+                    }
+                }
+                Cast => {
+                    if let Some(spell) = spell_menu() {
+                        match self.player.cast_spell(spell) {
+                            Some(Cure1 | Cure2) => self.player.restore_hp(spell.healing()),
+                            Some(Fire | Stone) => self.monster.receive_damage(spell.damage()),
+                            Some(Meditate) => self.player.restore_mp(spell.mana_restore()),
+                            None => {
+                                println!("Insufficient MP!");
+                                continue;
+                            }
+                        }
+                        if self.is_monster_dead() {
+                            return PlayerVictory;
+                        }
+                        damage_and_check!();
+                    }
+                }
+                ShowInventory => {
+                    self.player.visit_inventory();
+                    damage_and_check!();
+                }
+                Run => {
+                    damage_and_check!();
+                    return PlayerRan;
+                }
+                DoNothing => {
+                    damage_and_check!();
+                }
+            }
+        }
+    }
 
-    let stdin = io::stdin();
-    let mut handle = stdin.lock();
-    handle.read_line(buf)?;
-    Ok(())
+    pub fn update_status(&mut self) {
+        self.status.clear();
+        self.player.write_status(&mut self.status);
+    }
+
+    pub fn menu(&mut self) -> CombatAction {
+        self.update_status();
+        println!(
+            "The {} in front of you has {}",
+            self.monster.kind,
+            self.monster.status()
+        );
+        println!(
+            "{}TTACK, {}AST, {}UN, {}NVENTORY, or DO {}OTHING?",
+            Style::new().underline().paint("A"),
+            Style::new().underline().paint("C"),
+            Style::new().underline().paint("R"),
+            Style::new().underline().paint("I"),
+            Style::new().underline().paint("N"),
+        );
+        loop {
+            self.buf.clear();
+            print!("{} > ", self.status);
+            io::stdout().flush().unwrap();
+
+            let stdin = io::stdin();
+            let mut handle = stdin.lock();
+            match handle.read_line(&mut self.buf) {
+                Ok(_) => (),
+                Err(e) => println!("Error in combat menu readline: {:#?}", e),
+            }
+            if let Ok(action) = self.buf.parse::<CombatAction>() {
+                break action;
+            }
+        }
+    }
 }
