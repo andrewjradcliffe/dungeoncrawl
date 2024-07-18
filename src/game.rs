@@ -1,5 +1,4 @@
 use crate::adventure::*;
-use crate::combat::*;
 use crate::encounter::*;
 use crate::player::*;
 use crate::scoreboard::*;

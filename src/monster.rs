@@ -1,4 +1,3 @@
-use crate::combat::Combatant;
 use crate::utils::*;
 use ansi_term::Colour;
 use ansi_term::Style;
@@ -12,15 +11,6 @@ pub struct Monster {
     pub(crate) strength: i64,
     pub(crate) current_hp: i64,
     pub(crate) max_hp: i64,
-}
-
-impl Combatant for Monster {
-    fn is_alive(&self) -> bool {
-        self.current_hp > 0
-    }
-    fn receive_damage(&mut self, amount: i64) {
-        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
-    }
 }
 
 impl Monster {
@@ -54,6 +44,13 @@ impl Monster {
 
     pub fn rand() -> Self {
         Monster::new(MonsterKind::rand())
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.current_hp > 0
+    }
+    pub fn receive_damage(&mut self, amount: i64) {
+        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
 }
 

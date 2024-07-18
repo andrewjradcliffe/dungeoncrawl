@@ -39,9 +39,3 @@ impl FromStr for CombatAction {
         }
     }
 }
-
-pub trait Combatant {
-    fn is_alive(&self) -> bool;
-
-    fn receive_damage(&mut self, amount: i64);
-}

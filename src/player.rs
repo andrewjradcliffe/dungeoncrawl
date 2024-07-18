@@ -1,4 +1,3 @@
-use crate::combat::Combatant;
 use crate::inventory::*;
 use crate::item::*;
 use crate::loot::Loot;
@@ -26,15 +25,6 @@ pub struct Player {
     pub(crate) gold: usize,
 }
 
-impl Combatant for Player {
-    fn is_alive(&self) -> bool {
-        self.current_hp > 0
-    }
-    fn receive_damage(&mut self, amount: i64) {
-        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
-    }
-}
-
 impl Player {
     pub fn new() -> Self {
         Self {
@@ -56,6 +46,12 @@ impl Player {
     }
     pub fn restore_tp(&mut self, amount: i64) {
         self.current_tp = (self.current_tp + amount).clamp(0, self.max_tp);
+    }
+    pub fn is_alive(&self) -> bool {
+        self.current_hp > 0
+    }
+    pub fn receive_damage(&mut self, amount: i64) {
+        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
 
     pub fn cast_spell(&mut self, spell: Spell) -> Option<Spell> {
