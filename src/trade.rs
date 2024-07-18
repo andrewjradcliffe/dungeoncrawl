@@ -156,8 +156,8 @@ impl Merchant {
                             1 => println!("You bought 1 {} for {} gold.", item, actual_cost),
                             n => println!("You bought {n} {}s for {} gold.", item, actual_cost),
                         }
+                        self.inventory.drop_multiple(item, actual_count);
                     }
-                    self.inventory.drop_multiple(item, actual_count);
                 }
                 TradeAction::Sell => {
                     let item = transaction.item;
