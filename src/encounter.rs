@@ -67,10 +67,10 @@ impl<'a> Encounter<'a> {
         res
     }
 
-    pub fn dialogue(&mut self) -> EncounterOutcome {
+    pub(crate) fn dialogue(&mut self) -> EncounterOutcome {
         macro_rules! damage_and_check {
             () => {
-                self.player.receive_damage(self.monster.strength);
+                self.player.receive_melee_attack(&self.monster);
                 if self.is_player_dead() {
                     return MonsterVictory;
                 }
@@ -81,7 +81,7 @@ impl<'a> Encounter<'a> {
                 Attack => {
                     if let Some(melee) = melee_menu() {
                         match self.player.cast_melee(melee) {
-                            Some(melee) => self.monster.receive_damage(melee.damage()),
+                            Some(melee) => self.monster.receive_melee_attack(melee),
                             None => {
                                 println!("Insufficient TP!");
                                 continue;
@@ -96,9 +96,10 @@ impl<'a> Encounter<'a> {
                 Cast => {
                     if let Some(spell) = spell_menu() {
                         match self.player.cast_spell(spell) {
-                            Some(Cure1 | Cure2) => self.player.restore_hp(spell.healing()),
-                            Some(Fire | Stone) => self.monster.receive_damage(spell.damage()),
-                            Some(Meditate) => self.player.restore_mp(spell.mana_restore()),
+                            Some(Fire | Stone) => self.monster.receive_spell_attack(spell),
+                            Some(Cure1 | Cure2 | Meditate) => {
+                                self.player.receive_defensive_spell(spell)
+                            }
                             None => {
                                 println!("Insufficient MP!");
                                 continue;

@@ -1,6 +1,7 @@
+use crate::melee::*;
+use crate::spell::*;
 use crate::utils::*;
-use ansi_term::Colour;
-use ansi_term::Style;
+use ansi_term::{Colour, Style};
 use rand::Rng;
 use std::fmt::{self, Write};
 use std::hash::Hash;
@@ -51,6 +52,24 @@ impl Monster {
     }
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
+    }
+    pub fn receive_melee_attack(&mut self, melee: Melee) {
+        let amount = melee.damage();
+        println!(
+            "Your {melee} attack hits the {} for {} damage!",
+            self.kind,
+            Colour::Purple.paint(format!("{}", amount))
+        );
+        self.receive_damage(amount);
+    }
+    pub fn receive_spell_attack(&mut self, spell: Spell) {
+        let amount = spell.damage();
+        println!(
+            "Your {spell} hits the {} for {} damage!",
+            self.kind,
+            Colour::Purple.paint(format!("{}", amount))
+        );
+        self.receive_damage(amount);
     }
 }
 

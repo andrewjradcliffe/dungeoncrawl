@@ -1,11 +1,12 @@
 use crate::inventory::*;
 use crate::item::*;
 use crate::loot::Loot;
-use crate::melee::Melee;
-use crate::spell::Spell;
+use crate::melee::*;
+use crate::monster::*;
+use crate::spell::*;
 use crate::trade::*;
 use crate::utils::*;
-use ansi_term::Style;
+use ansi_term::{Colour, Style};
 use std::fmt::Write;
 
 pub(crate) const PLAYER_HP: i64 = 100;
@@ -52,6 +53,51 @@ impl Player {
     }
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
+    }
+    pub fn receive_melee_attack(&mut self, monster: &Monster) {
+        match monster.kind {
+            MonsterKind::Fairy => {
+                println!(
+                    "The {}'s heals you for {} {}!",
+                    MonsterKind::Fairy,
+                    Colour::Purple.paint("20"),
+                    *ANSI_HP
+                );
+                self.receive_damage(monster.strength);
+            }
+            kind => {
+                let amount = monster.strength;
+                println!(
+                    "The {kind}'s melee attack hits you for {} damage!",
+                    Colour::Purple.paint(format!("{}", amount)),
+                );
+                self.receive_damage(amount);
+            }
+        }
+    }
+
+    pub fn receive_defensive_spell(&mut self, spell: Spell) {
+        match spell {
+            Cure1 | Cure2 => {
+                let amount = spell.healing();
+                println!(
+                    "Your {spell} heals you for {} {}!",
+                    Colour::Purple.paint(format!("{}", amount)),
+                    *ANSI_HP
+                );
+                self.restore_hp(amount);
+            }
+            Meditate => {
+                let amount = spell.mana_restore();
+                println!(
+                    "Your {spell} restores {} of your {}!",
+                    Colour::Purple.paint(format!("{}", amount)),
+                    *ANSI_MP
+                );
+                self.restore_hp(amount);
+            }
+            _ => (),
+        }
     }
 
     pub fn cast_spell(&mut self, spell: Spell) -> Option<Spell> {
