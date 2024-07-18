@@ -38,7 +38,7 @@ impl Item {
     pub(crate) fn description_imp(&self) -> String {
         match self {
             HealthPotion => format!("restores {} {}", self.healing(), *ANSI_HP),
-            ManaPotion => format!("restores {} {}", self.healing(), *ANSI_MP),
+            ManaPotion => format!("restores {} {}", self.mana_restore(), *ANSI_MP),
             Food => format!(
                 "restores {} {} and {} {}",
                 self.healing(),
