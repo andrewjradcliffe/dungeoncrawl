@@ -21,18 +21,38 @@ impl Item {
     pub(crate) const fn total_variants() -> usize {
         3
     }
-    // pub const fn description(&self) -> &'static str {
-    //     match self {
-    //         HealthPotion => "restores 25 HP",
-    //         ManaPotion => "restores 25 MP",
-    //         Food => "restores 10 HP and 10 MP",
-    //     }
-    // }
-    pub fn description(&self) -> &String {
-        static HEALTH_POTION: Lazy<String> = Lazy::new(|| format!("restores 25 {}", *ANSI_HP));
-        static MANA_POTION: Lazy<String> = Lazy::new(|| format!("restores 25 {}", *ANSI_MP));
-        static FOOD: Lazy<String> =
-            Lazy::new(|| format!("restores 10 {} and 10 {}", *ANSI_HP, *ANSI_MP));
+    pub const fn healing(&self) -> i64 {
+        match self {
+            HealthPotion => 25,
+            ManaPotion => 0,
+            Food => 10,
+        }
+    }
+    pub const fn mana_restore(&self) -> i64 {
+        match self {
+            HealthPotion => 0,
+            ManaPotion => 25,
+            Food => 10,
+        }
+    }
+    pub(crate) fn description_imp(&self) -> String {
+        match self {
+            HealthPotion => format!("restores {} {}", self.healing(), *ANSI_HP),
+            ManaPotion => format!("restores {} {}", self.healing(), *ANSI_MP),
+            Food => format!(
+                "restores {} {} and {} {}",
+                self.healing(),
+                *ANSI_HP,
+                self.mana_restore(),
+                *ANSI_MP
+            ),
+        }
+    }
+
+    pub fn description(&self) -> &str {
+        static HEALTH_POTION: Lazy<String> = Lazy::new(|| HealthPotion.description_imp());
+        static MANA_POTION: Lazy<String> = Lazy::new(|| ManaPotion.description_imp());
+        static FOOD: Lazy<String> = Lazy::new(|| Food.description_imp());
 
         match self {
             HealthPotion => &*HEALTH_POTION,

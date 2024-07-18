@@ -78,20 +78,27 @@ impl Player {
         }
     }
 
-    pub fn visit_inventory(&mut self) {
-        if let Some(item) = self.inventory.menu(&self.inventory_message()) {
-            self.consume(item);
+    pub fn consume(&mut self, item: Item) {
+        self.restore_hp(item.healing());
+        self.restore_mp(item.mana_restore());
+    }
+    pub fn visit_inventory(&mut self) -> bool {
+        match self.inventory.menu(&self.inventory_message()) {
+            InventoryTransaction::Use(item) => {
+                if let Some(item) = self.inventory.pop_item(item) {
+                    self.consume(item);
+                }
+                true
+            }
+            InventoryTransaction::Drop(item) => {
+                self.inventory.drop_item(item);
+                true
+            }
+            InventoryTransaction::Quit => false,
         }
     }
-    pub fn consume(&mut self, item: Item) {
-        match item {
-            HealthPotion => self.restore_hp(25),
-            ManaPotion => self.restore_mp(25),
-            Food => {
-                self.restore_hp(10);
-                self.restore_mp(10);
-            }
-        }
+    pub fn noncombat_inventory(&mut self) {
+        while self.visit_inventory() {}
     }
     pub fn acquire(&mut self, loot: Loot) {
         self.inventory.push_loot(loot)

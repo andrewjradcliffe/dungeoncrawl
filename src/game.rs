@@ -64,7 +64,7 @@ pub fn game() {
                     game.player.sleep();
                 }
                 TownAction::Trade => merchant.trade(&mut game.player),
-                TownAction::Inventory => game.player.visit_inventory(),
+                TownAction::Inventory => game.player.noncombat_inventory(),
             },
             State::Gauntlet => {
                 let n_monster: usize = rng.gen_range(1..5);
@@ -83,7 +83,7 @@ pub fn game() {
                 AdventureAction::Town => {
                     game.state = State::Town;
                 }
-                AdventureAction::Inventory => game.player.visit_inventory(),
+                AdventureAction::Inventory => game.player.noncombat_inventory(),
             },
         }
     }

@@ -35,6 +35,37 @@ impl FromStr for InventoryAction {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum InventoryTransaction {
+    Use(Item),
+    Drop(Item),
+    Quit,
+}
+impl FromStr for InventoryTransaction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+        if let Some((lhs, rhs)) = s.split_once(' ') {
+            if let Ok(action) = lhs.parse::<InventoryAction>() {
+                if let Ok(item) = rhs.parse::<Item>() {
+                    match action {
+                        InventoryAction::Drop => {
+                            return Ok(InventoryTransaction::Drop(item));
+                        }
+                        InventoryAction::Use => {
+                            return Ok(InventoryTransaction::Use(item));
+                        }
+                        InventoryAction::Quit => (),
+                    }
+                }
+            }
+        } else if let Ok(InventoryAction::Quit) = s.parse::<InventoryAction>() {
+            return Ok(InventoryTransaction::Quit);
+        }
+        Err(s.to_string())
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Inventory {
     pub(crate) bag: IndexMap<Item, usize>,
@@ -57,12 +88,12 @@ impl Inventory {
         self.sum == 0
     }
 
-    pub fn menu(&mut self, msg: &str) -> Option<Item> {
+    pub fn menu(&mut self, msg: &str) -> InventoryTransaction {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering inventory menu... ----");
         println!("{}", msg);
         if self.is_empty() {
-            None
+            InventoryTransaction::Quit
         } else {
             loop {
                 buf.clear();
@@ -74,26 +105,8 @@ impl Inventory {
                     Ok(_) => (),
                     Err(e) => println!("Error in inventory menu readline: {:#?}", e),
                 }
-                let s = buf.trim();
-                if let Some((lhs, rhs)) = s.split_once(' ') {
-                    if let Ok(action) = lhs.parse::<InventoryAction>() {
-                        if let Ok(item) = rhs.parse::<Item>() {
-                            match action {
-                                InventoryAction::Drop => {
-                                    self.drop_item(item);
-                                    return None;
-                                }
-                                InventoryAction::Use => {
-                                    return self.pop_item(item);
-                                }
-                                InventoryAction::Quit => (),
-                            }
-                        }
-                    }
-                } else {
-                    if let Ok(InventoryAction::Quit) = s.parse::<InventoryAction>() {
-                        break None;
-                    }
+                if let Ok(transaction) = buf.parse::<InventoryTransaction>() {
+                    break transaction;
                 }
             }
         }
