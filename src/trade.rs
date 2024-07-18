@@ -15,7 +15,7 @@ pub struct Merchant {
     inventory: Inventory,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TradeAction {
     Buy,
     Sell,
@@ -42,19 +42,30 @@ impl FromStr for TradeAction {
     }
 }
 
+// #[derive(Debug, Clone, PartialEq)]
+// pub enum Transaction {
+//     Buy{item: Item, count: usize},
+//     Sell{item: Item, count: usize},
+//     Quit,
+// }
+
+// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+// pub enum Assessment {
+//     SufficientGold,
+//     SufficientInventory,
+//     InsufficientInventory,
+//     InsufficientGold,
+// }
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Transaction {
-    action: TradeAction,
-    item: Item,
-    count: usize,
+    pub(crate) kind: TradeAction,
+    pub(crate) item: Item,
+    pub(crate) count: usize,
 }
 impl Transaction {
-    pub fn new(action: TradeAction, item: Item, count: usize) -> Self {
-        Self {
-            action,
-            item,
-            count,
-        }
+    pub fn new(kind: TradeAction, item: Item, count: usize) -> Self {
+        Self { kind, item, count }
     }
     pub fn total_cost(&self) -> usize {
         self.item.cost() * self.count
@@ -95,12 +106,43 @@ impl Merchant {
         }
         s
     }
-    pub fn menu(&self) -> Option<Transaction> {
+    pub fn can_perform(&self, transaction: &Transaction) -> bool {
+        match transaction.kind {
+            TradeAction::Buy => self.inventory.n_available(&transaction.item) >= transaction.count,
+            TradeAction::Sell => true,
+            TradeAction::Quit => true,
+        }
+    }
+    pub fn perform(&mut self, transaction: &Transaction) {
+        match transaction.kind {
+            TradeAction::Buy => {
+                self.inventory
+                    .drop_multiple(transaction.item, transaction.count);
+            }
+            TradeAction::Sell => {
+                self.inventory
+                    .push_multiple(transaction.item, transaction.count);
+            }
+            TradeAction::Quit => (),
+        }
+    }
+    pub fn describe_rejected_transaction(&self, transaction: &Transaction) {
+        match transaction.kind {
+            TradeAction::Buy => {
+                if self.inventory.n_available(&transaction.item) < transaction.count {
+                    println!("Merchant rejected transaction: insufficient inventory!")
+                }
+            }
+            TradeAction::Sell => (),
+            TradeAction::Quit => (),
+        }
+    }
+    pub fn menu(&self) -> Transaction {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Browsing merchant's wares... ----");
         if self.inventory.is_empty() {
             println!("Inventory is empty!");
-            None
+            Transaction::new(TradeAction::Quit, Item::Food, 0)
         } else {
             println!("{}", self.inventory_message());
             loop {
@@ -125,11 +167,11 @@ impl Merchant {
                                 if let Some((lhs, rhs)) = rst.split_once(' ') {
                                     if let Ok(n) = lhs.parse::<usize>() {
                                         if let Ok(item) = rhs.parse::<Item>() {
-                                            return Some(Transaction::new(action, item, n));
+                                            return Transaction::new(action, item, n);
                                         }
                                     }
                                 } else if let Ok(item) = rst.parse::<Item>() {
-                                    return Some(Transaction::new(action, item, 1));
+                                    return Transaction::new(action, item, 1);
                                 }
                             }
                             TradeAction::Quit => (),
@@ -137,47 +179,58 @@ impl Merchant {
                     }
                 } else {
                     if let Ok(TradeAction::Quit) = s.parse::<TradeAction>() {
-                        break None;
+                        break Transaction::new(TradeAction::Quit, Item::Food, 0);
                     }
                 }
             }
         }
     }
     pub fn visit(&mut self, player: &mut Player) {
-        if let Some(transaction) = self.menu() {
-            match transaction.action {
-                TradeAction::Buy => {
-                    let item = transaction.item;
-                    let count = transaction.count;
-                    let actual_count = count.clamp(0, self.inventory.n_available(&item));
-                    let actual_cost = actual_count * item.cost();
-                    if actual_cost <= player.gold {
-                        player.inventory.push_multiple(item, actual_count);
-                        player.gold -= actual_cost;
-                        match actual_count {
-                            0 => (),
-                            1 => println!("You bought 1 {} for {} gold.", item, actual_cost),
-                            n => println!("You bought {n} {}s for {} gold.", item, actual_cost),
-                        }
-                        self.inventory.drop_multiple(item, actual_count);
+        let transaction = self.menu();
+        match transaction.kind {
+            TradeAction::Quit => (),
+            TradeAction::Buy | TradeAction::Sell => {
+                if self.can_perform(&transaction) {
+                    if player.can_perform(&transaction) {
+                        self.perform(&transaction);
+                        player.perform(&transaction);
+                    } else {
+                        player.describe_rejected_transaction(&transaction);
                     }
+                } else {
+                    self.describe_rejected_transaction(&transaction);
                 }
-                TradeAction::Sell => {
-                    let item = transaction.item;
-                    let count = transaction.count;
-                    let actual_count = count.clamp(0, player.inventory.n_available(&item));
-                    let actual_cost = actual_count * item.cost();
-                    player.inventory.drop_multiple(item, actual_count);
-                    player.gold += actual_cost;
-                    match actual_count {
-                        0 => (),
-                        1 => println!("You sold 1 {} for {} gold.", item, actual_cost),
-                        n => println!("You sold {n} {}s for {} gold.", item, actual_cost),
-                    }
-                    self.inventory.push_multiple(item, actual_count);
-                }
-                _ => panic!(),
-            }
+            } // TradeAction::Buy => {
+              //     let item = transaction.item;
+              //     let count = transaction.count;
+              //     let actual_count = count.clamp(0, self.inventory.n_available(&item));
+              //     let actual_cost = actual_count * item.cost();
+              //     if actual_cost <= player.gold {
+              //         player.inventory.push_multiple(item, actual_count);
+              //         player.gold -= actual_cost;
+              //         match actual_count {
+              //             0 => (),
+              //             1 => println!("You bought 1 {} for {} gold.", item, actual_cost),
+              //             n => println!("You bought {n} {}s for {} gold.", item, actual_cost),
+              //         }
+              //         self.inventory.drop_multiple(item, actual_count);
+              //     }
+              // }
+              // TradeAction::Sell => {
+              //     let item = transaction.item;
+              //     let count = transaction.count;
+              //     let actual_count = count.clamp(0, player.inventory.n_available(&item));
+              //     let actual_cost = actual_count * item.cost();
+              //     player.inventory.drop_multiple(item, actual_count);
+              //     player.gold += actual_cost;
+              //     match actual_count {
+              //         0 => (),
+              //         1 => println!("You sold 1 {} for {} gold.", item, actual_cost),
+              //         n => println!("You sold {n} {}s for {} gold.", item, actual_cost),
+              //     }
+              //     self.inventory.push_multiple(item, actual_count);
+              // }
+              // _ => panic!(),
         }
     }
 }

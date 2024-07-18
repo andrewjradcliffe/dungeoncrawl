@@ -4,6 +4,7 @@ use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::Melee;
 use crate::spell::Spell;
+use crate::trade::*;
 use crate::utils::*;
 use ansi_term::Style;
 use std::fmt::Write;
@@ -170,5 +171,69 @@ impl Player {
             }
         }
         s
+    }
+    // pub fn assess_transaction(&self, transaction: &Transaction) -> Assessment {
+    //     match transaction.kind {
+    //         TradeAction::Buy => {
+    //             if self.gold >= transaction.total_cost() {
+    //                 Assessment::SufficientGold
+    //             } else {
+    //                 Assessment::InsufficientGold
+    //             }
+    //         }
+    //         TradeAction::Sell => {
+    //             if self.inventory.n_available(&transaction.item) >= transaction.count {
+    //                 Assessment::SufficientInventory
+    //             } else {
+    //                 Assessment::InsufficientInventory
+    //             }
+    //         }
+    //         TradeAction::Quit => true,
+    //     }
+    // }
+    pub fn can_perform(&self, transaction: &Transaction) -> bool {
+        match transaction.kind {
+            TradeAction::Buy => self.gold >= transaction.total_cost(),
+            TradeAction::Sell => self.inventory.n_available(&transaction.item) >= transaction.count,
+            TradeAction::Quit => true,
+        }
+    }
+    pub fn perform(&mut self, transaction: &Transaction) {
+        match transaction.kind {
+            TradeAction::Buy => {
+                let cost = transaction.total_cost();
+                self.gold -= cost;
+                self.inventory
+                    .push_multiple(transaction.item, transaction.count);
+                match transaction.count {
+                    0 => (),
+                    1 => println!("You bought 1 {} for {} gold.", transaction.item, cost),
+                    n => println!("You bought {n} {}s for {} gold.", transaction.item, cost),
+                }
+            }
+            TradeAction::Sell => {
+                let cost = transaction.total_cost();
+                self.gold += cost;
+                self.inventory
+                    .drop_multiple(transaction.item, transaction.count);
+                match transaction.count {
+                    0 => (),
+                    1 => println!("You sold 1 {} for {} gold.", transaction.item, cost),
+                    n => println!("You sold {n} {}s for {} gold.", transaction.item, cost),
+                }
+            }
+            TradeAction::Quit => (),
+        }
+    }
+    pub fn describe_rejected_transaction(&self, transaction: &Transaction) {
+        match transaction.kind {
+            TradeAction::Buy => println!("Player rejected transaction: insufficient gold!"),
+            TradeAction::Sell => {
+                if self.inventory.n_available(&transaction.item) <= transaction.count {
+                    println!("Player rejected transaction: insufficient inventory!")
+                }
+            }
+            TradeAction::Quit => (),
+        }
     }
 }
