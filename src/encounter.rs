@@ -107,8 +107,9 @@ impl<'a> Encounter<'a> {
     pub fn run(&mut self) -> EncounterOutcome {
         let kind = self.monster.kind.clone();
         println!("---- A wild {kind} appeared! ----");
-        let mut buf = String::with_capacity(1 << 10);
+        let mut buf = String::with_capacity(1 << 7);
         let mut res = Indeterminate;
+        let mut status = String::with_capacity(1 << 7);
         loop {
             match res {
                 PlayerVictory => {
@@ -129,7 +130,9 @@ impl<'a> Encounter<'a> {
                 Indeterminate => {
                     println!("The {kind} in front of you has {}", self.monster.status());
                     println!("ATTACK, CAST, RUN, INVENTORY, or DO NOTHING?");
-                    match get_response(&mut buf, self.player.status()) {
+                    status.clear();
+                    self.player.write_status(&mut status);
+                    match get_response(&mut buf, &status) {
                         Ok(()) => match buf.parse::<CombatAction>() {
                             Ok(action) => {
                                 res = self.perform(action);
@@ -145,7 +148,7 @@ impl<'a> Encounter<'a> {
     }
 }
 
-pub fn get_response(buf: &mut String, status: String) -> io::Result<()> {
+pub fn get_response(buf: &mut String, status: &str) -> io::Result<()> {
     buf.clear();
     print!("{} > ", status);
     io::stdout().flush()?;

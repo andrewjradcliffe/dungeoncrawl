@@ -94,7 +94,13 @@ impl Player {
         self.inventory.push_loot(loot)
     }
     pub fn status(&self) -> String {
-        format!(
+        let mut buf = String::with_capacity(1 << 7);
+        self.write_status(&mut buf);
+        buf
+    }
+    pub fn write_status(&self, buf: &mut String) {
+        write!(
+            buf,
             "HP[{}/{}] MP[{}/{}] TP[{}/{}]",
             self.current_hp,
             self.max_hp,
@@ -103,6 +109,7 @@ impl Player {
             self.current_tp,
             self.max_tp,
         )
+        .unwrap();
     }
     pub fn sleep(&mut self) {
         self.current_hp = self.max_hp;
