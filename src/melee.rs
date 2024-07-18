@@ -48,7 +48,7 @@ impl Melee {
         )
     }
 
-    pub fn description(&self) -> &String {
+    pub fn description(&self) -> &str {
         static BASIC: Lazy<String> = Lazy::new(|| Basic.description_imp());
         static POWER: Lazy<String> = Lazy::new(|| Power.description_imp());
         static SUPER: Lazy<String> = Lazy::new(|| Super.description_imp());

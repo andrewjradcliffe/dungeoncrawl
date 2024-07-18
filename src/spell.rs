@@ -68,7 +68,7 @@ impl Spell {
             Cure1 | Cure2 | Meditate => self.defensive_imp(),
         }
     }
-    pub fn description(&self) -> &String {
+    pub fn description(&self) -> &str {
         static STONE: Lazy<String> = Lazy::new(|| Stone.description_imp());
         static FIRE: Lazy<String> = Lazy::new(|| Fire.description_imp());
         static CURE1: Lazy<String> = Lazy::new(|| Cure1.description_imp());
