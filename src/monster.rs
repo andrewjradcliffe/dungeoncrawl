@@ -1,4 +1,5 @@
 use crate::combat::Combatant;
+use crate::utils::*;
 use ansi_term::Colour;
 use ansi_term::Style;
 use rand::Rng;
@@ -36,7 +37,7 @@ impl Monster {
         write!(
             buf,
             "{}[{}/{}]",
-            Colour::Red.bold().paint("HP"),
+            *ANSI_HP,
             Style::new().italic().paint(hp),
             self.max_hp
         )

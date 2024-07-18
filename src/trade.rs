@@ -86,7 +86,7 @@ impl Merchant {
                     "    {:<30} x{:<4} | {:>30} | price: {:>4} {}",
                     format!("{}", item),
                     count,
-                    item.description_fancy(),
+                    item.description(),
                     item.cost(),
                     Yellow.bold().paint("gold"),
                 )

@@ -4,7 +4,7 @@ use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::Melee;
 use crate::spell::Spell;
-use ansi_term::Colour;
+use crate::utils::*;
 use ansi_term::Style;
 use std::fmt::Write;
 
@@ -105,7 +105,7 @@ impl Player {
         write!(
             buf,
             "{}[{}/{}]",
-            Colour::Red.bold().paint("HP"),
+            *ANSI_HP,
             Style::new().italic().paint(hp),
             self.max_hp
         )
@@ -116,7 +116,7 @@ impl Player {
         write!(
             buf,
             "{}[{}/{}]",
-            Colour::Green.bold().paint("MP"),
+            *ANSI_MP,
             Style::new().italic().paint(mp),
             self.max_mp
         )
@@ -127,7 +127,7 @@ impl Player {
         write!(
             buf,
             "{}[{}/{}]",
-            Colour::Blue.bold().paint("TP"),
+            *ANSI_TP,
             Style::new().italic().paint(tp),
             self.max_tp
         )
@@ -164,7 +164,7 @@ impl Player {
                     "    {:<30} x{:<4} | {}",
                     format!("{}", item),
                     count,
-                    item.description_fancy()
+                    item.description()
                 )
                 .unwrap();
             }

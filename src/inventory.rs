@@ -182,7 +182,7 @@ impl fmt::Display for Inventory {
                 "    {:<30} x{:<4} | {}",
                 format!("{}", item),
                 count,
-                item.description_fancy()
+                item.description()
             )?;
         }
         Ok(())

@@ -1,4 +1,4 @@
-use ansi_term::{Colour::Green, Colour::Red};
+use crate::utils::*;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
@@ -21,27 +21,19 @@ impl Item {
     pub(crate) const fn total_variants() -> usize {
         3
     }
-    pub const fn description(&self) -> &'static str {
-        match self {
-            HealthPotion => "restores 25 HP",
-            ManaPotion => "restores 25 MP",
-            Food => "restores 10 HP and 10 MP",
-        }
-    }
-    pub fn description_fancy(&self) -> &String {
-        static HEALTH_POTION: Lazy<String> =
-            Lazy::new(|| format!("restores 25 {}", Red.bold().paint("HP")));
+    // pub const fn description(&self) -> &'static str {
+    //     match self {
+    //         HealthPotion => "restores 25 HP",
+    //         ManaPotion => "restores 25 MP",
+    //         Food => "restores 10 HP and 10 MP",
+    //     }
+    // }
+    pub fn description(&self) -> &String {
+        static HEALTH_POTION: Lazy<String> = Lazy::new(|| format!("restores 25 {}", *ANSI_HP));
+        static MANA_POTION: Lazy<String> = Lazy::new(|| format!("restores 25 {}", *ANSI_MP));
+        static FOOD: Lazy<String> =
+            Lazy::new(|| format!("restores 10 {} and 10 {}", *ANSI_HP, *ANSI_MP));
 
-        static MANA_POTION: Lazy<String> =
-            Lazy::new(|| format!("restores 25 {}", Green.bold().paint("MP")));
-
-        static FOOD: Lazy<String> = Lazy::new(|| {
-            format!(
-                "restores 10 {} and 10 {}",
-                Red.bold().paint("HP"),
-                Green.bold().paint("MP")
-            )
-        });
         match self {
             HealthPotion => &*HEALTH_POTION,
             ManaPotion => &*MANA_POTION,
