@@ -131,7 +131,7 @@ impl FromStr for Item {
 
         static RE_HP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:hp|health potion)$").unwrap());
         static RE_MP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:mp|mana potion)$").unwrap());
-        static RE_FOOD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^food$").unwrap());
+        static RE_FOOD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:food|f)$").unwrap());
 
         if RE_HP.is_match(s) {
             Ok(HealthPotion)
