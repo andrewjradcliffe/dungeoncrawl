@@ -139,7 +139,7 @@ impl<'a> Encounter<'a> {
             self.monster.status()
         );
         println!(
-            "{}TTACK, {}AST, {}UN, {}NVENTORY, or DO {}OTHING?",
+            "{}TTACK, {}AST, {}UN, {}NVENTORY, or do {}OTHING?",
             Style::new().underline().paint("A"),
             Style::new().underline().paint("C"),
             Style::new().underline().paint("R"),
