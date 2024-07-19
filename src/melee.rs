@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ansi_term::Style;
+use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
@@ -58,8 +58,19 @@ impl Melee {
             Super => &*SUPER,
         }
     }
+    pub(crate) const fn display_offset(&self) -> usize {
+        match self {
+            Super => 1,
+            _ => 0,
+        }
+    }
     pub(crate) fn print_menu_item(&self) {
-        println!("    {:<30} | {}", format!("{}", self), self.description());
+        println!(
+            "    {:>width$} | {}",
+            format!("{}", self),
+            self.description(),
+            width = 40 - self.display_offset()
+        );
     }
 }
 
@@ -87,9 +98,9 @@ impl FromStr for Melee {
 impl fmt::Display for Melee {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Basic => write!(f, "Basic"),
-            Power => write!(f, "Power"),
-            Super => write!(f, "Super"),
+            Basic => write!(f, "{}", Colour::RGB(0xb0, 0xc4, 0xde).paint("Basic")),
+            Power => write!(f, "{}", Colour::RGB(0x70, 0x80, 0x90).paint("Power")),
+            Super => write!(f, "{}", Colour::RGB(0x5f, 0x93, 0xa0).paint("Super")),
         }
     }
 }
@@ -98,7 +109,7 @@ pub(crate) fn melee_menu() -> Option<Melee> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
     println!(
-        "                                   | {} |  {} |  {}",
+        "                      | {} |  {} |  {}",
         Style::new().underline().paint("damage"),
         Style::new().underline().paint("cost"),
         Style::new().underline().paint("gain"),
