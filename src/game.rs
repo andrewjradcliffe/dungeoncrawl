@@ -53,11 +53,9 @@ pub fn game() {
             State::Town => match town_menu() {
                 TownAction::Adventure => {
                     game.state = State::Adventure;
-                    println!("go for an adventure");
                 }
                 TownAction::Gauntlet => {
                     game.state = State::Gauntlet;
-                    println!("commence gauntlet");
                 }
                 TownAction::Sleep => {
                     game.player.sleep();
