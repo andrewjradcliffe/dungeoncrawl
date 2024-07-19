@@ -1,6 +1,7 @@
 use crate::item::*;
 use crate::loot::Loot;
 use crate::utils::*;
+use ansi_term::{Colour, Style};
 use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -88,7 +89,7 @@ impl Inventory {
         self.sum == 0
     }
 
-    pub fn menu(&mut self, msg: &str) -> InventoryTransaction {
+    pub fn menu(&self, msg: &str) -> InventoryTransaction {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering inventory menu... ----");
         println!("{}", msg);
@@ -172,6 +173,32 @@ impl Inventory {
     pub fn n_available(&self, item: &Item) -> usize {
         self.bag.get(item).map(Clone::clone).unwrap_or(0)
     }
+    pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
+        if self.is_empty() {
+            writeln!(f, "Inventory is empty!")?;
+        } else {
+            writeln!(f, "{}:", Style::new().bold().underline().paint("Inventory"))?;
+            writeln!(
+                f,
+                "                          | {} |  {}  |  {}",
+                Style::new().underline().paint("available"),
+                Style::new().underline().paint(field2),
+                Style::new().underline().paint("effect"),
+            )?;
+            for (item, count) in self.bag.iter().filter(|(_, count)| **count > 0) {
+                writeln!(
+                    f,
+                    "    {:<30} | {:^9} | {:>2} {} | {:<30}",
+                    format!("{}", item),
+                    count,
+                    item.cost(),
+                    Colour::Yellow.bold().paint("gold"),
+                    item.description(),
+                )?;
+            }
+        }
+        Ok(())
+    }
 }
 impl FromIterator<(Item, usize)> for Inventory {
     fn from_iter<T>(iter: T) -> Self
@@ -188,16 +215,6 @@ impl FromIterator<(Item, usize)> for Inventory {
 
 impl fmt::Display for Inventory {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Inventory:")?;
-        for (item, count) in self.bag.iter().filter(|(_, count)| **count > 0) {
-            writeln!(
-                f,
-                "    {:<30} x{:<4} | {}",
-                format!("{}", item),
-                count,
-                item.description()
-            )?;
-        }
-        Ok(())
+        self.fmt_imp(f, "value")
     }
 }

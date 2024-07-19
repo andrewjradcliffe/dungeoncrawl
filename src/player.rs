@@ -205,28 +205,7 @@ impl Player {
             self.gold
         )
         .unwrap();
-        if self.inventory.is_empty() {
-            writeln!(s, "Inventory is empty!").unwrap();
-        } else {
-            writeln!(s, "{}:", Style::new().bold().underline().paint("Bag")).unwrap();
-            writeln!(
-                s,
-                "                          | {} |  {}",
-                Style::new().underline().paint("available"),
-                Style::new().underline().paint("effect"),
-            )
-            .unwrap();
-            for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
-                writeln!(
-                    s,
-                    "    {:<30} | {:^9} | {:<30}",
-                    format!("{}", item),
-                    count,
-                    item.description()
-                )
-                .unwrap();
-            }
-        }
+        writeln!(s, "{}", self.inventory).unwrap();
         s
     }
     // pub fn assess_transaction(&self, transaction: &Transaction) -> Assessment {

@@ -2,11 +2,8 @@ use crate::inventory::*;
 use crate::item::*;
 use crate::player::Player;
 use crate::utils::*;
-use ansi_term::Colour::Yellow;
-use ansi_term::Style;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::fmt::Write;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
@@ -81,31 +78,7 @@ impl Merchant {
     }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
-        if self.inventory.is_empty() {
-            writeln!(s, "Inventory is empty!").unwrap();
-        } else {
-            writeln!(s, "{}:", Style::new().bold().underline().paint("Inventory")).unwrap();
-            writeln!(
-                s,
-                "                          | {} |  {}  |  {}",
-                Style::new().underline().paint("available"),
-                Style::new().underline().paint("price"),
-                Style::new().underline().paint("effect"),
-            )
-            .unwrap();
-            for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
-                writeln!(
-                    s,
-                    "    {:<30} | {:^9} | {:>2} {} | {:<30}",
-                    format!("{}", item),
-                    count,
-                    item.cost(),
-                    Yellow.bold().paint("gold"),
-                    item.description(),
-                )
-                .unwrap();
-            }
-        }
+        self.inventory.fmt_imp(&mut s, "price").unwrap();
         s
     }
     pub fn can_perform(&self, transaction: &Transaction) -> bool {
