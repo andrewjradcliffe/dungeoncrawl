@@ -41,9 +41,9 @@ impl Melee {
         format!(
             "{:>6} | {:>2} {} | {:>2} {}",
             self.damage(),
-            self.gain(),
-            *ANSI_TP,
             self.cost(),
+            *ANSI_TP,
+            self.gain(),
             *ANSI_TP,
         )
     }
@@ -100,8 +100,8 @@ pub(crate) fn melee_menu() -> Option<Melee> {
     println!(
         "                                   | {} |  {} |  {}",
         Style::new().underline().paint("damage"),
-        Style::new().underline().paint("gain"),
         Style::new().underline().paint("cost"),
+        Style::new().underline().paint("gain"),
     );
     Basic.print_menu_item();
     Power.print_menu_item();
