@@ -39,12 +39,12 @@ impl FromStr for TradeAction {
     }
 }
 
-// #[derive(Debug, Clone, PartialEq)]
-// pub enum Transaction {
-//     Buy{item: Item, count: usize},
-//     Sell{item: Item, count: usize},
-//     Quit,
-// }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Transaction {
+    Buy { item: Item, count: usize },
+    Sell { item: Item, count: usize },
+    Quit,
+}
 
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 // pub enum Assessment {
@@ -54,18 +54,52 @@ impl FromStr for TradeAction {
 //     InsufficientGold,
 // }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Transaction {
-    pub(crate) kind: TradeAction,
-    pub(crate) item: Item,
-    pub(crate) count: usize,
-}
 impl Transaction {
     pub fn new(kind: TradeAction, item: Item, count: usize) -> Self {
-        Self { kind, item, count }
+        match kind {
+            TradeAction::Quit => Transaction::Quit,
+            TradeAction::Buy => Transaction::Buy { item, count },
+            TradeAction::Sell => Transaction::Sell { item, count },
+        }
     }
     pub fn total_cost(&self) -> usize {
-        self.item.cost() * self.count
+        match self {
+            Self::Quit => 0,
+            Self::Buy { item, count } => item.cost() * count,
+            Self::Sell { item, count } => item.cost() * count,
+        }
+    }
+}
+
+impl FromStr for Transaction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+
+        if let Some((fst, rst)) = s.split_once(' ') {
+            if let Ok(action) = fst.parse::<TradeAction>() {
+                match action {
+                    TradeAction::Buy | TradeAction::Sell => {
+                        let rst = rst.trim();
+                        if let Some((lhs, rhs)) = rst.split_once(' ') {
+                            if let Ok(n) = lhs.parse::<usize>() {
+                                if let Ok(item) = rhs.parse::<Item>() {
+                                    return Ok(Transaction::new(action, item, n));
+                                }
+                            }
+                        } else if let Ok(item) = rst.parse::<Item>() {
+                            return Ok(Transaction::new(action, item, 1));
+                        }
+                    }
+                    TradeAction::Quit => (),
+                }
+            }
+        } else {
+            if let Ok(TradeAction::Quit) = s.parse::<TradeAction>() {
+                return Ok(Transaction::Quit);
+            }
+        }
+        Err(s.to_string())
     }
 }
 
@@ -82,34 +116,30 @@ impl Merchant {
         s
     }
     pub fn can_perform(&self, transaction: &Transaction) -> bool {
-        match transaction.kind {
-            TradeAction::Buy => self.inventory.n_available(&transaction.item) >= transaction.count,
-            TradeAction::Sell => true,
-            TradeAction::Quit => true,
+        match transaction {
+            Transaction::Buy { item, count } => self.inventory.n_available(item) >= *count,
+            _ => true,
         }
     }
     pub fn perform(&mut self, transaction: &Transaction) {
-        match transaction.kind {
-            TradeAction::Buy => {
-                self.inventory
-                    .drop_multiple(transaction.item, transaction.count);
+        match transaction {
+            Transaction::Buy { item, count } => {
+                self.inventory.drop_multiple(*item, *count);
             }
-            TradeAction::Sell => {
-                self.inventory
-                    .push_multiple(transaction.item, transaction.count);
+            Transaction::Sell { item, count } => {
+                self.inventory.drop_multiple(*item, *count);
             }
-            TradeAction::Quit => (),
+            Transaction::Quit => (),
         }
     }
     pub fn describe_rejected_transaction(&self, transaction: &Transaction) {
-        match transaction.kind {
-            TradeAction::Buy => {
-                if self.inventory.n_available(&transaction.item) < transaction.count {
+        match transaction {
+            Transaction::Buy { item, count } => {
+                if self.inventory.n_available(item) < *count {
                     println!("Merchant rejected transaction: insufficient inventory!")
                 }
             }
-            TradeAction::Sell => (),
-            TradeAction::Quit => (),
+            _ => (),
         }
     }
     pub fn menu(&self, gold: usize) -> Transaction {
@@ -117,7 +147,7 @@ impl Merchant {
         println!("---- Browsing merchant's wares... ----");
         if self.inventory.is_empty() {
             println!("Inventory is empty!");
-            Transaction::new(TradeAction::Quit, Item::Food, 0)
+            Transaction::Quit
         } else {
             println!("{}", self.inventory_message());
             loop {
@@ -132,39 +162,17 @@ impl Merchant {
                     Ok(_) => (),
                     Err(e) => println!("Error in inventory menu readline: {:#?}", e),
                 }
-                let s = buf.trim();
-
-                if let Some((fst, rst)) = s.split_once(' ') {
-                    if let Ok(action) = fst.parse::<TradeAction>() {
-                        match action {
-                            TradeAction::Buy | TradeAction::Sell => {
-                                let rst = rst.trim();
-                                if let Some((lhs, rhs)) = rst.split_once(' ') {
-                                    if let Ok(n) = lhs.parse::<usize>() {
-                                        if let Ok(item) = rhs.parse::<Item>() {
-                                            return Transaction::new(action, item, n);
-                                        }
-                                    }
-                                } else if let Ok(item) = rst.parse::<Item>() {
-                                    return Transaction::new(action, item, 1);
-                                }
-                            }
-                            TradeAction::Quit => (),
-                        }
-                    }
-                } else {
-                    if let Ok(TradeAction::Quit) = s.parse::<TradeAction>() {
-                        break Transaction::new(TradeAction::Quit, Item::Food, 0);
-                    }
+                if let Ok(transaction) = buf.parse::<Transaction>() {
+                    break transaction;
                 }
             }
         }
     }
     pub fn visit(&mut self, player: &mut Player) -> bool {
         let transaction = self.menu(player.gold.clone());
-        match transaction.kind {
-            TradeAction::Quit => false,
-            TradeAction::Buy | TradeAction::Sell => {
+        match transaction {
+            Transaction::Quit => false,
+            _ => {
                 if self.can_perform(&transaction) {
                     if player.can_perform(&transaction) {
                         self.perform(&transaction);
