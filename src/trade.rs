@@ -87,7 +87,7 @@ impl Merchant {
             writeln!(s, "{}:", Style::new().bold().underline().paint("Inventory")).unwrap();
             writeln!(
                 s,
-                "                                   | {} |  {}  |  {}",
+                "                          | {} |  {}  |  {}",
                 Style::new().underline().paint("available"),
                 Style::new().underline().paint("price"),
                 Style::new().underline().paint("effect"),

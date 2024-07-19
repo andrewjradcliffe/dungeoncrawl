@@ -1,4 +1,5 @@
 use crate::utils::*;
+use ansi_term::Colour;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
@@ -8,9 +9,9 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Item {
-    /// Restores 25 HP
+    /// Restores 50 HP
     HealthPotion,
-    /// Restores 25 MP
+    /// Restores 50 MP
     ManaPotion,
     /// Restores 10 HP and 10 MP
     Food,
@@ -23,7 +24,7 @@ impl Item {
     }
     pub const fn healing(&self) -> i64 {
         match self {
-            HealthPotion => 25,
+            HealthPotion => 50,
             ManaPotion => 0,
             Food => 10,
         }
@@ -31,7 +32,7 @@ impl Item {
     pub const fn mana_restore(&self) -> i64 {
         match self {
             HealthPotion => 0,
-            ManaPotion => 25,
+            ManaPotion => 50,
             Food => 10,
         }
     }
@@ -53,6 +54,40 @@ impl Item {
         static HEALTH_POTION: Lazy<String> = Lazy::new(|| HealthPotion.description_imp());
         static MANA_POTION: Lazy<String> = Lazy::new(|| ManaPotion.description_imp());
         static FOOD: Lazy<String> = Lazy::new(|| Food.description_imp());
+
+        match self {
+            HealthPotion => &*HEALTH_POTION,
+            ManaPotion => &*MANA_POTION,
+            Food => &*FOOD,
+        }
+    }
+
+    pub(crate) fn combat_description_imp(&self) -> String {
+        match self {
+            HealthPotion => format!(
+                "restores {} {}",
+                Colour::Purple.paint(format!("{}", self.healing())),
+                *ANSI_HP
+            ),
+            ManaPotion => format!(
+                "restores {} {}",
+                Colour::Purple.paint(format!("{}", self.mana_restore())),
+                *ANSI_MP
+            ),
+            Food => format!(
+                "restores {} {} and {} {}",
+                Colour::Purple.paint(format!("{}", self.healing())),
+                *ANSI_HP,
+                Colour::Purple.paint(format!("{}", self.mana_restore())),
+                *ANSI_MP
+            ),
+        }
+    }
+
+    pub fn combat_description(&self) -> &str {
+        static HEALTH_POTION: Lazy<String> = Lazy::new(|| HealthPotion.combat_description_imp());
+        static MANA_POTION: Lazy<String> = Lazy::new(|| ManaPotion.combat_description_imp());
+        static FOOD: Lazy<String> = Lazy::new(|| Food.combat_description_imp());
 
         match self {
             HealthPotion => &*HEALTH_POTION,
@@ -113,9 +148,9 @@ impl FromStr for Item {
 impl fmt::Display for Item {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            HealthPotion => write!(f, "Health potion"),
-            ManaPotion => write!(f, "Mana potion"),
-            Food => write!(f, "Food"),
+            HealthPotion => write!(f, "{}", Colour::Cyan.paint("Health potion")),
+            ManaPotion => write!(f, "{}", Colour::Cyan.paint("Mana potion")),
+            Food => write!(f, "{}", Colour::Cyan.paint("Food")),
         }
     }
 }

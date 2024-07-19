@@ -1,5 +1,5 @@
 use crate::utils::*;
-use ansi_term::Style;
+use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
@@ -84,7 +84,18 @@ impl Spell {
         }
     }
     pub(crate) fn print_menu_item(&self) {
-        println!("    {:<30} | {}", format!("{}", self), self.description());
+        println!(
+            "    {:>width$} | {}",
+            format!("{}", self),
+            self.description(),
+            width = 40 - self.display_offset()
+        );
+    }
+    pub(crate) const fn display_offset(&self) -> usize {
+        match self {
+            Fire => 3,
+            _ => 0,
+        }
     }
 }
 
@@ -120,11 +131,11 @@ impl FromStr for Spell {
 impl fmt::Display for Spell {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Cure1 => write!(f, "Cure I"),
-            Cure2 => write!(f, "Cure II"),
-            Fire => write!(f, "Fire"),
-            Stone => write!(f, "Stone"),
-            Meditate => write!(f, "Meditate"),
+            Cure1 => write!(f, "{}", Colour::RGB(0xff, 0xb6, 0xc1).paint("Cure I")),
+            Cure2 => write!(f, "{}", Colour::RGB(0xff, 0xb6, 0xc1).paint("Cure II")),
+            Fire => write!(f, "{}", Colour::RGB(0xff, 0x45, 0x00).paint("Fire")),
+            Stone => write!(f, "{}", Colour::RGB(0xa9, 0xa9, 0xa9).paint("Stone")),
+            Meditate => write!(f, "{}", Colour::RGB(0x6a, 0x6a, 0xcd).paint("Meditate")),
         }
     }
 }
@@ -134,7 +145,7 @@ pub(crate) fn spell_menu() -> Option<Spell> {
     println!("---- Entering spell menu... ----");
     println!("{}", Style::new().underline().italic().paint("Offensive"));
     println!(
-        "                                   | {} |  {}",
+        "                      | {} |  {}",
         Style::new().underline().paint("damage"),
         Style::new().underline().paint("cost"),
     );
@@ -143,7 +154,7 @@ pub(crate) fn spell_menu() -> Option<Spell> {
 
     println!("{}", Style::new().underline().italic().paint("Defensive"));
     println!(
-        "                                   |   {} |  {} |  {}",
+        "                      |  {}  |  {} |  {}",
         Style::new().underline().paint("healing"),
         Style::new().underline().paint("cost"),
         Style::new().underline().paint("gain"),

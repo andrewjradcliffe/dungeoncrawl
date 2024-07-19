@@ -123,6 +123,7 @@ impl Player {
     pub fn consume(&mut self, item: Item) {
         self.restore_hp(item.healing());
         self.restore_mp(item.mana_restore());
+        println!("Your {item} {}!", item.combat_description());
     }
     pub fn visit_inventory(&mut self) -> bool {
         match self.inventory.menu(&self.inventory_message()) {
@@ -208,10 +209,17 @@ impl Player {
             writeln!(s, "Inventory is empty!").unwrap();
         } else {
             writeln!(s, "{}:", Style::new().bold().underline().paint("Bag")).unwrap();
+            writeln!(
+                s,
+                "                          | {} |  {}",
+                Style::new().underline().paint("available"),
+                Style::new().underline().paint("effect"),
+            )
+            .unwrap();
             for (item, count) in self.inventory.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     s,
-                    "    {:<30} x{:<4} | {}",
+                    "    {:<30} | {:^9} | {:<30}",
                     format!("{}", item),
                     count,
                     item.description()
