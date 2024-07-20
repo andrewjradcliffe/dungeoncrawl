@@ -70,10 +70,11 @@ impl Monster {
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
-    pub fn receive_melee_attack(&mut self, melee: Melee) {
-        let amount = melee.damage();
+    pub fn receive_melee_attack(&mut self, melee: MeleeAttack) {
+        let amount = melee.damage;
         println!(
-            "Your {melee} attack hits the {} for {} damage!",
+            "Your {} attack hits the {} for {} damage!",
+            melee.kind,
             self.kind,
             Colour::Purple.paint(format!("{}", amount))
         );

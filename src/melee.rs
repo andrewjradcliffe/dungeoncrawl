@@ -88,7 +88,7 @@ impl fmt::Display for Melee {
     }
 }
 
-pub(crate) fn melee_menu(strength: i64) -> Option<Melee> {
+pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
     println!(
@@ -122,7 +122,11 @@ pub(crate) fn melee_menu(strength: i64) -> Option<Melee> {
             break None;
         } else {
             if let Ok(melee) = s.parse::<Melee>() {
-                return Some(melee);
+                return Some(match melee {
+                    Basic => basic,
+                    Power => power,
+                    Super => sup,
+                });
             }
         }
     }
@@ -140,14 +144,20 @@ impl MeleeAttack {
             damage: strength * kind.damage() / 10,
         }
     }
+    pub const fn cost(&self) -> i64 {
+        self.kind.cost()
+    }
+    pub const fn gain(&self) -> i64 {
+        self.kind.gain()
+    }
     pub(crate) fn print_menu_item(&self) {
         println!(
             "    {:>width$} |  {:>6}   | {:>2} {} | {:>2} {}",
             format!("{}", self.kind),
             self.damage,
-            self.kind.cost(),
+            self.cost(),
             *ANSI_TP,
-            self.kind.gain(),
+            self.gain(),
             *ANSI_TP,
             width = 40 - self.kind.display_offset(),
         );

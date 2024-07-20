@@ -114,7 +114,7 @@ impl Player {
             None
         }
     }
-    pub fn cast_melee(&mut self, melee: Melee) -> Option<Melee> {
+    pub fn cast_melee(&mut self, melee: MeleeAttack) -> Option<MeleeAttack> {
         let cost = melee.cost();
         let gain = melee.gain();
         if self.current_tp >= cost {
