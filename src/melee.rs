@@ -6,7 +6,7 @@ use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Melee {
     Basic,
     Power,
@@ -37,27 +37,6 @@ impl Melee {
             Power | Super => 5,
         }
     }
-    pub(crate) fn description_imp(&self) -> String {
-        format!(
-            "{:>6} | {:>2} {} | {:>2} {}",
-            self.damage(),
-            self.cost(),
-            *ANSI_TP,
-            self.gain(),
-            *ANSI_TP,
-        )
-    }
-
-    pub fn description(&self) -> &str {
-        static BASIC: Lazy<String> = Lazy::new(|| Basic.description_imp());
-        static POWER: Lazy<String> = Lazy::new(|| Power.description_imp());
-        static SUPER: Lazy<String> = Lazy::new(|| Super.description_imp());
-        match self {
-            Basic => &*BASIC,
-            Power => &*POWER,
-            Super => &*SUPER,
-        }
-    }
     pub(crate) const fn display_offset(&self) -> usize {
         match self {
             Super => 1,
@@ -66,10 +45,14 @@ impl Melee {
     }
     pub(crate) fn print_menu_item(&self) {
         println!(
-            "    {:>width$} | {}",
+            "    {:>width$} | {:>6} | {:>2} {} | {:>2} {}",
             format!("{}", self),
-            self.description(),
-            width = 40 - self.display_offset()
+            self.damage(),
+            self.cost(),
+            *ANSI_TP,
+            self.gain(),
+            *ANSI_TP,
+            width = 40 - self.display_offset(),
         );
     }
 }

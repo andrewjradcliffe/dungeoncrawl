@@ -1,3 +1,4 @@
+use crate::utils::is_quit;
 use crate::utils::*;
 use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
@@ -15,8 +16,6 @@ pub enum Spell {
     Meditate,
 }
 pub use Spell::*;
-
-use crate::utils::is_quit;
 
 impl Spell {
     pub const fn cost(&self) -> i64 {
@@ -48,48 +47,30 @@ impl Spell {
             _ => 0,
         }
     }
-    pub(crate) fn offensive_imp(&self) -> String {
-        format!("{:>6} | {:>2} {}", self.damage(), self.cost(), *ANSI_MP,)
-    }
-    pub(crate) fn defensive_imp(&self) -> String {
-        format!(
-            "{:>6} {} | {:>2} {} | {:>2} {}",
-            self.healing(),
-            *ANSI_HP,
-            self.cost(),
-            *ANSI_MP,
-            self.mana_restore(),
-            *ANSI_MP,
-        )
-    }
-    pub(crate) fn description_imp(&self) -> String {
-        match self {
-            Stone | Fire => self.offensive_imp(),
-            Cure1 | Cure2 | Meditate => self.defensive_imp(),
-        }
-    }
-    pub fn description(&self) -> &str {
-        static STONE: Lazy<String> = Lazy::new(|| Stone.description_imp());
-        static FIRE: Lazy<String> = Lazy::new(|| Fire.description_imp());
-        static CURE1: Lazy<String> = Lazy::new(|| Cure1.description_imp());
-        static CURE2: Lazy<String> = Lazy::new(|| Cure2.description_imp());
-        static MEDITATE: Lazy<String> = Lazy::new(|| Meditate.description_imp());
-
-        match self {
-            Stone => &*STONE,
-            Fire => &*FIRE,
-            Cure1 => &*CURE1,
-            Cure2 => &*CURE2,
-            Meditate => &*MEDITATE,
-        }
-    }
     pub(crate) fn print_menu_item(&self) {
-        println!(
-            "    {:>width$} | {}",
-            format!("{}", self),
-            self.description(),
-            width = 40 - self.display_offset()
-        );
+        match self {
+            Stone | Fire => println!(
+                "    {:>width$} | {:>6}    | {:>2} {} | {:>2} {}",
+                format!("{}", self),
+                self.damage(),
+                self.cost(),
+                *ANSI_MP,
+                self.mana_restore(),
+                *ANSI_MP,
+                width = 40 - self.display_offset()
+            ),
+            _ => println!(
+                "    {:>width$} | {:>6} {} | {:>2} {} | {:>2} {}",
+                format!("{}", self),
+                self.healing(),
+                *ANSI_HP,
+                self.cost(),
+                *ANSI_MP,
+                self.mana_restore(),
+                *ANSI_MP,
+                width = 40 - self.display_offset()
+            ),
+        };
     }
     pub(crate) const fn display_offset(&self) -> usize {
         match self {
@@ -145,9 +126,10 @@ pub(crate) fn spell_menu() -> Option<Spell> {
     println!("---- Entering spell menu... ----");
     println!("{}", Style::new().underline().italic().paint("Offensive"));
     println!(
-        "                      | {} |  {}",
+        "                      |  {}   |  {} |  {}",
         Style::new().underline().paint("damage"),
         Style::new().underline().paint("cost"),
+        Style::new().underline().paint("gain"),
     );
     Stone.print_menu_item();
     Fire.print_menu_item();

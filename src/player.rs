@@ -58,7 +58,7 @@ impl Player {
         match monster.kind {
             MonsterKind::Fairy => {
                 println!(
-                    "The {}'s heals you for {} {}!",
+                    "The {} heals you for {} {}!",
                     MonsterKind::Fairy,
                     Colour::Purple.paint("20"),
                     *ANSI_HP
