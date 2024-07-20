@@ -12,6 +12,8 @@ pub struct Monster {
     pub(crate) strength: i64,
     pub(crate) current_hp: i64,
     pub(crate) max_hp: i64,
+    pub(crate) current_tp: i64,
+    pub(crate) max_tp: i64,
 }
 
 impl Monster {
@@ -21,6 +23,8 @@ impl Monster {
             strength: kind.strength(),
             current_hp: kind.max_hp(),
             max_hp: kind.max_hp(),
+            current_tp: 0,
+            max_tp: 100,
         }
     }
     pub fn write_hp(&self, buf: &mut String) {
@@ -34,8 +38,21 @@ impl Monster {
         )
         .unwrap();
     }
+    pub fn write_tp(&self, buf: &mut String) {
+        let tp = format!("{}", self.current_tp);
+        write!(
+            buf,
+            "{}[{}/{}]",
+            *ANSI_TP,
+            Style::new().italic().paint(tp),
+            self.max_tp
+        )
+        .unwrap();
+    }
     pub fn write_status(&self, buf: &mut String) {
         self.write_hp(buf);
+        write!(buf, " ").unwrap();
+        self.write_tp(buf);
     }
     pub fn status(&self) -> String {
         let mut buf = String::with_capacity(1 << 7);
@@ -70,6 +87,22 @@ impl Monster {
             Colour::Purple.paint(format!("{}", amount))
         );
         self.receive_damage(amount);
+    }
+    pub fn cast_melee(&mut self, melee: Melee) -> (Melee, i64) {
+        let cost = melee.cost();
+        let gain = melee.gain();
+        let damage = melee.damage();
+        self.current_tp = self.current_tp - cost + gain;
+        (melee, damage * self.kind.strength() / 10)
+    }
+    pub fn produce_melee_attack(&mut self) -> (Melee, i64) {
+        if self.current_tp >= Super.cost() {
+            self.cast_melee(Super)
+        } else if self.current_tp >= Power.cost() && self.current_hp <= 10 {
+            self.cast_melee(Power)
+        } else {
+            self.cast_melee(Basic)
+        }
     }
 }
 

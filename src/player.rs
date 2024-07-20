@@ -54,7 +54,7 @@ impl Player {
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
-    pub fn receive_melee_attack(&mut self, monster: &Monster) {
+    pub fn receive_melee_attack(&mut self, monster: &mut Monster) {
         match monster.kind {
             MonsterKind::Fairy => {
                 println!(
@@ -66,9 +66,9 @@ impl Player {
                 self.receive_damage(monster.strength);
             }
             kind => {
-                let amount = monster.strength;
+                let (melee, amount) = monster.produce_melee_attack();
                 println!(
-                    "The {kind}'s melee attack hits you for {} damage!",
+                    "The {kind}'s {melee} attack hits you for {} damage!",
                     Colour::Purple.paint(format!("{}", amount)),
                 );
                 self.receive_damage(amount);

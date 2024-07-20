@@ -70,7 +70,7 @@ impl<'a> Encounter<'a> {
     pub(crate) fn dialogue(&mut self) -> EncounterOutcome {
         macro_rules! damage_and_check {
             () => {
-                self.player.receive_melee_attack(&self.monster);
+                self.player.receive_melee_attack(&mut self.monster);
                 if self.is_player_dead() {
                     return MonsterVictory;
                 }
