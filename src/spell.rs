@@ -50,7 +50,7 @@ impl Spell {
     pub(crate) fn print_menu_item(&self) {
         match self {
             Stone | Fire => println!(
-                "    {:>width$} | {:>6}    | {:>2} {} | {:>2} {}",
+                "    {:>width$} |  {:>6}   | {:>2} {} | {:>2} {}",
                 format!("{}", self),
                 self.damage(),
                 self.cost(),
@@ -60,7 +60,7 @@ impl Spell {
                 width = 40 - self.display_offset()
             ),
             _ => println!(
-                "    {:>width$} | {:>6} {} | {:>2} {} | {:>2} {}",
+                "    {:>width$} |{:>6} {}  | {:>2} {} | {:>2} {}",
                 format!("{}", self),
                 self.healing(),
                 *ANSI_HP,

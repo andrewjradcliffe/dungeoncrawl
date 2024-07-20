@@ -45,7 +45,7 @@ impl Melee {
     }
     pub(crate) fn print_menu_item(&self) {
         println!(
-            "    {:>width$} | {:>6} | {:>2} {} | {:>2} {}",
+            "    {:>width$} |  {:>6}   | {:>2} {} | {:>2} {}",
             format!("{}", self),
             self.damage(),
             self.cost(),
@@ -92,7 +92,7 @@ pub(crate) fn melee_menu() -> Option<Melee> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
     println!(
-        "                      | {} |  {} |  {}",
+        "                      |  {}   |  {} |  {}",
         Style::new().underline().paint("damage"),
         Style::new().underline().paint("cost"),
         Style::new().underline().paint("gain"),
