@@ -195,6 +195,7 @@ impl Player {
         self.current_hp = self.max_hp;
         self.current_mp = self.max_mp;
         self.current_tp = 0;
+        println!("You feel well-rested!");
     }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
