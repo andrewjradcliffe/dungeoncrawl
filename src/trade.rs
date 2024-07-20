@@ -81,14 +81,14 @@ impl FromStr for Transaction {
                 match action {
                     TradeAction::Buy | TradeAction::Sell => {
                         let rst = rst.trim();
-                        if let Some((lhs, rhs)) = rst.split_once(' ') {
+                        if let Ok(item) = rst.parse::<Item>() {
+                            return Ok(Transaction::new(action, item, 1));
+                        } else if let Some((lhs, rhs)) = rst.split_once(' ') {
                             if let Ok(n) = lhs.parse::<usize>() {
                                 if let Ok(item) = rhs.parse::<Item>() {
                                     return Ok(Transaction::new(action, item, n));
                                 }
                             }
-                        } else if let Ok(item) = rst.parse::<Item>() {
-                            return Ok(Transaction::new(action, item, 1));
                         }
                     }
                     TradeAction::Quit => (),
@@ -189,5 +189,60 @@ impl Merchant {
     }
     pub fn trade(&mut self, player: &mut Player) {
         while self.visit(player) {}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod trade_action {
+        use super::*;
+
+        #[test]
+        fn from_str() {
+            macro_rules! test_eq {
+                ($lhs:expr ; $($s:literal),+) => {
+                    $(
+                        assert_eq!($lhs, $s.parse::<TradeAction>().unwrap());
+                    )+
+                }
+            }
+            test_eq!(TradeAction::Buy ; "buy", "b", "BUY", "B", "bUY");
+            test_eq!(TradeAction::Sell ; "sell", "s", "SELL", "S", "sElL");
+            test_eq!(TradeAction::Quit ; "quit", "q", "QUIT", "Q", "Quit");
+
+            macro_rules! test_err {
+                ($($s:literal),+) => {
+                    $(
+                        assert!($s.parse::<TradeAction>().is_err());
+                    )+
+                }
+            }
+            test_err!("a", "c", "bu", "sel", "qui", "1234");
+        }
+    }
+    mod transaction {
+        use super::*;
+
+        #[test]
+        fn from_str() {
+            macro_rules! test {
+                ($action:expr, $a:literal, $item:expr ; $($s:literal),+) => {
+                    $(
+                        assert_eq!(format!("{} {}", $a, $s).parse::<Transaction>().unwrap(), Transaction::new($action, $item, 1));
+                        assert_eq!(format!("{} 1 {}", $a, $s).parse::<Transaction>().unwrap(), Transaction::new($action, $item, 1));
+                        assert_eq!(format!("{} 5 {}", $a, $s).parse::<Transaction>().unwrap(), Transaction::new($action, $item, 5));
+                    )+
+
+                }
+            }
+            test!(TradeAction::Buy, "b", HealthPotion ; "hp", "HP", "health potion", "hEalth poTION");
+            test!(TradeAction::Buy, "b", ManaPotion ; "mp", "MP", "mana potion", "MaNA poTION");
+            test!(TradeAction::Buy, "b", Food ; "f", "F", "food", "FOOd");
+            test!(TradeAction::Sell, "s", HealthPotion ; "hp", "HP", "health potion", "hEalth poTION");
+            test!(TradeAction::Sell, "s", ManaPotion ; "mp", "MP", "mana potion", "MaNA poTION");
+            test!(TradeAction::Sell, "s", Food ; "f", "F", "food", "FOOd");
+        }
     }
 }

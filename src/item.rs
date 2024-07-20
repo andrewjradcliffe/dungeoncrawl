@@ -129,8 +129,10 @@ impl FromStr for Item {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_HP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:hp|health potion)$").unwrap());
-        static RE_MP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:mp|mana potion)$").unwrap());
+        static RE_HP: Lazy<Regex> =
+            Lazy::new(|| Regex::new(r"(?i)^(?:hp|health\s+potion)$").unwrap());
+        static RE_MP: Lazy<Regex> =
+            Lazy::new(|| Regex::new(r"(?i)^(?:mp|mana\s+potion)$").unwrap());
         static RE_FOOD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:food|f)$").unwrap());
 
         if RE_HP.is_match(s) {
@@ -163,5 +165,33 @@ impl DuplicatedItem {
     #[inline]
     pub fn new(kind: Item, n: usize) -> Self {
         Self { kind, n }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_str() {
+        macro_rules! test_eq {
+            ($lhs:expr ; $($s:literal),+) => {
+                $(
+                    assert_eq!($lhs, $s.parse::<Item>().unwrap());
+                )+
+            }
+        }
+        test_eq!(HealthPotion ; "hp", "HP", "health potion", "Health potion", "health    potion");
+        test_eq!(ManaPotion ; "mp", "MP", "mana potion", "Mana potion", "mana    potion");
+        test_eq!(Food ; "f", "F", "foOd", "food");
+
+        macro_rules! test_err {
+            ($($s:literal),+) => {
+                $(
+                    assert!($s.parse::<Item>().is_err());
+                )+
+            }
+        }
+        test_err!("a", "c", "bu", "sel", "qui", "1234");
     }
 }
