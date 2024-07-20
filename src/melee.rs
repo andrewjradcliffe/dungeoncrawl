@@ -88,7 +88,7 @@ impl fmt::Display for Melee {
     }
 }
 
-pub(crate) fn melee_menu() -> Option<Melee> {
+pub(crate) fn melee_menu(strength: i64) -> Option<Melee> {
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
     println!(
@@ -97,9 +97,12 @@ pub(crate) fn melee_menu() -> Option<Melee> {
         Style::new().underline().paint("cost"),
         Style::new().underline().paint("gain"),
     );
-    Basic.print_menu_item();
-    Power.print_menu_item();
-    Super.print_menu_item();
+    let basic = MeleeAttack::new(Basic, strength);
+    let power = MeleeAttack::new(Power, strength);
+    let sup = MeleeAttack::new(Super, strength);
+    basic.print_menu_item();
+    power.print_menu_item();
+    sup.print_menu_item();
     loop {
         buf.clear();
 
@@ -122,5 +125,31 @@ pub(crate) fn melee_menu() -> Option<Melee> {
                 return Some(melee);
             }
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MeleeAttack {
+    pub(crate) kind: Melee,
+    pub(crate) damage: i64,
+}
+impl MeleeAttack {
+    pub fn new(kind: Melee, strength: i64) -> Self {
+        Self {
+            kind,
+            damage: strength * kind.damage() / 10,
+        }
+    }
+    pub(crate) fn print_menu_item(&self) {
+        println!(
+            "    {:>width$} |  {:>6}   | {:>2} {} | {:>2} {}",
+            format!("{}", self.kind),
+            self.damage,
+            self.kind.cost(),
+            *ANSI_TP,
+            self.kind.gain(),
+            *ANSI_TP,
+            width = 40 - self.kind.display_offset(),
+        );
     }
 }

@@ -79,7 +79,7 @@ impl<'a> Encounter<'a> {
         loop {
             match self.menu() {
                 Attack => {
-                    if let Some(melee) = melee_menu() {
+                    if let Some(melee) = melee_menu(self.player.strength) {
                         match self.player.cast_melee(melee) {
                             Some(melee) => self.monster.receive_melee_attack(melee),
                             None => {

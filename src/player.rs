@@ -13,6 +13,7 @@ pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
 pub(crate) const PLAYER_GOLD: usize = 25;
+pub(crate) const PLAYER_STRENGTH: i64 = 10;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -24,6 +25,7 @@ pub struct Player {
     pub(crate) max_tp: i64,
     pub(crate) inventory: Inventory,
     pub(crate) gold: usize,
+    pub(crate) strength: i64,
 }
 
 impl Player {
@@ -37,6 +39,7 @@ impl Player {
             max_tp: PLAYER_TP,
             inventory: Inventory::new_player(),
             gold: PLAYER_GOLD,
+            strength: PLAYER_STRENGTH,
         }
     }
     pub fn restore_hp(&mut self, amount: i64) {
@@ -66,7 +69,9 @@ impl Player {
                 self.receive_damage(monster.strength);
             }
             kind => {
-                let (melee, amount) = monster.produce_melee_attack();
+                let attack = monster.produce_melee_attack();
+                let amount = attack.damage;
+                let melee = attack.kind;
                 println!(
                     "The {kind}'s {melee} attack hits you for {} damage!",
                     Colour::Purple.paint(format!("{}", amount)),

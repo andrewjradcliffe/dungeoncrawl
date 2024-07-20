@@ -88,14 +88,13 @@ impl Monster {
         );
         self.receive_damage(amount);
     }
-    pub fn cast_melee(&mut self, melee: Melee) -> (Melee, i64) {
+    pub(crate) fn cast_melee(&mut self, melee: Melee) -> MeleeAttack {
         let cost = melee.cost();
         let gain = melee.gain();
-        let damage = melee.damage();
         self.current_tp = self.current_tp - cost + gain;
-        (melee, damage * self.kind.strength() / 10)
+        MeleeAttack::new(melee, self.kind.strength())
     }
-    pub fn produce_melee_attack(&mut self) -> (Melee, i64) {
+    pub fn produce_melee_attack(&mut self) -> MeleeAttack {
         if self.current_tp >= Super.cost() {
             self.cast_melee(Super)
         } else if self.current_tp >= Power.cost() && self.current_hp <= 10 {
