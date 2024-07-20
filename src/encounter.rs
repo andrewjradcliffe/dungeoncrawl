@@ -112,8 +112,9 @@ impl<'a> Encounter<'a> {
                     }
                 }
                 ShowInventory => {
-                    self.player.visit_inventory();
-                    damage_and_check!();
+                    if self.player.visit_inventory() {
+                        damage_and_check!();
+                    }
                 }
                 Run => {
                     damage_and_check!();
