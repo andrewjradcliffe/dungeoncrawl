@@ -14,18 +14,26 @@ pub struct Monster {
     pub(crate) max_hp: i64,
     pub(crate) current_tp: i64,
     pub(crate) max_tp: i64,
+    pub(crate) level: usize,
 }
 
 impl Monster {
-    pub fn new(kind: MonsterKind) -> Self {
+    pub fn new(kind: MonsterKind, level: usize) -> Self {
         Self {
             kind,
-            strength: kind.strength(),
-            current_hp: kind.max_hp(),
-            max_hp: kind.max_hp(),
+            strength: kind.strength() * level as i64,
+            current_hp: kind.max_hp() * level as i64,
+            max_hp: kind.max_hp() * level as i64,
             current_tp: 0,
             max_tp: 100,
+            level,
         }
+    }
+    pub fn strength(&self) -> i64 {
+        self.strength
+    }
+    pub fn experience_points(&self) -> usize {
+        self.max_hp as usize / 2
     }
     pub fn write_hp(&self, buf: &mut String) {
         let hp = format!("{}", self.current_hp);
@@ -60,8 +68,12 @@ impl Monster {
         buf
     }
 
-    pub fn rand() -> Self {
-        Monster::new(MonsterKind::rand())
+    pub fn rand(level: usize) -> Self {
+        let mut rng = rand::thread_rng();
+        Monster::new(
+            MonsterKind::rand(),
+            rng.gen_range(1usize..=level.min(10usize)),
+        )
     }
 
     pub fn is_alive(&self) -> bool {
@@ -94,7 +106,7 @@ impl Monster {
         let cost = melee.cost();
         let gain = melee.gain();
         self.current_tp = self.current_tp - cost + gain;
-        MeleeAttack::new(melee, self.kind.strength())
+        MeleeAttack::new(melee, self.strength())
     }
     pub fn produce_melee_attack(&mut self) -> MeleeAttack {
         if self.current_tp >= Super.cost() {

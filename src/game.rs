@@ -74,7 +74,7 @@ pub fn game() {
                         let mut enc = Encounter::new(&mut game.player);
                         match enc.run() {
                             PlayerVictory => {
-                                let xp = enc.monster.kind.experience_points();
+                                let xp = enc.monster.experience_points();
                                 println!("You earned {xp} experience points!");
                                 game.player.xp += xp;
                                 game.player.update_level();
@@ -116,7 +116,7 @@ pub fn gauntlet(game: &mut Game, n: usize) {
             PlayerVictory => {
                 i += 1;
                 scoreboard.record(kind);
-                let xp = enc.monster.kind.experience_points();
+                let xp = enc.monster.experience_points();
                 println!("You earned {xp} experience points!");
                 game.player.xp += xp;
                 game.player.update_level();

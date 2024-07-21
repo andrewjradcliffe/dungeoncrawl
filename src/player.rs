@@ -82,6 +82,9 @@ impl Player {
             self.intellect = PLAYER_INTELLECT * self.level as i64;
         }
     }
+    pub(crate) fn level(&self) -> usize {
+        self.level
+    }
     pub fn restore_hp(&mut self, amount: i64) {
         self.current_hp = (self.current_hp + amount).clamp(0, self.max_hp);
     }
@@ -114,7 +117,7 @@ impl Player {
                 println!(
                     "The {} heals you for {} {}!",
                     MonsterKind::Fairy,
-                    Colour::Purple.paint("20"),
+                    Colour::Purple.paint(format!("{}", monster.strength)),
                     *ANSI_HP
                 );
                 self.receive_damage(monster.strength);

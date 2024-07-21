@@ -32,9 +32,10 @@ impl<'a> Encounter<'a> {
         }
     }
     pub fn new(player: &'a mut Player) -> Self {
+        let level = player.level();
         Self {
             player,
-            monster: Monster::rand(),
+            monster: Monster::rand(level),
             buf: String::with_capacity(1 << 7),
             status: String::with_capacity(1 << 7),
         }
@@ -48,7 +49,10 @@ impl<'a> Encounter<'a> {
 
     pub fn run(&mut self) -> EncounterOutcome {
         let kind = self.monster.kind.clone();
-        println!("---- A wild {kind} appeared! ----");
+        println!(
+            "---- A wild {kind} (level {}) appeared! ----",
+            self.monster.level
+        );
         let res = self.dialogue();
         match res {
             PlayerVictory => {
