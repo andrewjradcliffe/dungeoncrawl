@@ -125,7 +125,7 @@ impl Player {
         }
     }
 
-    pub fn consume(&mut self, item: Item) {
+    pub fn consume(&mut self, item: Consumable) {
         self.restore_hp(item.healing());
         self.restore_mp(item.mana_restore());
         println!("Your {item} {}!", item.combat_description());

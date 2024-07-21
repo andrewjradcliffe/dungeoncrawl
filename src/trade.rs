@@ -41,8 +41,8 @@ impl FromStr for TradeAction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Transaction {
-    Buy { item: Item, count: usize },
-    Sell { item: Item, count: usize },
+    Buy { item: Consumable, count: usize },
+    Sell { item: Consumable, count: usize },
     Quit,
 }
 
@@ -55,7 +55,7 @@ pub enum Transaction {
 // }
 
 impl Transaction {
-    pub fn new(kind: TradeAction, item: Item, count: usize) -> Self {
+    pub fn new(kind: TradeAction, item: Consumable, count: usize) -> Self {
         match kind {
             TradeAction::Quit => Transaction::Quit,
             TradeAction::Buy => Transaction::Buy { item, count },
@@ -81,11 +81,11 @@ impl FromStr for Transaction {
                 match action {
                     TradeAction::Buy | TradeAction::Sell => {
                         let rst = rst.trim();
-                        if let Ok(item) = rst.parse::<Item>() {
+                        if let Ok(item) = rst.parse::<Consumable>() {
                             return Ok(Transaction::new(action, item, 1));
                         } else if let Some((lhs, rhs)) = rst.split_once(' ') {
                             if let Ok(n) = lhs.parse::<usize>() {
-                                if let Ok(item) = rhs.parse::<Item>() {
+                                if let Ok(item) = rhs.parse::<Consumable>() {
                                     return Ok(Transaction::new(action, item, n));
                                 }
                             }

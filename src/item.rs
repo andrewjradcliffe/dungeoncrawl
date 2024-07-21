@@ -8,7 +8,7 @@ use std::hash::Hash;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Item {
+pub enum Consumable {
     /// Restores 50 HP
     HealthPotion,
     /// Restores 50 MP
@@ -16,9 +16,9 @@ pub enum Item {
     /// Restores 10 HP and 10 MP
     Food,
 }
-pub use Item::*;
+pub use Consumable::*;
 
-impl Item {
+impl Consumable {
     pub(crate) const fn total_variants() -> usize {
         3
     }
@@ -124,7 +124,7 @@ impl Item {
     }
 }
 
-impl FromStr for Item {
+impl FromStr for Consumable {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
@@ -147,7 +147,7 @@ impl FromStr for Item {
     }
 }
 
-impl fmt::Display for Item {
+impl fmt::Display for Consumable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             HealthPotion => write!(f, "{}", Colour::Cyan.paint("Health potion")),
@@ -158,12 +158,12 @@ impl fmt::Display for Item {
 }
 
 pub struct DuplicatedItem {
-    pub(crate) kind: Item,
+    pub(crate) kind: Consumable,
     pub(crate) n: usize,
 }
 impl DuplicatedItem {
     #[inline]
-    pub fn new(kind: Item, n: usize) -> Self {
+    pub fn new(kind: Consumable, n: usize) -> Self {
         Self { kind, n }
     }
 }

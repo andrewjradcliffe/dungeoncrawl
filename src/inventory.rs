@@ -38,8 +38,8 @@ impl FromStr for InventoryAction {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum InventoryTransaction {
-    Use(Item),
-    Drop(Item),
+    Use(Consumable),
+    Drop(Consumable),
     Quit,
 }
 impl FromStr for InventoryTransaction {
@@ -48,7 +48,7 @@ impl FromStr for InventoryTransaction {
         let s = s.trim();
         if let Some((lhs, rhs)) = s.split_once(' ') {
             if let Ok(action) = lhs.parse::<InventoryAction>() {
-                if let Ok(item) = rhs.parse::<Item>() {
+                if let Ok(item) = rhs.parse::<Consumable>() {
                     match action {
                         InventoryAction::Drop => {
                             return Ok(InventoryTransaction::Drop(item));
@@ -69,14 +69,14 @@ impl FromStr for InventoryTransaction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Inventory {
-    pub(crate) bag: IndexMap<Item, usize>,
+    pub(crate) bag: IndexMap<Consumable, usize>,
     pub(crate) sum: usize,
 }
 
 impl Inventory {
     pub fn new() -> Self {
         Self {
-            bag: IndexMap::with_capacity(Item::total_variants()),
+            bag: IndexMap::with_capacity(Consumable::total_variants()),
             sum: 0,
         }
     }
@@ -112,7 +112,7 @@ impl Inventory {
             }
         }
     }
-    pub fn pop_item(&mut self, item: Item) -> Option<Item> {
+    pub fn pop_item(&mut self, item: Consumable) -> Option<Consumable> {
         match self.bag.entry(item) {
             Entry::Occupied(mut v) => {
                 if *v.get() > 0 {
@@ -126,7 +126,7 @@ impl Inventory {
             Entry::Vacant(_) => None,
         }
     }
-    pub fn pop_multiple(&mut self, item: Item, n: usize) -> Option<DuplicatedItem> {
+    pub fn pop_multiple(&mut self, item: Consumable, n: usize) -> Option<DuplicatedItem> {
         match self.bag.entry(item) {
             Entry::Occupied(mut v) => match *v.get() {
                 0 => None,
@@ -144,13 +144,13 @@ impl Inventory {
             Entry::Vacant(_) => None,
         }
     }
-    pub fn drop_multiple(&mut self, item: Item, n: usize) {
+    pub fn drop_multiple(&mut self, item: Consumable, n: usize) {
         self.pop_multiple(item, n);
     }
-    pub fn drop_item(&mut self, item: Item) {
+    pub fn drop_item(&mut self, item: Consumable) {
         self.pop_item(item);
     }
-    pub fn push_multiple(&mut self, item: Item, count: usize) {
+    pub fn push_multiple(&mut self, item: Consumable, count: usize) {
         self.sum += count;
         match self.bag.entry(item) {
             Entry::Occupied(mut v) => {
@@ -161,7 +161,7 @@ impl Inventory {
             }
         }
     }
-    pub fn push(&mut self, item: Item) {
+    pub fn push(&mut self, item: Consumable) {
         self.push_multiple(item, 1)
     }
     pub fn push_loot(&mut self, loot: Loot) {
@@ -170,7 +170,7 @@ impl Inventory {
     pub fn push_duplicated(&mut self, dup: DuplicatedItem) {
         self.push_multiple(dup.kind, dup.n)
     }
-    pub fn n_available(&self, item: &Item) -> usize {
+    pub fn n_available(&self, item: &Consumable) -> usize {
         self.bag.get(item).map(Clone::clone).unwrap_or(0)
     }
     pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
@@ -200,10 +200,10 @@ impl Inventory {
         Ok(())
     }
 }
-impl FromIterator<(Item, usize)> for Inventory {
+impl FromIterator<(Consumable, usize)> for Inventory {
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = (Item, usize)>,
+        T: IntoIterator<Item = (Consumable, usize)>,
     {
         let mut inv = Self::new();
         for (item, count) in iter {
