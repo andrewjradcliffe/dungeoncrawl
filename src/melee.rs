@@ -43,18 +43,6 @@ impl Melee {
             _ => 0,
         }
     }
-    pub(crate) fn print_menu_item(&self) {
-        println!(
-            "    {:>width$} |  {:>6}   | {:>2} {} | {:>2} {}",
-            format!("{}", self),
-            self.damage(),
-            self.cost(),
-            *ANSI_TP,
-            self.gain(),
-            *ANSI_TP,
-            width = 40 - self.display_offset(),
-        );
-    }
 }
 
 impl FromStr for Melee {
