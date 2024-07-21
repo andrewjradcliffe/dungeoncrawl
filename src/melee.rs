@@ -129,7 +129,7 @@ impl MeleeAttack {
     pub fn new(kind: Melee, strength: i64) -> Self {
         Self {
             kind,
-            damage: strength * kind.damage() / 10,
+            damage: strength * kind.damage(),
         }
     }
     pub const fn cost(&self) -> i64 {

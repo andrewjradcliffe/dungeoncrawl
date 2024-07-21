@@ -80,10 +80,11 @@ impl Monster {
         );
         self.receive_damage(amount);
     }
-    pub fn receive_spell_attack(&mut self, spell: Spell) {
-        let amount = spell.damage();
+    pub fn receive_spell_attack(&mut self, spell: OffenseSpell) {
+        let amount = spell.damage;
+        let kind = spell.kind;
         println!(
-            "Your {spell} hits the {} for {} damage!",
+            "Your {kind} hits the {} for {} damage!",
             self.kind,
             Colour::Purple.paint(format!("{}", amount))
         );
@@ -135,13 +136,13 @@ impl MonsterKind {
 
     pub const fn strength(&self) -> i64 {
         match self {
-            Frog => 5,
-            Bat => 7,
-            Wolf => 8,
-            Goblin => 10,
-            Bear => 12,
-            Orc => 15,
-            Dragon => 20,
+            Frog => 1,
+            Bat => 1,
+            Wolf => 2,
+            Goblin => 3,
+            Bear => 4,
+            Orc => 6,
+            Dragon => 10,
             Fairy => -20,
         }
     }
