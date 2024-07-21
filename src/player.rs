@@ -14,8 +14,8 @@ pub(crate) const PLAYER_HP: i64 = 100;
 pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
 pub(crate) const PLAYER_GOLD: usize = 25;
-pub(crate) const PLAYER_STRENGTH: i64 = 10;
-pub(crate) const PLAYER_INTELLECT: i64 = 10;
+pub(crate) const PLAYER_STRENGTH: i64 = 1;
+pub(crate) const PLAYER_INTELLECT: i64 = 1;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -93,12 +93,13 @@ impl Player {
         }
     }
 
-    pub fn receive_defensive_spell(&mut self, spell: Spell) {
-        match spell {
+    pub fn receive_defensive_spell(&mut self, spell: DefenseSpell) {
+        let kind = spell.kind;
+        match kind {
             Cure1 | Cure2 => {
-                let amount = spell.healing();
+                let amount = spell.healing;
                 println!(
-                    "Your {spell} heals you for {} {}!",
+                    "Your {kind} heals you for {} {}!",
                     Colour::Purple.paint(format!("{}", amount)),
                     *ANSI_HP
                 );
@@ -107,17 +108,16 @@ impl Player {
             Meditate => {
                 let amount = spell.mana_restore();
                 println!(
-                    "Your {spell} restores {} of your {}!",
+                    "Your {kind} restores {} of your {}!",
                     Colour::Purple.paint(format!("{}", amount)),
                     *ANSI_MP
                 );
-                self.restore_hp(amount);
+                self.restore_mp(amount);
             }
-            _ => (),
         }
     }
 
-    pub fn cast_spell(&mut self, spell: Spell) -> Option<Spell> {
+    pub fn cast_spell(&mut self, spell: SpellCast) -> Option<SpellCast> {
         let cost = spell.cost();
         if self.current_mp >= cost {
             self.current_mp = (self.current_mp - cost).clamp(0, self.max_mp);

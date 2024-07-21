@@ -94,12 +94,10 @@ impl<'a> Encounter<'a> {
                     }
                 }
                 Cast => {
-                    if let Some(spell) = spell_menu() {
+                    if let Some(spell) = spell_menu(self.player.intellect()) {
                         match self.player.cast_spell(spell) {
-                            Some(Fire | Stone) => self.monster.receive_spell_attack(spell),
-                            Some(Cure1 | Cure2 | Meditate) => {
-                                self.player.receive_defensive_spell(spell)
-                            }
+                            Some(SpellCast::Offense(x)) => self.monster.receive_spell_attack(x),
+                            Some(SpellCast::Defense(x)) => self.player.receive_defensive_spell(x),
                             None => {
                                 println!("Insufficient MP!");
                                 continue;
