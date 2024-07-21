@@ -48,40 +48,52 @@ pub fn game() {
 
     let mut merchant = Merchant::new();
 
-    while game.player.is_alive() {
-        match game.state {
-            State::Town => match town_menu() {
-                TownAction::Adventure => {
-                    game.state = State::Adventure;
-                }
-                TownAction::Gauntlet => {
-                    game.state = State::Gauntlet;
-                }
-                TownAction::Sleep => {
-                    game.player.sleep();
-                }
-                TownAction::Trade => merchant.trade(&mut game.player),
-                TownAction::Inventory => game.player.noncombat_inventory(),
-            },
-            State::Gauntlet => {
-                let n_monster: usize = rng.gen_range(1..5);
-                game.state = State::Town;
-                gauntlet(&mut game, n_monster);
-            }
-            State::Adventure => match adventure_menu() {
-                AdventureAction::Encounter => {
-                    let mut enc = Encounter::new(&mut game.player);
-                    match enc.run() {
-                        PlayerVictory => (),
-                        MonsterVictory => break,
-                        _ => (),
+    loop {
+        if game.player.is_alive() {
+            match game.state {
+                State::Town => match town_menu() {
+                    TownAction::Adventure => {
+                        game.state = State::Adventure;
                     }
-                }
-                AdventureAction::Town => {
+                    TownAction::Gauntlet => {
+                        game.state = State::Gauntlet;
+                    }
+                    TownAction::Sleep => {
+                        game.player.sleep();
+                    }
+                    TownAction::Trade => merchant.trade(&mut game.player),
+                    TownAction::Inventory => game.player.noncombat_inventory(),
+                },
+                State::Gauntlet => {
+                    let n_monster: usize = rng.gen_range(1..5);
                     game.state = State::Town;
+                    gauntlet(&mut game, n_monster);
                 }
-                AdventureAction::Inventory => game.player.noncombat_inventory(),
-            },
+                State::Adventure => match adventure_menu() {
+                    AdventureAction::Encounter => {
+                        let mut enc = Encounter::new(&mut game.player);
+                        match enc.run() {
+                            PlayerVictory => {
+                                let xp = enc.monster.kind.experience_points();
+                                println!("You earned {xp} experience points!");
+                                game.player.xp += xp;
+                                game.player.update_level();
+                            }
+                            MonsterVictory => break,
+                            _ => (),
+                        }
+                    }
+                    AdventureAction::Town => {
+                        game.state = State::Town;
+                    }
+                    AdventureAction::Inventory => game.player.noncombat_inventory(),
+                },
+            }
+        } else {
+            game.state = State::Town;
+            println!("Another adventurer found your body and carried it to the town.");
+            println!("You are now being revived...");
+            game.player.revive();
         }
     }
 }
@@ -104,6 +116,10 @@ pub fn gauntlet(game: &mut Game, n: usize) {
             PlayerVictory => {
                 i += 1;
                 scoreboard.record(kind);
+                let xp = enc.monster.kind.experience_points();
+                println!("You earned {xp} experience points!");
+                game.player.xp += xp;
+                game.player.update_level();
             }
             MonsterVictory => break,
             _ => (),

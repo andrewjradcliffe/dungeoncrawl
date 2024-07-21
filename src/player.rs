@@ -16,6 +16,8 @@ pub(crate) const PLAYER_TP: i64 = 100;
 pub(crate) const PLAYER_GOLD: usize = 25;
 pub(crate) const PLAYER_STRENGTH: i64 = 1;
 pub(crate) const PLAYER_INTELLECT: i64 = 1;
+pub(crate) const PLAYER_LEVEL: usize = 1;
+pub(crate) const PLAYER_XP: usize = 0;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -30,6 +32,23 @@ pub struct Player {
     pub(crate) strength: i64,
     pub(crate) intellect: i64,
     pub(crate) equipment: Equipment,
+    pub(crate) level: usize,
+    pub(crate) xp: usize,
+}
+pub(crate) const fn level(x: usize) -> usize {
+    match x {
+        0..=99 => 1,
+        100..=199 => 2,
+        200..=399 => 3,
+        400..=599 => 4,
+        600..=799 => 5,
+        800..=999 => 6,
+        1000..=1999 => 7,
+        2000..=3999 => 8,
+        4000..=7999 => 9,
+        _ => 10,
+        // 8000.. => 10,
+    }
 }
 
 impl Player {
@@ -46,6 +65,21 @@ impl Player {
             strength: PLAYER_STRENGTH,
             intellect: PLAYER_INTELLECT,
             equipment: Equipment::default(),
+            level: PLAYER_LEVEL,
+            xp: PLAYER_XP,
+        }
+    }
+    pub(crate) fn update_level(&mut self) {
+        let new_level = level(self.xp);
+        if self.level != new_level {
+            println!("You are now level {}!", new_level);
+            self.level = new_level;
+            let new_hp = PLAYER_HP * self.level as i64;
+            self.current_hp = new_hp;
+            self.max_hp = new_hp;
+            self.current_mp = self.max_mp;
+            self.strength = PLAYER_STRENGTH * self.level as i64;
+            self.intellect = PLAYER_INTELLECT * self.level as i64;
         }
     }
     pub fn restore_hp(&mut self, amount: i64) {
@@ -65,6 +99,11 @@ impl Player {
     }
     pub fn is_alive(&self) -> bool {
         self.current_hp > 0
+    }
+    pub fn revive(&mut self) {
+        self.current_hp = self.max_hp;
+        self.current_mp = self.max_mp;
+        self.current_tp = 0;
     }
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
@@ -209,9 +248,7 @@ impl Player {
         self.write_tp(buf);
     }
     pub fn sleep(&mut self) {
-        self.current_hp = self.max_hp;
-        self.current_mp = self.max_mp;
-        self.current_tp = 0;
+        self.revive();
         println!("You feel well-rested!");
     }
     pub fn inventory_message(&self) -> String {
