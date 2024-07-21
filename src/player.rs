@@ -1,6 +1,6 @@
+use crate::consumable::*;
 use crate::equipment::*;
 use crate::inventory::*;
-use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::*;
 use crate::monster::*;

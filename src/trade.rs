@@ -1,5 +1,5 @@
+use crate::consumable::*;
 use crate::inventory::*;
-use crate::item::*;
 use crate::player::Player;
 use crate::utils::*;
 use once_cell::sync::Lazy;

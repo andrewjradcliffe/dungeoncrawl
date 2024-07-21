@@ -1,4 +1,4 @@
-use crate::item::*;
+use crate::consumable::*;
 use crate::monster::MonsterKind;
 use rand::Rng;
 

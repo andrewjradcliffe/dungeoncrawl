@@ -1,4 +1,5 @@
 pub mod adventure;
+pub mod attribute;
 pub mod combat;
 pub mod encounter;
 pub mod game;
@@ -15,6 +16,8 @@ pub mod scoreboard;
 pub mod spell;
 pub mod town;
 pub mod trade;
-pub mod equipment;
 
 pub(crate) mod utils;
+
+pub use crate::item::consumable;
+pub use crate::item::equipment;

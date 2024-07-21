@@ -1,4 +1,4 @@
-use crate::item::*;
+use crate::consumable::*;
 use crate::loot::Loot;
 use crate::utils::*;
 use ansi_term::{Colour, Style};

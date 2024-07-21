@@ -138,6 +138,14 @@ impl Default for Equipment {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Gear {
+    Weapon(Weapon),
+    Head(Head),
+    Chest(Chest),
+    Hand(Hand),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
