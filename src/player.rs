@@ -1,3 +1,4 @@
+use crate::equipment::*;
 use crate::inventory::*;
 use crate::item::*;
 use crate::loot::Loot;
@@ -14,6 +15,7 @@ pub(crate) const PLAYER_MP: i64 = 100;
 pub(crate) const PLAYER_TP: i64 = 100;
 pub(crate) const PLAYER_GOLD: usize = 25;
 pub(crate) const PLAYER_STRENGTH: i64 = 10;
+pub(crate) const PLAYER_INTELLECT: i64 = 10;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
@@ -26,6 +28,8 @@ pub struct Player {
     pub(crate) inventory: Inventory,
     pub(crate) gold: usize,
     pub(crate) strength: i64,
+    pub(crate) intellect: i64,
+    pub(crate) equipment: Equipment,
 }
 
 impl Player {
@@ -40,6 +44,8 @@ impl Player {
             inventory: Inventory::new_player(),
             gold: PLAYER_GOLD,
             strength: PLAYER_STRENGTH,
+            intellect: PLAYER_INTELLECT,
+            equipment: Equipment::default(),
         }
     }
     pub fn restore_hp(&mut self, amount: i64) {
@@ -50,6 +56,12 @@ impl Player {
     }
     pub fn restore_tp(&mut self, amount: i64) {
         self.current_tp = (self.current_tp + amount).clamp(0, self.max_tp);
+    }
+    pub fn strength(&self) -> i64 {
+        self.strength + self.equipment.strength()
+    }
+    pub fn intellect(&self) -> i64 {
+        self.intellect + self.equipment.intellect()
     }
     pub fn is_alive(&self) -> bool {
         self.current_hp > 0
