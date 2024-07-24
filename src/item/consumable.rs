@@ -177,7 +177,7 @@ mod tests {
         macro_rules! test_eq {
             ($lhs:expr ; $($s:literal),+) => {
                 $(
-                    assert_eq!($lhs, $s.parse::<Item>().unwrap());
+                    assert_eq!($lhs, $s.parse::<Consumable>().unwrap());
                 )+
             }
         }
@@ -188,7 +188,7 @@ mod tests {
         macro_rules! test_err {
             ($($s:literal),+) => {
                 $(
-                    assert!($s.parse::<Item>().is_err());
+                    assert!($s.parse::<Consumable>().is_err());
                 )+
             }
         }

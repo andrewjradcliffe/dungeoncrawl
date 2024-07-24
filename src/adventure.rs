@@ -10,6 +10,8 @@ pub enum AdventureAction {
     Encounter,
     Town,
     Inventory,
+    Equipment,
+    Stats,
 }
 use AdventureAction::*;
 
@@ -19,6 +21,8 @@ impl AdventureAction {
             Encounter => "Engage a random monster in combat",
             Town => "Visit the town",
             Inventory => "Open inventory",
+            Equipment => "Open equipment",
+            Stats => "Display character statistics",
         }
     }
     pub(crate) fn print_menu_item(&self) {
@@ -36,6 +40,8 @@ impl fmt::Display for AdventureAction {
             Encounter => write!(f, "Encounter"),
             Town => write!(f, "Town"),
             Inventory => write!(f, "Inventory"),
+            Equipment => write!(f, "Equipment"),
+            Stats => write!(f, "Stats"),
         }
     }
 }
@@ -48,6 +54,8 @@ impl FromStr for AdventureAction {
         static RE_ENC: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:encounter|e)$").unwrap());
         static RE_TOWN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:town|t)$").unwrap());
         static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
+        static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
+        static RE_STATS: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
 
         if RE_ENC.is_match(s) {
             Ok(Encounter)
@@ -55,6 +63,10 @@ impl FromStr for AdventureAction {
             Ok(Town)
         } else if RE_INV.is_match(s) {
             Ok(Inventory)
+        } else if RE_EQUIP.is_match(s) {
+            Ok(Equipment)
+        } else if RE_STATS.is_match(s) {
+            Ok(Stats)
         } else {
             Err(s.to_string())
         }
@@ -67,6 +79,8 @@ pub fn adventure_menu() -> AdventureAction {
     Encounter.print_menu_item();
     Town.print_menu_item();
     Inventory.print_menu_item();
+    Equipment.print_menu_item();
+    Stats.print_menu_item();
     loop {
         buf.clear();
         print!("🍁 ");

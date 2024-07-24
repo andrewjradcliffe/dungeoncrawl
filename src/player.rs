@@ -1,6 +1,7 @@
 use crate::consumable::*;
 use crate::equipment::*;
 use crate::inventory::*;
+use crate::item::equipment_bag::*;
 use crate::loot::Loot;
 use crate::melee::*;
 use crate::monster::*;
@@ -32,22 +33,26 @@ pub struct Player {
     pub(crate) strength: i64,
     pub(crate) intellect: i64,
     pub(crate) equipment: Equipment,
+    pub(crate) equipment_bag: EquipmentBag,
     pub(crate) level: usize,
     pub(crate) xp: usize,
 }
-pub(crate) const fn level(x: usize) -> usize {
-    match x {
-        0..=99 => 1,
-        100..=199 => 2,
-        200..=399 => 3,
-        400..=599 => 4,
-        600..=799 => 5,
-        800..=999 => 6,
-        1000..=1999 => 7,
-        2000..=3999 => 8,
-        4000..=7999 => 9,
-        _ => 10,
-        // 8000.. => 10,
+const R: f64 = 18466.496523378733; // -12800.0 / (0.5_f64).ln();
+pub(crate) fn level(x: usize) -> usize {
+    (10.0 * (1.0 - ((x as f64) / R).exp())).ceil().max(1.0) as usize
+}
+pub(crate) fn max_xp_at_level(level: usize) -> usize {
+    let y = (level as f64) / 10.0;
+    (-((1.0 - y).ln()) * R).floor() as usize
+}
+
+pub(crate) fn xp_to_next_level(x: usize) -> usize {
+    let level = level(x);
+    if level == 10 {
+        0
+    } else {
+        let thresh = max_xp_at_level(level);
+        thresh - x + 1
     }
 }
 
@@ -65,6 +70,7 @@ impl Player {
             strength: PLAYER_STRENGTH,
             intellect: PLAYER_INTELLECT,
             equipment: Equipment::default(),
+            equipment_bag: EquipmentBag::new_player(),
             level: PLAYER_LEVEL,
             xp: PLAYER_XP,
         }
@@ -199,8 +205,34 @@ impl Player {
             InventoryTransaction::Quit => false,
         }
     }
+    pub fn equip(&mut self, item: Gear) -> Gear {
+        self.equipment.equip(item)
+    }
+    pub fn unequip(&mut self, item: Gear) -> Gear {
+        self.equipment.unequip(item)
+    }
+    pub fn visit_equipment(&mut self) -> bool {
+        match self.equipment_bag.menu(&self.equipment_message()) {
+            EquipmentTransaction::Equip(item) => {
+                if let Some(item) = self.equipment_bag.pop_item(item) {
+                    let item = self.equip(item);
+                    self.equipment_bag.push(item);
+                }
+                true
+            }
+            EquipmentTransaction::Unequip(item) => {
+                let item = self.unequip(item);
+                self.equipment_bag.push(item);
+                true
+            }
+            EquipmentTransaction::Quit => false,
+        }
+    }
     pub fn noncombat_inventory(&mut self) {
         while self.visit_inventory() {}
+    }
+    pub fn noncombat_equipment(&mut self) {
+        while self.visit_equipment() {}
     }
     pub fn acquire(&mut self, loot: Loot) {
         self.inventory.push_loot(loot)
@@ -266,6 +298,30 @@ impl Player {
         writeln!(s, "{}", self.inventory).unwrap();
         s
     }
+    pub fn equipment_message(&self) -> String {
+        let mut s = String::with_capacity(1 << 10);
+        writeln!(s, "{}", self.equipment,).unwrap();
+        writeln!(s, "{}", self.equipment_bag).unwrap();
+        s
+    }
+    pub fn attribute_message(&self) -> String {
+        let mut s = String::with_capacity(1 << 10);
+        writeln!(s, "Level: {}", self.level).unwrap();
+        writeln!(
+            s,
+            "Experience: {}    ({} until next level)",
+            self.xp,
+            xp_to_next_level(self.xp)
+        )
+        .unwrap();
+        writeln!(s, "💰: {}", self.gold).unwrap();
+        self.write_status(&mut s);
+        s.push('\n');
+        writeln!(s, "STR: {}", self.strength()).unwrap();
+        writeln!(s, "INT: {}", self.intellect()).unwrap();
+        s
+    }
+
     // pub fn assess_transaction(&self, transaction: &Transaction) -> Assessment {
     //     match transaction.kind {
     //         TradeAction::Buy => {
