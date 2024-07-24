@@ -127,7 +127,7 @@ impl Merchant {
                 self.inventory.drop_multiple(*item, *count);
             }
             Transaction::Sell { item, count } => {
-                self.inventory.drop_multiple(*item, *count);
+                self.inventory.push_multiple(*item, *count);
             }
             Transaction::Quit => (),
         }
