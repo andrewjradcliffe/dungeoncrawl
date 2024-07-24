@@ -18,11 +18,16 @@ use Element::*;
 impl Element {
     pub const fn symbol(&self) -> char {
         match self {
-            Player => '@',  // '🯆'
+            Player => '@',  // '🧝'
             Monster => 'm', // '👾',
             Tree => 't',    // '🌳',
             Rock => 'r',    // '🪨',
             Empty => '.',   // '🪜',
+                             // Player => '🧝',
+                             // Monster => '👾',
+                             // Tree => '🌳',
+                             // Rock => '🪨',
+                             // Empty => '🏾',
         }
     }
 }
@@ -75,6 +80,9 @@ impl Map {
     pub fn new() -> Self {
         let mut grid = Grid::new_default(5, 5);
         grid[(2, 2)] = Player;
+        grid[(2, 3)] = Tree;
+        grid[(3, 2)] = Rock;
+        grid[(1, 2)] = Tree;
         Self(grid)
     }
     pub fn menu() -> Direction {
@@ -124,8 +132,10 @@ impl Map {
                 (i_1, j_1)
             }
         };
-        self.0[(i_0, j_0)] = Empty;
-        self.0[(i_1, j_1)] = Player;
+        if self.0[(i_1, j_1)] == Empty {
+            self.0[(i_0, j_0)] = Empty;
+            self.0[(i_1, j_1)] = Player;
+        }
     }
 }
 
