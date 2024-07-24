@@ -27,7 +27,7 @@ impl Element {
             Monster => '👾',
             Tree => '🌳',
             Rock => '🪨',
-            Empty => '🏾',
+            Empty => '🏽',
         }
     }
 }
