@@ -1,8 +1,8 @@
 use crate::consumable::*;
 use crate::loot::Loot;
+use crate::multiset::MultiSet;
 use crate::utils::*;
 use ansi_term::{Colour, Style};
-use indexmap::{map::Entry, IndexMap};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
@@ -68,17 +68,11 @@ impl FromStr for InventoryTransaction {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Inventory {
-    pub(crate) bag: IndexMap<Consumable, usize>,
-    pub(crate) sum: usize,
-}
+pub struct Inventory(MultiSet<Consumable>);
 
 impl Inventory {
     pub fn new() -> Self {
-        Self {
-            bag: IndexMap::with_capacity(Consumable::total_variants()),
-            sum: 0,
-        }
+        Self(MultiSet::with_capacity(Consumable::total_variants()))
     }
     pub fn new_player() -> Self {
         [(HealthPotion, 1), (ManaPotion, 1), (Food, 2)]
@@ -86,7 +80,7 @@ impl Inventory {
             .collect()
     }
     pub fn is_empty(&self) -> bool {
-        self.sum == 0
+        self.0.is_empty()
     }
 
     pub fn menu(&self, msg: &str) -> InventoryTransaction {
@@ -112,66 +106,29 @@ impl Inventory {
             }
         }
     }
-    pub fn pop_item(&mut self, item: Consumable) -> Option<Consumable> {
-        match self.bag.entry(item) {
-            Entry::Occupied(mut v) => {
-                if *v.get() > 0 {
-                    self.sum -= 1;
-                    *v.get_mut() -= 1;
-                    Some(item)
-                } else {
-                    None
-                }
-            }
-            Entry::Vacant(_) => None,
-        }
+    pub fn pop_item(&mut self, kind: Consumable) -> Option<Consumable> {
+        self.0.pop_item(kind)
     }
-    pub fn pop_multiple(&mut self, item: Consumable, n: usize) -> Option<DuplicatedItem> {
-        match self.bag.entry(item) {
-            Entry::Occupied(mut v) => match *v.get() {
-                0 => None,
-                u if u >= n => {
-                    self.sum -= n;
-                    *v.get_mut() -= n;
-                    Some(DuplicatedItem::new(item, n))
-                }
-                u => {
-                    self.sum -= u;
-                    *v.get_mut() = 0;
-                    Some(DuplicatedItem::new(item, u))
-                }
-            },
-            Entry::Vacant(_) => None,
-        }
+    pub fn pop_multiple(&mut self, kind: Consumable, n: usize) -> Option<(Consumable, usize)> {
+        self.0.pop_multiple(kind, n)
     }
-    pub fn drop_multiple(&mut self, item: Consumable, n: usize) {
-        self.pop_multiple(item, n);
+    pub fn drop_multiple(&mut self, kind: Consumable, n: usize) {
+        self.0.drop_multiple(kind, n);
     }
-    pub fn drop_item(&mut self, item: Consumable) {
-        self.pop_item(item);
+    pub fn drop_item(&mut self, kind: Consumable) {
+        self.pop_item(kind);
     }
-    pub fn push_multiple(&mut self, item: Consumable, count: usize) {
-        self.sum += count;
-        match self.bag.entry(item) {
-            Entry::Occupied(mut v) => {
-                *v.get_mut() += count;
-            }
-            Entry::Vacant(e) => {
-                e.insert(count);
-            }
-        }
+    pub fn push_multiple(&mut self, kind: Consumable, count: usize) {
+        self.0.push_multiple(kind, count);
     }
-    pub fn push(&mut self, item: Consumable) {
-        self.push_multiple(item, 1)
-    }
-    pub fn push_loot(&mut self, loot: Loot) {
-        self.push_multiple(loot.item, loot.amount)
-    }
-    pub fn push_duplicated(&mut self, dup: DuplicatedItem) {
-        self.push_multiple(dup.kind, dup.n)
+    pub fn push(&mut self, kind: Consumable) {
+        self.push_multiple(kind, 1);
     }
     pub fn n_available(&self, item: &Consumable) -> usize {
-        self.bag.get(item).map(Clone::clone).unwrap_or(0)
+        self.0.n_available(item)
+    }
+    pub fn push_loot(&mut self, loot: Loot) {
+        self.push_multiple(loot.item, loot.amount);
     }
     pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
         if self.is_empty() {
@@ -185,7 +142,7 @@ impl Inventory {
                 Style::new().underline().paint(field2),
                 Style::new().underline().paint("effect"),
             )?;
-            for (item, count) in self.bag.iter().filter(|(_, count)| **count > 0) {
+            for (item, count) in self.0.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     f,
                     "    {:<30} | {:^9} | {:>2} {} | {:<30}",
@@ -205,11 +162,7 @@ impl FromIterator<(Consumable, usize)> for Inventory {
     where
         T: IntoIterator<Item = (Consumable, usize)>,
     {
-        let mut inv = Self::new();
-        for (item, count) in iter {
-            inv.push_multiple(item, count);
-        }
-        inv
+        Self(iter.into_iter().collect())
     }
 }
 

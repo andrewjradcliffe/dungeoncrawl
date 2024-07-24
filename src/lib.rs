@@ -10,6 +10,7 @@ pub mod loot;
 pub mod map;
 pub mod melee;
 pub mod monster;
+pub mod multiset;
 pub mod player;
 pub mod readline;
 pub mod scoreboard;

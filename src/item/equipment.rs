@@ -1,4 +1,3 @@
-use crate::utils::*;
 use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -375,64 +374,6 @@ impl fmt::Display for Gear {
             Self::Glove => write!(f, "{}", Colour::Cyan.paint("glove")),
             Self::Bare => write!(f, "{}", Colour::Cyan.paint("bare")),
         }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum EquipmentAction {
-    Equip,
-    Unequip,
-    Quit,
-}
-
-impl FromStr for EquipmentAction {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s = s.trim();
-
-        static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equip|e)$").unwrap());
-        static RE_UNEQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:unequip|u)$").unwrap());
-
-        if RE_EQUIP.is_match(s) {
-            Ok(EquipmentAction::Equip)
-        } else if RE_UNEQUIP.is_match(s) {
-            Ok(EquipmentAction::Unequip)
-        } else if is_quit(s) {
-            Ok(EquipmentAction::Quit)
-        } else {
-            Err(s.to_string())
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum EquipmentTransaction {
-    Equip(Gear),
-    Unequip(Gear),
-    Quit,
-}
-impl FromStr for EquipmentTransaction {
-    type Err = String;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s = s.trim();
-        if let Some((lhs, rhs)) = s.split_once(' ') {
-            if let Ok(action) = lhs.parse::<EquipmentAction>() {
-                if let Ok(gear) = rhs.parse::<Gear>() {
-                    match action {
-                        EquipmentAction::Equip => {
-                            return Ok(EquipmentTransaction::Equip(gear));
-                        }
-                        EquipmentAction::Unequip => {
-                            return Ok(EquipmentTransaction::Unequip(gear));
-                        }
-                        EquipmentAction::Quit => (),
-                    }
-                }
-            }
-        } else if let Ok(EquipmentAction::Quit) = s.parse::<EquipmentAction>() {
-            return Ok(EquipmentTransaction::Quit);
-        }
-        Err(s.to_string())
     }
 }
 

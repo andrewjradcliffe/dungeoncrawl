@@ -157,17 +157,6 @@ impl fmt::Display for Consumable {
     }
 }
 
-pub struct DuplicatedItem {
-    pub(crate) kind: Consumable,
-    pub(crate) n: usize,
-}
-impl DuplicatedItem {
-    #[inline]
-    pub fn new(kind: Consumable, n: usize) -> Self {
-        Self { kind, n }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

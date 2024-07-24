@@ -1,21 +1,77 @@
 use crate::equipment::*;
+use crate::multiset::MultiSet;
+use crate::utils::*;
 use ansi_term::{Colour, Style};
-use indexmap::{map::Entry, IndexMap};
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
+use std::str::FromStr;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum EquipmentAction {
+    Equip,
+    Unequip,
+    Quit,
+}
+
+impl FromStr for EquipmentAction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+
+        static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equip|e)$").unwrap());
+        static RE_UNEQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:unequip|u)$").unwrap());
+
+        if RE_EQUIP.is_match(s) {
+            Ok(EquipmentAction::Equip)
+        } else if RE_UNEQUIP.is_match(s) {
+            Ok(EquipmentAction::Unequip)
+        } else if is_quit(s) {
+            Ok(EquipmentAction::Quit)
+        } else {
+            Err(s.to_string())
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum EquipmentTransaction {
+    Equip(Gear),
+    Unequip(Gear),
+    Quit,
+}
+impl FromStr for EquipmentTransaction {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim();
+        if let Some((lhs, rhs)) = s.split_once(' ') {
+            if let Ok(action) = lhs.parse::<EquipmentAction>() {
+                if let Ok(gear) = rhs.parse::<Gear>() {
+                    match action {
+                        EquipmentAction::Equip => {
+                            return Ok(EquipmentTransaction::Equip(gear));
+                        }
+                        EquipmentAction::Unequip => {
+                            return Ok(EquipmentTransaction::Unequip(gear));
+                        }
+                        EquipmentAction::Quit => (),
+                    }
+                }
+            }
+        } else if let Ok(EquipmentAction::Quit) = s.parse::<EquipmentAction>() {
+            return Ok(EquipmentTransaction::Quit);
+        }
+        Err(s.to_string())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct EquipmentBag {
-    bag: IndexMap<Gear, usize>,
-    sum: usize,
-}
+pub struct EquipmentBag(MultiSet<Gear>);
 
 impl EquipmentBag {
     pub fn new() -> Self {
-        Self {
-            bag: IndexMap::with_capacity(Gear::total_variants()),
-            sum: 0,
-        }
+        Self(MultiSet::with_capacity(Gear::total_variants()))
     }
     pub fn new_player() -> Self {
         [(Sword, 1), (Helmet, 1), (Breastplate, 1), (Gauntlet, 1)]
@@ -23,7 +79,7 @@ impl EquipmentBag {
             .collect()
     }
     pub fn is_empty(&self) -> bool {
-        self.sum == 0
+        self.0.is_empty()
     }
 
     pub fn menu(&self, msg: &str) -> EquipmentTransaction {
@@ -46,39 +102,13 @@ impl EquipmentBag {
         }
     }
     pub fn pop_item(&mut self, kind: Gear) -> Option<Gear> {
-        match self.bag.entry(kind) {
-            Entry::Occupied(mut v) => {
-                if *v.get() > 0 {
-                    self.sum -= 1;
-                    *v.get_mut() -= 1;
-                    Some(kind)
-                } else {
-                    None
-                }
-            }
-            Entry::Vacant(_) => None,
-        }
+        self.0.pop_item(kind)
     }
     pub fn pop_multiple(&mut self, kind: Gear, n: usize) -> Option<(Gear, usize)> {
-        match self.bag.entry(kind) {
-            Entry::Occupied(mut v) => match *v.get() {
-                0 => None,
-                u if u >= n => {
-                    self.sum -= n;
-                    *v.get_mut() -= n;
-                    Some((kind, n))
-                }
-                u => {
-                    self.sum -= u;
-                    *v.get_mut() = 0;
-                    Some((kind, u))
-                }
-            },
-            Entry::Vacant(_) => None,
-        }
+        self.0.pop_multiple(kind, n)
     }
     pub fn drop_multiple(&mut self, kind: Gear, n: usize) {
-        self.pop_multiple(kind, n);
+        self.0.drop_multiple(kind, n);
     }
     pub fn drop_item(&mut self, kind: Gear) {
         self.pop_item(kind);
@@ -86,27 +116,14 @@ impl EquipmentBag {
     pub fn push_multiple(&mut self, kind: Gear, count: usize) {
         match kind {
             Bare | Fist => (),
-            kind => {
-                self.sum += count;
-                match self.bag.entry(kind) {
-                    Entry::Occupied(mut v) => {
-                        *v.get_mut() += count;
-                    }
-                    Entry::Vacant(e) => {
-                        e.insert(count);
-                    }
-                }
-            }
+            kind => self.0.push_multiple(kind, count),
         }
     }
     pub fn push(&mut self, kind: Gear) {
         self.push_multiple(kind, 1);
     }
-    pub fn push_duplicated(&mut self, kind: Gear, count: usize) {
-        self.push_multiple(kind, count);
-    }
     pub fn n_available(&self, item: &Gear) -> usize {
-        self.bag.get(item).map(Clone::clone).unwrap_or(0)
+        self.0.n_available(item)
     }
     pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
         if self.is_empty() {
@@ -124,10 +141,10 @@ impl EquipmentBag {
                 Style::new().underline().paint(field2),
                 Style::new().underline().paint("effect"),
             )?;
-            for (item, count) in self
-                .bag
-                .iter()
-                .filter(|(kind, count)| **count > 0 && **kind != Gear::Fist && **kind != Gear::Bare)
+            for (item, count) in
+                self.0.bag.iter().filter(|(kind, count)| {
+                    **count > 0 && **kind != Gear::Fist && **kind != Gear::Bare
+                })
             {
                 writeln!(
                     f,
@@ -148,11 +165,7 @@ impl FromIterator<(Gear, usize)> for EquipmentBag {
     where
         T: IntoIterator<Item = (Gear, usize)>,
     {
-        let mut inv = Self::new();
-        for (item, count) in iter {
-            inv.push_multiple(item, count);
-        }
-        inv
+        Self(iter.into_iter().collect())
     }
 }
 
