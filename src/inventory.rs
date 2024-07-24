@@ -116,16 +116,16 @@ impl Inventory {
         self.0.drop_multiple(kind, n);
     }
     pub fn drop_item(&mut self, kind: Consumable) {
-        self.pop_item(kind);
+        self.0.pop_item(kind);
     }
     pub fn push_multiple(&mut self, kind: Consumable, count: usize) {
         self.0.push_multiple(kind, count);
     }
     pub fn push(&mut self, kind: Consumable) {
-        self.push_multiple(kind, 1);
+        self.0.push(kind);
     }
-    pub fn n_available(&self, item: &Consumable) -> usize {
-        self.0.n_available(item)
+    pub fn n_available(&self, kind: &Consumable) -> usize {
+        self.0.n_available(kind)
     }
     pub fn push_loot(&mut self, loot: Loot) {
         self.push_multiple(loot.item, loot.amount);

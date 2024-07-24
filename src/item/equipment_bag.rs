@@ -111,7 +111,7 @@ impl EquipmentBag {
         self.0.drop_multiple(kind, n);
     }
     pub fn drop_item(&mut self, kind: Gear) {
-        self.pop_item(kind);
+        self.0.pop_item(kind);
     }
     pub fn push_multiple(&mut self, kind: Gear, count: usize) {
         match kind {
@@ -120,10 +120,13 @@ impl EquipmentBag {
         }
     }
     pub fn push(&mut self, kind: Gear) {
-        self.push_multiple(kind, 1);
+        match kind {
+            Bare | Fist => (),
+            kind => self.0.push(kind),
+        }
     }
-    pub fn n_available(&self, item: &Gear) -> usize {
-        self.0.n_available(item)
+    pub fn n_available(&self, kind: &Gear) -> usize {
+        self.0.n_available(kind)
     }
     pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
         if self.is_empty() {
