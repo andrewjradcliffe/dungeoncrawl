@@ -109,6 +109,9 @@ impl Player {
     pub fn intellect(&self) -> i64 {
         self.intellect + self.equipment.intellect()
     }
+    pub fn armor(&self) -> i64 {
+        self.equipment.armor()
+    }
     pub fn is_alive(&self) -> bool {
         self.current_hp > 0
     }
@@ -120,20 +123,25 @@ impl Player {
     pub fn receive_damage(&mut self, amount: i64) {
         self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
     }
+    pub fn armor_reduction(&self, damage: i64) -> i64 {
+        const U: i64 = 10; // maximum armor
+        let a = self.armor();
+        (U - a) * damage / U
+    }
     pub fn receive_melee_attack(&mut self, monster: &mut Monster) {
         match monster.kind {
             MonsterKind::Fairy => {
                 println!(
                     "The {} heals you for {} {}!",
                     MonsterKind::Fairy,
-                    Colour::Purple.paint(format!("{}", monster.strength)),
+                    Colour::Purple.paint(format!("{}", monster.strength.abs())),
                     *ANSI_HP
                 );
                 self.receive_damage(monster.strength);
             }
             kind => {
                 let attack = monster.produce_melee_attack();
-                let amount = attack.damage;
+                let amount = self.armor_reduction(attack.damage);
                 let melee = attack.kind;
                 println!(
                     "The {kind}'s {melee} attack hits you for {} damage!",
@@ -312,7 +320,7 @@ impl Player {
         writeln!(s, "Level: {}", self.level).unwrap();
         writeln!(
             s,
-            "Experience: {}    ({} until next level)",
+            "Experience: {:<10}    ({} until next level)",
             self.xp,
             xp_to_next_level(self.xp)
         )
@@ -322,6 +330,7 @@ impl Player {
         s.push('\n');
         writeln!(s, "STR: {}", self.strength()).unwrap();
         writeln!(s, "INT: {}", self.intellect()).unwrap();
+        writeln!(s, "ARMOR: {}", self.armor()).unwrap();
         s
     }
 

@@ -141,6 +141,9 @@ impl Equipment {
             + self.chest.intellect()
             + self.hand.intellect()
     }
+    pub const fn armor(&self) -> i64 {
+        self.weapon.armor() + self.head.armor() + self.chest.armor() + self.hand.armor()
+    }
     pub fn equip(&mut self, item: Gear) -> Gear {
         match item {
             Fist | Sword | Axe | Wand | Staff => {
@@ -275,8 +278,8 @@ impl Gear {
     }
     pub const fn strength(&self) -> i64 {
         match self {
-            Self::Sword => 1,
-            Self::Axe => 3,
+            Self::Sword => 2,
+            Self::Axe => 4,
             Self::Helmet => 3,
             Self::Breastplate => 3,
             Self::Gauntlet => 2,
@@ -285,11 +288,22 @@ impl Gear {
     }
     pub const fn intellect(&self) -> i64 {
         match self {
-            Self::Wand => 1,
-            Self::Staff => 3,
+            Self::Wand => 2,
+            Self::Staff => 4,
             Self::Hat => 3,
             Self::Robe => 3,
             Self::Glove => 2,
+            _ => 0,
+        }
+    }
+    pub const fn armor(&self) -> i64 {
+        match self {
+            Self::Helmet => 3,
+            Self::Breastplate => 3,
+            Self::Gauntlet => 2,
+            Self::Hat => 1,
+            Self::Robe => 1,
+            Self::Glove => 1,
             _ => 0,
         }
     }
@@ -299,7 +313,12 @@ impl Gear {
         10 * if lhs > rhs { lhs } else { rhs }
     }
     pub(crate) fn description(&self) -> String {
-        format!("STR +{:<2}  INT +{:<2}", self.strength(), self.intellect())
+        format!(
+            "STR +{:<2}  INT +{:<2}  ARMOR +{:<2}",
+            self.strength(),
+            self.intellect(),
+            self.armor()
+        )
     }
 }
 impl FromStr for Gear {
