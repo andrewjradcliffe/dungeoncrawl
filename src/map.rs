@@ -18,16 +18,16 @@ use Element::*;
 impl Element {
     pub const fn symbol(&self) -> char {
         match self {
-            Player => '@',  // '🧝'
-            Monster => 'm', // '👾',
-            Tree => 't',    // '🌳',
-            Rock => 'r',    // '🪨',
-            Empty => '.',   // '🪜',
-                             // Player => '🧝',
-                             // Monster => '👾',
-                             // Tree => '🌳',
-                             // Rock => '🪨',
-                             // Empty => '🏾',
+            // Player => '@',  // '🧝'
+            // Monster => 'm', // '👾',
+            // Tree => 't',    // '🌳',
+            // Rock => 'r',    // '🪨',
+            // Empty => '.',   // '🪜',
+            Player => '🧟',
+            Monster => '👾',
+            Tree => '🌳',
+            Rock => '🪨',
+            Empty => '🏾',
         }
     }
 }
