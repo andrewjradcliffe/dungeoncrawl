@@ -220,7 +220,7 @@ impl fmt::Display for Equipment {
         writeln!(f, "{}:", Style::new().underline().paint("Equipment"))?;
         writeln!(
             f,
-            "                          | {} | {}",
+            "                                 |  {}  | {}",
             Style::new().underline().paint("value"),
             Style::new().underline().paint("effect"),
         )?;
@@ -228,7 +228,7 @@ impl fmt::Display for Equipment {
             ($item:expr, $slot:literal) => {
                 writeln!(
                     f,
-                    "{:>10} {:<30} | {:>2} {} | {:<30}",
+                    "{:<10} {:<30} | {:>2} {} | {:<30}",
                     $slot,
                     format!("{}", $item),
                     $item.cost(),
