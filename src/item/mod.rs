@@ -69,6 +69,5 @@ mod tests {
         map.insert(Item::Consumable(Consumable::HealthPotion), 2);
         map.insert(Item::Consumable(Consumable::ManaPotion), 1);
         assert_eq!(map.len(), 4);
-        panic!("{:#?}", map);
     }
 }

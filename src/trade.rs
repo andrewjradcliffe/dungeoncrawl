@@ -265,12 +265,12 @@ mod tests {
 
                 }
             }
-            test!(TradeAction::Buy, "b", HealthPotion ; "hp", "HP", "health potion", "hEalth poTION");
-            test!(TradeAction::Buy, "b", ManaPotion ; "mp", "MP", "mana potion", "MaNA poTION");
-            test!(TradeAction::Buy, "b", Food ; "f", "F", "food", "FOOd");
-            test!(TradeAction::Sell, "s", HealthPotion ; "hp", "HP", "health potion", "hEalth poTION");
-            test!(TradeAction::Sell, "s", ManaPotion ; "mp", "MP", "mana potion", "MaNA poTION");
-            test!(TradeAction::Sell, "s", Food ; "f", "F", "food", "FOOd");
+            test!(TradeAction::Buy, "b", Item::from(HealthPotion) ; "hp", "HP", "health potion", "hEalth poTION");
+            test!(TradeAction::Buy, "b", Item::from(ManaPotion) ; "mp", "MP", "mana potion", "MaNA poTION");
+            test!(TradeAction::Buy, "b", Item::from(Food) ; "f", "F", "food", "FOOd");
+            test!(TradeAction::Sell, "s", Item::from(HealthPotion) ; "hp", "HP", "health potion", "hEalth poTION");
+            test!(TradeAction::Sell, "s", Item::from(ManaPotion) ; "mp", "MP", "mana potion", "MaNA poTION");
+            test!(TradeAction::Sell, "s", Item::from(Food) ; "f", "F", "food", "FOOd");
         }
     }
 }
