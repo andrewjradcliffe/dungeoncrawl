@@ -87,6 +87,7 @@ impl Inventory {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering inventory menu... ----");
         println!("{}", msg);
+        let n = msg.lines().count() + 2;
         if self.is_empty() {
             InventoryTransaction::Quit
         } else {
@@ -97,10 +98,13 @@ impl Inventory {
                 let stdin = io::stdin();
                 let mut handle = stdin.lock();
                 match handle.read_line(&mut buf) {
-                    Ok(_) => (),
+                    Ok(_) => {
+                        let _ = crate::readline::clear_last_n_lines(1);
+                    }
                     Err(e) => println!("Error in inventory menu readline: {:#?}", e),
                 }
                 if let Ok(transaction) = buf.parse::<InventoryTransaction>() {
+                    let _ = crate::readline::clear_last_n_lines(n);
                     break transaction;
                 }
             }

@@ -172,7 +172,9 @@ impl Merchant {
             println!("Inventory is empty!");
             Transaction::Quit
         } else {
-            println!("{}", self.inventory_message());
+            let msg = self.inventory_message();
+            let n = msg.lines().count() + 2;
+            println!("{}", msg);
             loop {
                 buf.clear();
 
@@ -182,10 +184,13 @@ impl Merchant {
                 let stdin = io::stdin();
                 let mut handle = stdin.lock();
                 match handle.read_line(&mut buf) {
-                    Ok(_) => (),
+                    Ok(_) => {
+                        let _ = crate::readline::clear_last_n_lines(1);
+                    }
                     Err(e) => println!("Error in inventory menu readline: {:#?}", e),
                 }
                 if let Ok(transaction) = buf.parse::<Transaction>() {
+                    let _ = crate::readline::clear_last_n_lines(n);
                     break transaction;
                 }
             }

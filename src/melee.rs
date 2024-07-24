@@ -77,6 +77,7 @@ impl fmt::Display for Melee {
 }
 
 pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
+    const N: usize = 5;
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering melee menu... ----");
     println!(
@@ -109,11 +110,11 @@ pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
         let s = buf.trim();
 
         if is_quit(s) {
-            let _ = crate::readline::clear_last_n_lines(5);
+            let _ = crate::readline::clear_last_n_lines(N);
             break None;
         } else {
             if let Ok(melee) = s.parse::<Melee>() {
-                let _ = crate::readline::clear_last_n_lines(5);
+                let _ = crate::readline::clear_last_n_lines(N);
                 return Some(match melee {
                     Basic => basic,
                     Power => power,

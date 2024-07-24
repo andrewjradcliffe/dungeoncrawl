@@ -233,6 +233,7 @@ impl SpellCast {
 }
 
 pub(crate) fn spell_menu(intellect: i64) -> Option<SpellCast> {
+    const N: usize = 10;
     let mut buf = String::with_capacity(1 << 7);
     println!("---- Entering spell menu... ----");
     OffenseSpell::print_menu_preface();
@@ -257,16 +258,20 @@ pub(crate) fn spell_menu(intellect: i64) -> Option<SpellCast> {
         let stdin = io::stdin();
         let mut handle = stdin.lock();
         match handle.read_line(&mut buf) {
-            Ok(_) => (),
+            Ok(_) => {
+                let _ = crate::readline::clear_last_n_lines(1);
+            }
             Err(e) => println!("Error in inventory menu readline: {:#?}", e),
         }
 
         let s = buf.trim();
 
         if is_quit(s) {
+            let _ = crate::readline::clear_last_n_lines(N);
             break None;
         } else {
             if let Ok(offense) = s.parse::<Offense>() {
+                let _ = crate::readline::clear_last_n_lines(N);
                 return Some(SpellCast::Offense(match offense {
                     Stone => stone,
                     Fire => fire,
