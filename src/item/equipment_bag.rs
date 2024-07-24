@@ -78,6 +78,22 @@ impl EquipmentBag {
             .into_iter()
             .collect()
     }
+    pub fn new_merchant() -> Self {
+        [
+            (Sword, 1),
+            (Axe, 1),
+            (Helmet, 1),
+            (Breastplate, 1),
+            (Gauntlet, 1),
+            (Wand, 1),
+            (Staff, 1),
+            (Hat, 1),
+            (Robe, 1),
+            (Glove, 1),
+        ]
+        .into_iter()
+        .collect()
+    }
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }

@@ -113,7 +113,7 @@ impl Merchant {
             .collect();
         Self {
             inventory,
-            equipment_bag: EquipmentBag::new_player(),
+            equipment_bag: EquipmentBag::new_merchant(),
         }
     }
     pub fn inventory_message(&self) -> String {
