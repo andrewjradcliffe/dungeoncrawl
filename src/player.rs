@@ -37,9 +37,12 @@ pub struct Player {
     pub(crate) level: usize,
     pub(crate) xp: usize,
 }
-const R: f64 = 18466.496523378733; // -12800.0 / (0.5_f64).ln();
+// const R: f64 = 18466.496523378733; // -12800.0 / (0.5_f64).ln();
+// const R: f64 = 9233.248261689367; // -6400.0 / (0.5_f64).ln();
+// const R: f64 = 4616.624130844683; // -3200.0 / (0.5_f64).ln();
+const R: f64 = 2308.3120654223417; // -1600.0 / (0.5_f64).ln();
 pub(crate) fn level(x: usize) -> usize {
-    (10.0 * (1.0 - ((x as f64) / R).exp())).ceil().max(1.0) as usize
+    (10.0 * (1.0 - (-(x as f64) / R).exp())).ceil().max(1.0) as usize
 }
 pub(crate) fn max_xp_at_level(level: usize) -> usize {
     let y = (level as f64) / 10.0;
@@ -77,7 +80,7 @@ impl Player {
     }
     pub(crate) fn update_level(&mut self) {
         let new_level = level(self.xp);
-        if self.level != new_level {
+        if self.level < new_level {
             println!("You are now level {}!", new_level);
             self.level = new_level;
             let new_hp = PLAYER_HP * self.level as i64;
