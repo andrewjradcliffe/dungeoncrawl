@@ -81,7 +81,6 @@ pub fn game() {
                                 game.player.xp += xp;
                                 game.player.update_level();
                             }
-                            MonsterVictory => break,
                             _ => (),
                         }
                     }
