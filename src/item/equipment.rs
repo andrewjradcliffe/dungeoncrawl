@@ -173,7 +173,7 @@ impl Equipment {
         match item {
             Fist | Sword | Axe | Wand | Staff => {
                 let old = self.weapon;
-                self.weapon = Bare;
+                self.weapon = Fist;
                 old
             }
             Helmet | Hat => {

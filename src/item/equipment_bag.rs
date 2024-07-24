@@ -30,22 +30,18 @@ impl EquipmentBag {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering equipment menu... ----");
         println!("{}", msg);
-        if self.is_empty() {
-            EquipmentTransaction::Quit
-        } else {
-            loop {
-                buf.clear();
-                print!("👜 ");
-                io::Write::flush(&mut io::stdout()).unwrap();
-                let stdin = io::stdin();
-                let mut handle = stdin.lock();
-                match handle.read_line(&mut buf) {
-                    Ok(_) => (),
-                    Err(e) => println!("Error in inventory menu readline: {:#?}", e),
-                }
-                if let Ok(transaction) = buf.parse::<EquipmentTransaction>() {
-                    break transaction;
-                }
+        loop {
+            buf.clear();
+            print!("👜 ");
+            io::Write::flush(&mut io::stdout()).unwrap();
+            let stdin = io::stdin();
+            let mut handle = stdin.lock();
+            match handle.read_line(&mut buf) {
+                Ok(_) => (),
+                Err(e) => println!("Error in equipment menu readline: {:#?}", e),
+            }
+            if let Ok(transaction) = buf.parse::<EquipmentTransaction>() {
+                break transaction;
             }
         }
     }
@@ -88,21 +84,26 @@ impl EquipmentBag {
         self.pop_item(kind);
     }
     pub fn push_multiple(&mut self, kind: Gear, count: usize) {
-        self.sum += count;
-        match self.bag.entry(kind) {
-            Entry::Occupied(mut v) => {
-                *v.get_mut() += count;
-            }
-            Entry::Vacant(e) => {
-                e.insert(count);
+        match kind {
+            Bare | Fist => (),
+            kind => {
+                self.sum += count;
+                match self.bag.entry(kind) {
+                    Entry::Occupied(mut v) => {
+                        *v.get_mut() += count;
+                    }
+                    Entry::Vacant(e) => {
+                        e.insert(count);
+                    }
+                }
             }
         }
     }
     pub fn push(&mut self, kind: Gear) {
-        self.push_multiple(kind, 1)
+        self.push_multiple(kind, 1);
     }
     pub fn push_duplicated(&mut self, kind: Gear, count: usize) {
-        self.push_multiple(kind, count)
+        self.push_multiple(kind, count);
     }
     pub fn n_available(&self, item: &Gear) -> usize {
         self.bag.get(item).map(Clone::clone).unwrap_or(0)
