@@ -74,16 +74,20 @@ impl FromStr for Direction {
         }
     }
 }
-
-pub struct Map(pub(crate) Grid<Element>);
+#[derive(Debug, Clone, PartialEq)]
+pub struct Map {
+    pub(crate) grid: Grid<Element>,
+    pub(crate) player: (usize, usize),
+}
 impl Map {
     pub fn new() -> Self {
-        let mut grid = Grid::new_default(5, 5);
-        grid[(2, 2)] = Player;
+        let mut grid = Grid::new_default(10, 10);
+        let player = (2, 2);
+        grid[player] = Player;
         grid[(2, 3)] = Tree;
         grid[(3, 2)] = Rock;
         grid[(1, 2)] = Tree;
-        Self(grid)
+        Self { grid, player }
     }
     pub fn menu() -> Direction {
         let mut buf = String::with_capacity(1 << 10);
@@ -108,33 +112,33 @@ impl Map {
     }
     pub fn movement(&mut self) {
         let (i_0, j_0) = self
-            .0
-            .cartesian_index(self.0.inner.iter().position(|x| *x == Player).unwrap());
+            .grid
+            .cartesian_index(self.grid.inner.iter().position(|x| *x == Player).unwrap());
         let (i_1, j_1) = match Self::menu() {
             Up => {
-                let i_1 = i_0 - 1;
+                let i_1 = if i_0 == 0 { 0 } else { i_0 - 1 };
                 let j_1 = j_0;
                 (i_1, j_1)
             }
             Down => {
                 let i_1 = i_0 + 1;
                 let j_1 = j_0;
-                (i_1, j_1)
+                (if i_1 == self.grid.n_rows { i_0 } else { i_1 }, j_1)
             }
             Forward => {
                 let i_1 = i_0;
                 let j_1 = j_0 + 1;
-                (i_1, j_1)
+                (i_1, if j_1 == self.grid.n_cols { j_0 } else { j_1 })
             }
             Backward => {
                 let i_1 = i_0;
-                let j_1 = j_0 - 1;
+                let j_1 = if j_0 == 0 { 0 } else { j_0 - 1 };
                 (i_1, j_1)
             }
         };
-        if self.0[(i_1, j_1)] == Empty {
-            self.0[(i_0, j_0)] = Empty;
-            self.0[(i_1, j_1)] = Player;
+        if self.grid[(i_1, j_1)] == Empty {
+            self.grid[(i_0, j_0)] = Empty;
+            self.grid[(i_1, j_1)] = Player;
         }
     }
 }
@@ -142,7 +146,7 @@ impl Map {
 pub fn demo_movement() {
     let mut map = Map::new();
     loop {
-        println!("{}", map.0);
+        println!("{}", map.grid);
         map.movement();
         let _ = crate::readline::clear_screen();
         let _ = crate::readline::cursor_topleft();
