@@ -102,6 +102,7 @@ impl EquipmentBag {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Entering equipment menu... ----");
         println!("{}", msg);
+        let n = msg.lines().count() + 2;
         loop {
             buf.clear();
             print!("👜 ");
@@ -109,10 +110,13 @@ impl EquipmentBag {
             let stdin = io::stdin();
             let mut handle = stdin.lock();
             match handle.read_line(&mut buf) {
-                Ok(_) => (),
+                Ok(_) => {
+                    let _ = crate::readline::clear_last_n_lines(1);
+                }
                 Err(e) => println!("Error in equipment menu readline: {:#?}", e),
             }
             if let Ok(transaction) = buf.parse::<EquipmentTransaction>() {
+                let _ = crate::readline::clear_last_n_lines(n);
                 break transaction;
             }
         }

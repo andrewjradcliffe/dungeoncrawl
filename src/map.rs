@@ -82,6 +82,8 @@ impl Map {
         println!("==== Select a direction... ====");
         loop {
             buf.clear();
+            // print!("adventure > ");
+            // io::Write::flush(&mut io::stdout());
 
             let stdin = io::stdin();
             let mut handle = stdin.lock();
@@ -133,5 +135,7 @@ pub fn demo_movement() {
         println!("{}", map.0);
         map.movement();
         let _ = crate::readline::clear_screen();
+        let _ = crate::readline::cursor_topleft();
+        // let _ = crate::readline::clear_last_n_lines(7);
     }
 }

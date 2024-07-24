@@ -84,6 +84,41 @@ pub fn read_direction() -> io::Result<()> {
 
 pub fn clear_screen() -> io::Result<()> {
     let mut stdout = io::stdout();
-    stdout.write_all(&[0x1B, 0x5B, 0x32, 'J' as u8, 0x0A])?;
+    stdout.write_all(&[0x1B, 0x5B, 0x32, 'J' as u8])?;
     stdout.flush()
+}
+pub fn cursor_topleft() -> io::Result<()> {
+    let mut stdout = io::stdout();
+    stdout.write_all(&[0x1B, 0x5B, 0x31, ';' as u8, 0x31, 'H' as u8])?;
+    stdout.flush()
+}
+pub fn cursor_up(n: usize) -> io::Result<()> {
+    let mut stdout = io::stdout();
+    for _ in 0..n {
+        stdout.write_all(&[0x1B, 0x5B, 0x31, 'A' as u8])?;
+    }
+    Ok(())
+}
+pub fn cursor_down(n: usize) -> io::Result<()> {
+    let mut stdout = io::stdout();
+    for _ in 0..n {
+        stdout.write_all(&[0x1B, 0x5B, 0x31, 'B' as u8])?;
+    }
+    Ok(())
+}
+pub fn clear_line() -> io::Result<()> {
+    let mut stdout = io::stdout();
+    stdout.write_all(&[0x1B, 0x5B, 0x32, 'K' as u8])?;
+    Ok(())
+}
+
+pub fn clear_last_n_lines(n: usize) -> io::Result<()> {
+    cursor_up(n)?;
+    let mut stdout = io::stdout();
+    for _ in 0..n {
+        stdout.write_all(&[0x1B, 0x5B, 0x32, 'K' as u8])?;
+        stdout.write_all(&[0x1B, 0x5B, 0x31, 'B' as u8])?;
+    }
+    stdout.flush()?;
+    cursor_up(n)
 }

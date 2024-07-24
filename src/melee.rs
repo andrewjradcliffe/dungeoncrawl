@@ -100,16 +100,20 @@ pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
         let stdin = io::stdin();
         let mut handle = stdin.lock();
         match handle.read_line(&mut buf) {
-            Ok(_) => (),
+            Ok(_) => {
+                let _ = crate::readline::clear_last_n_lines(1);
+            }
             Err(e) => println!("Error in inventory menu readline: {:#?}", e),
         }
 
         let s = buf.trim();
 
         if is_quit(s) {
+            let _ = crate::readline::clear_last_n_lines(5);
             break None;
         } else {
             if let Ok(melee) = s.parse::<Melee>() {
+                let _ = crate::readline::clear_last_n_lines(5);
                 return Some(match melee {
                     Basic => basic,
                     Power => power,
