@@ -2,6 +2,7 @@ use crate::consumable::*;
 use crate::equipment::*;
 use crate::inventory::*;
 use crate::item::equipment_bag::*;
+use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::*;
 use crate::monster::*;
@@ -356,7 +357,10 @@ impl Player {
     pub fn can_perform(&self, transaction: &Transaction) -> bool {
         match transaction {
             Transaction::Buy { .. } => self.gold >= transaction.total_cost(),
-            Transaction::Sell { item, count } => self.inventory.n_available(item) >= *count,
+            Transaction::Sell { item, count } => match item {
+                Item::Consumable(x) => self.inventory.n_available(x) >= *count,
+                Item::Gear(x) => self.equipment_bag.n_available(x) >= *count,
+            },
             Transaction::Quit => true,
         }
     }
@@ -365,7 +369,10 @@ impl Player {
             Transaction::Buy { item, count } => {
                 let cost = transaction.total_cost();
                 self.gold -= cost;
-                self.inventory.push_multiple(*item, *count);
+                match item {
+                    Item::Consumable(x) => self.inventory.push_multiple(*x, *count),
+                    Item::Gear(x) => self.equipment_bag.push_multiple(*x, *count),
+                }
                 match *count {
                     0 => (),
                     1 => println!("You bought 1 {} for {} gold.", item, cost),
@@ -375,7 +382,10 @@ impl Player {
             Transaction::Sell { item, count } => {
                 let cost = transaction.total_cost();
                 self.gold += cost;
-                self.inventory.drop_multiple(*item, *count);
+                match item {
+                    Item::Consumable(x) => self.inventory.drop_multiple(*x, *count),
+                    Item::Gear(x) => self.equipment_bag.drop_multiple(*x, *count),
+                }
                 match *count {
                     0 => (),
                     1 => println!("You sold 1 {} for {} gold.", item, cost),
@@ -388,11 +398,18 @@ impl Player {
     pub fn describe_rejected_transaction(&self, transaction: &Transaction) {
         match transaction {
             Transaction::Buy { .. } => println!("Player rejected transaction: insufficient gold!"),
-            Transaction::Sell { item, count } => {
-                if self.inventory.n_available(item) < *count {
-                    println!("Player rejected transaction: insufficient inventory!")
+            Transaction::Sell { item, count } => match item {
+                Item::Consumable(x) => {
+                    if self.inventory.n_available(x) < *count {
+                        println!("Player rejected transaction: insufficient inventory!")
+                    }
                 }
-            }
+                Item::Gear(x) => {
+                    if self.equipment_bag.n_available(x) < *count {
+                        println!("Player rejected transaction: insufficient inventory!")
+                    }
+                }
+            },
             Transaction::Quit => (),
         }
     }

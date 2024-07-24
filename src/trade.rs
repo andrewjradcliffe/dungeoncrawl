@@ -1,5 +1,7 @@
 use crate::consumable::*;
 use crate::inventory::*;
+use crate::item::equipment_bag::EquipmentBag;
+use crate::item::*;
 use crate::player::Player;
 use crate::utils::*;
 use once_cell::sync::Lazy;
@@ -10,6 +12,7 @@ use std::str::FromStr;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Merchant {
     inventory: Inventory,
+    equipment_bag: EquipmentBag,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -41,8 +44,8 @@ impl FromStr for TradeAction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Transaction {
-    Buy { item: Consumable, count: usize },
-    Sell { item: Consumable, count: usize },
+    Buy { item: Item, count: usize },
+    Sell { item: Item, count: usize },
     Quit,
 }
 
@@ -55,7 +58,7 @@ pub enum Transaction {
 // }
 
 impl Transaction {
-    pub fn new(kind: TradeAction, item: Consumable, count: usize) -> Self {
+    pub fn new(kind: TradeAction, item: Item, count: usize) -> Self {
         match kind {
             TradeAction::Quit => Transaction::Quit,
             TradeAction::Buy => Transaction::Buy { item, count },
@@ -81,11 +84,11 @@ impl FromStr for Transaction {
                 match action {
                     TradeAction::Buy | TradeAction::Sell => {
                         let rst = rst.trim();
-                        if let Ok(item) = rst.parse::<Consumable>() {
+                        if let Ok(item) = rst.parse::<Item>() {
                             return Ok(Transaction::new(action, item, 1));
                         } else if let Some((lhs, rhs)) = rst.split_once(' ') {
                             if let Ok(n) = lhs.parse::<usize>() {
-                                if let Ok(item) = rhs.parse::<Consumable>() {
+                                if let Ok(item) = rhs.parse::<Item>() {
                                     return Ok(Transaction::new(action, item, n));
                                 }
                             }
@@ -108,37 +111,57 @@ impl Merchant {
         let inventory = [(HealthPotion, 10), (ManaPotion, 10), (Food, 20)]
             .into_iter()
             .collect();
-        Self { inventory }
+        Self {
+            inventory,
+            equipment_bag: EquipmentBag::new_player(),
+        }
     }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
         self.inventory.fmt_imp(&mut s, "price").unwrap();
+        self.equipment_bag.fmt_imp(&mut s, "price").unwrap();
         s
     }
     pub fn can_perform(&self, transaction: &Transaction) -> bool {
         match transaction {
-            Transaction::Buy { item, count } => self.inventory.n_available(item) >= *count,
+            Transaction::Buy {
+                item: Item::Consumable(x),
+                count,
+            } => self.inventory.n_available(x) >= *count,
+            Transaction::Buy {
+                item: Item::Gear(x),
+                count,
+            } => self.equipment_bag.n_available(x) >= *count,
             _ => true,
         }
     }
     pub fn perform(&mut self, transaction: &Transaction) {
         match transaction {
-            Transaction::Buy { item, count } => {
-                self.inventory.drop_multiple(*item, *count);
-            }
-            Transaction::Sell { item, count } => {
-                self.inventory.push_multiple(*item, *count);
-            }
+            Transaction::Buy { item, count } => match item {
+                Item::Consumable(x) => self.inventory.drop_multiple(*x, *count),
+                Item::Gear(x) => self.equipment_bag.drop_multiple(*x, *count),
+            },
+            Transaction::Sell { item, count } => match item {
+                Item::Consumable(x) => self.inventory.push_multiple(*x, *count),
+                Item::Gear(x) => self.equipment_bag.push_multiple(*x, *count),
+            },
             Transaction::Quit => (),
         }
     }
     pub fn describe_rejected_transaction(&self, transaction: &Transaction) {
         match transaction {
-            Transaction::Buy { item, count } => {
-                if self.inventory.n_available(item) < *count {
-                    println!("Merchant rejected transaction: insufficient inventory!")
+            Transaction::Buy { item, count } => match item {
+                Item::Consumable(x) => {
+                    if self.inventory.n_available(x) < *count {
+                        println!("Merchant rejected transaction: insufficient inventory!")
+                    }
                 }
-            }
+                Item::Gear(x) => {
+                    if self.equipment_bag.n_available(x) < *count {
+                        println!("Merchant rejected transaction: insufficient inventory!")
+                    }
+                }
+            },
             _ => (),
         }
     }
