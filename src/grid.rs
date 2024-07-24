@@ -44,6 +44,14 @@ impl<T> Grid<T> {
     pub fn shape(&self) -> (usize, usize) {
         (self.n_rows, self.n_cols)
     }
+    pub(crate) fn check_bounds(&self, (i, j): (usize, usize)) {
+        if i >= self.n_rows || j >= self.n_cols {
+            panic!(
+                "index out of bounds: the dimensions are ({}, {}) but the index is ({}, {})",
+                self.n_rows, self.n_cols, i, j,
+            );
+        }
+    }
 }
 
 impl<T: fmt::Display> fmt::Display for Grid<T> {
@@ -66,6 +74,7 @@ impl<T> Index<(usize, usize)> for Grid<T> {
     type Output = T;
     #[inline]
     fn index(&self, cartesian: (usize, usize)) -> &Self::Output {
+        self.check_bounds(cartesian);
         let idx = self.linear_index(cartesian.0, cartesian.1);
         &self.inner[idx]
     }
@@ -74,6 +83,7 @@ impl<T> Index<(usize, usize)> for Grid<T> {
 impl<T> IndexMut<(usize, usize)> for Grid<T> {
     #[inline]
     fn index_mut(&mut self, cartesian: (usize, usize)) -> &mut Self::Output {
+        self.check_bounds(cartesian);
         let idx = self.linear_index(cartesian.0, cartesian.1);
         &mut self.inner[idx]
     }
