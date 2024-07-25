@@ -59,7 +59,7 @@ impl fmt::Display for Item {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use indexmap::{map::Entry, IndexMap};
+    use indexmap::IndexMap;
 
     #[test]
     fn item_map() {

@@ -18,6 +18,7 @@ impl Algorithm {
     pub(crate) fn is_barrier(&self, i: usize, j: usize) -> bool {
         self.grid[(i, j)] == -2
     }
+    #[allow(dead_code)]
     pub(crate) fn multi_path(
         &mut self,
         i: usize,
@@ -36,13 +37,13 @@ impl Algorithm {
             if a_ij == -1 || a_ij > k {
                 self.grid[(i, j)] = k;
             }
-            println!("{}\n", self.grid);
+            // println!("{}\n", self.grid);
         } else if a_ij == -1 || a_ij > k {
             self.grid[(i, j)] = k;
             let mut p = p.to_vec();
             p.push((i, j));
             qs.push(p);
-            println!("{}\n", self.grid);
+            // println!("{}\n", self.grid);
         }
     }
     pub(crate) fn single_path(
@@ -57,7 +58,7 @@ impl Algorithm {
     ) {
         let a_ij = self.grid[(i, j)];
         if a_ij == -1 || a_ij > k {
-            println!("{}\n", self.grid);
+            // println!("{}\n", self.grid);
             self.grid[(i, j)] = k;
             let mut p = p.to_vec();
             p.push((i, j));
@@ -84,35 +85,35 @@ impl Algorithm {
         let mut rs = Vec::new();
         self.grid[(src.0, src.1)] = 0;
 
-        macro_rules! common {
-            ($i:ident, $j:ident, $a_ij:ident, $p:ident, $k:ident) => {
-                if ($i, $j) == dst {
-                    let mut p = $p.clone();
-                    p.push(($i, $j));
-                    rs.push(p);
-                    if $a_ij == -1 || $a_ij > $k {
-                        self.grid[($i, $j)] = $k;
-                    }
-                } else if $a_ij == -1 || $a_ij > $k {
-                    self.grid[($i, $j)] = $k;
-                    let mut p = $p.clone();
-                    p.push(($i, $j));
-                    qs.push(p);
-                }
-            }; // Single path
-               // ($i:ident, $j:ident, $a_ij:ident, $p:ident, $k:ident) => {
-               //     if $a_ij == -1 || $a_ij > k {
-               //         self.grid[($i, $j)] = $k;
-               //         let mut p = $p.clone();
-               //         p.push(($i, $j));
-               //         if ($i, $j) == dst {
-               //             rs.push(p);
-               //         } else {
-               //             qs.push(p);
-               //         }
-               //     }
-               // }
-        }
+        // macro_rules! common {
+        //     ($i:ident, $j:ident, $a_ij:ident, $p:ident, $k:ident) => {
+        //         if ($i, $j) == dst {
+        //             let mut p = $p.clone();
+        //             p.push(($i, $j));
+        //             rs.push(p);
+        //             if $a_ij == -1 || $a_ij > $k {
+        //                 self.grid[($i, $j)] = $k;
+        //             }
+        //         } else if $a_ij == -1 || $a_ij > $k {
+        //             self.grid[($i, $j)] = $k;
+        //             let mut p = $p.clone();
+        //             p.push(($i, $j));
+        //             qs.push(p);
+        //         }
+        //     }; // Single path
+        //        // ($i:ident, $j:ident, $a_ij:ident, $p:ident, $k:ident) => {
+        //        //     if $a_ij == -1 || $a_ij > k {
+        //        //         self.grid[($i, $j)] = $k;
+        //        //         let mut p = $p.clone();
+        //        //         p.push(($i, $j));
+        //        //         if ($i, $j) == dst {
+        //        //             rs.push(p);
+        //        //         } else {
+        //        //             qs.push(p);
+        //        //         }
+        //        //     }
+        //        // }
+        // }
 
         loop {
             while let Some(p) = ps.pop() {
@@ -228,6 +229,18 @@ mod tests {
             alg.grid[p] = -2;
         }
         let paths = alg.paths((0, 0), (4, 4));
+        let rhs = vec![
+            (0, 0),
+            (0, 1),
+            (0, 2),
+            (0, 3),
+            (0, 4),
+            (1, 4),
+            (2, 4),
+            (3, 4),
+            (4, 4),
+        ];
+        assert_eq!(paths[0], rhs);
         println!("{}", alg.grid);
         println!("{:#?}", paths);
         for path in paths {
@@ -241,6 +254,65 @@ mod tests {
             }
             println!("{}\n", grid);
         }
-        panic!();
+        // panic!();
+    }
+
+    #[test]
+    fn ten() {
+        let n = 10;
+        // let barrier = vec![
+        //     (1, 0),
+        //     (1, 1),
+        //     (1, 2),
+        //     (1, 3),
+        //     (3, 0),
+        //     (3, 1),
+        //     (3, 2),
+        //     (3, 3),
+        // ];
+        let barrier: Vec<_> = (0..n - 2)
+            .map(|offset| (1 + offset, n - 2 - offset))
+            .collect();
+        let mut alg = Algorithm::new(n, n);
+        for p in barrier.clone() {
+            alg.grid[p] = -2;
+        }
+        let paths = alg.paths((0, 0), (n - 1, n - 1));
+        let rhs = vec![
+            (0, 0),
+            (1, 0),
+            (2, 0),
+            (3, 0),
+            (4, 0),
+            (5, 0),
+            (6, 0),
+            (7, 0),
+            (8, 0),
+            (9, 0),
+            (9, 1),
+            (9, 2),
+            (9, 3),
+            (9, 4),
+            (9, 5),
+            (9, 6),
+            (9, 7),
+            (9, 8),
+            (9, 9),
+        ];
+        assert_eq!(paths[0], rhs);
+        // println!("{}", alg.grid);
+        // println!("{:#?}", paths);
+        // for path in paths {
+        //     let mut grid = alg.grid.clone();
+        //     grid.fill(0);
+        //     for p in path {
+        //         grid[p] = 1;
+        //     }
+        //     for p in barrier.clone() {
+        //         grid[p] = 2;
+        //     }
+        //     println!("{}\n", grid);
+        // }
+        // panic!();
     }
 }

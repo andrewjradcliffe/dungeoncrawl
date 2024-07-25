@@ -401,14 +401,14 @@ impl fmt::Display for Gear {
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn default() {
-    //     let lhs = Equipment {
-    //         weapon: Fist,
-    //         head: Head::Bare,
-    //         chest: Chest::Bare,
-    //         hand: Hand::Bare,
-    //     };
-    //     assert_eq!(lhs, Equipment::default())
-    // }
+    #[test]
+    fn default() {
+        let lhs = Equipment {
+            weapon: Gear::Fist,
+            head: Gear::Bare,
+            chest: Gear::Bare,
+            hand: Gear::Bare,
+        };
+        assert_eq!(lhs, Equipment::default())
+    }
 }
