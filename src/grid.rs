@@ -44,7 +44,11 @@ impl<T> Grid<T> {
     pub fn shape(&self) -> (usize, usize) {
         (self.n_rows, self.n_cols)
     }
-    pub(crate) fn check_bounds(&self, (i, j): (usize, usize)) {
+    #[inline]
+    pub(crate) fn check_bounds(&self, (i, j): (usize, usize)) -> bool {
+        i < self.n_rows && j < self.n_cols
+    }
+    pub(crate) fn check_bounds_or_panic(&self, (i, j): (usize, usize)) {
         if i >= self.n_rows || j >= self.n_cols {
             panic!(
                 "index out of bounds: the dimensions are ({}, {}) but the index is ({}, {})",
@@ -74,7 +78,7 @@ impl<T> Index<(usize, usize)> for Grid<T> {
     type Output = T;
     #[inline]
     fn index(&self, cartesian: (usize, usize)) -> &Self::Output {
-        self.check_bounds(cartesian);
+        self.check_bounds_or_panic(cartesian);
         let idx = self.linear_index(cartesian.0, cartesian.1);
         &self.inner[idx]
     }
@@ -83,7 +87,7 @@ impl<T> Index<(usize, usize)> for Grid<T> {
 impl<T> IndexMut<(usize, usize)> for Grid<T> {
     #[inline]
     fn index_mut(&mut self, cartesian: (usize, usize)) -> &mut Self::Output {
-        self.check_bounds(cartesian);
+        self.check_bounds_or_panic(cartesian);
         let idx = self.linear_index(cartesian.0, cartesian.1);
         &mut self.inner[idx]
     }
@@ -100,6 +104,22 @@ impl<T: Default> Grid<T> {
         }
     }
 }
+impl<T: Clone> Grid<T> {
+    pub fn new_fill(n_rows: usize, n_cols: usize, value: T) -> Self {
+        let n = n_rows * n_cols;
+        let mut inner = Vec::with_capacity(n);
+        inner.resize(n, value);
+        Self {
+            inner,
+            n_rows,
+            n_cols,
+        }
+    }
+    pub fn fill(&mut self, value: T) {
+        self.inner.fill(value);
+    }
+}
+
 impl<T: Clone> Grid<T> {
     pub fn transpose(&self) -> Self {
         let n_rows = self.n_rows();
