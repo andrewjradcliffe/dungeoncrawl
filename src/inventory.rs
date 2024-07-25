@@ -1,5 +1,4 @@
 use crate::consumable::*;
-use crate::loot::Loot;
 use crate::multiset::MultiSet;
 use crate::utils::*;
 use once_cell::sync::Lazy;
@@ -130,9 +129,6 @@ impl Inventory {
     }
     pub fn n_available(&self, kind: &Consumable) -> usize {
         self.0.n_available(kind)
-    }
-    pub fn push_loot(&mut self, loot: Loot) {
-        self.push_multiple(loot.item, loot.amount);
     }
     pub(crate) fn fmt_imp<T: fmt::Write>(&self, f: &mut T, field2: &'static str) -> fmt::Result {
         if self.is_empty() {

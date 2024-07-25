@@ -133,6 +133,9 @@ impl MonsterKind {
     pub(crate) const fn loot_weight(&self) -> usize {
         (self.max_hp() / 20) as usize
     }
+    pub(crate) fn loot_prob(&self) -> f64 {
+        (self.max_hp() as f64) / (Dragon.max_hp() as f64)
+    }
     pub const fn experience_points(&self) -> usize {
         (self.max_hp() / 2) as usize
     }

@@ -155,7 +155,7 @@ impl EquipmentBag {
             writeln!(f, "{}:", "EquipmentBag".bold().underline(),)?;
             writeln!(
                 f,
-                "                          | {} |  {}  |  {}",
+                "                       | {} |  {}  |  {}",
                 "available".underline(),
                 field2.underline(),
                 "effect".underline(),
@@ -168,7 +168,7 @@ impl EquipmentBag {
             {
                 writeln!(
                     f,
-                    "    {:<30} | {:^9} | {:>2} {} | {:<30}",
+                    "    {:<40} | {:^9} | {:>2} {} | {:<30}",
                     format!("{}", item),
                     count,
                     item.cost(),

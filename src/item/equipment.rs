@@ -219,7 +219,7 @@ impl fmt::Display for Equipment {
         writeln!(f, "{}:", "Equipment".underline())?;
         writeln!(
             f,
-            "                                 |  {}  | {}",
+            "                              |  {}  | {}",
             "value".underline(),
             "effect".underline(),
         )?;
@@ -228,7 +228,7 @@ impl fmt::Display for Equipment {
             ($item:expr, $slot:literal) => {
                 writeln!(
                     f,
-                    "{:<10} {:<30} | {:>2} {} | {:<30}",
+                    "{:<10} {:<40} | {:>2} {} | {:<30}",
                     $slot,
                     format!("{}", $item),
                     $item.cost(),
@@ -320,6 +320,20 @@ impl Gear {
             self.armor()
         )
     }
+    pub(crate) fn from_index_trunc(idx: u8) -> Self {
+        match idx {
+            0 => Self::Sword,
+            1 => Self::Axe,
+            2 => Self::Wand,
+            3 => Self::Staff,
+            4 => Self::Helmet,
+            5 => Self::Hat,
+            6 => Self::Breastplate,
+            7 => Self::Robe,
+            8 => Self::Gauntlet,
+            _ => Self::Glove,
+        }
+    }
 }
 impl FromStr for Gear {
     type Err = String;
@@ -361,19 +375,24 @@ impl FromStr for Gear {
 }
 impl fmt::Display for Gear {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        macro_rules! arm {
+            ($word:literal) => {
+                write!(f, "{}", $word.rgb(0x8a, 0x2b, 0xe2))
+            };
+        }
         match self {
-            Self::Fist => write!(f, "{}", "fist".cyan()),
-            Self::Axe => write!(f, "{}", "axe".cyan()),
-            Self::Sword => write!(f, "{}", "sword".cyan()),
-            Self::Wand => write!(f, "{}", "wand".cyan()),
-            Self::Staff => write!(f, "{}", "staff".cyan()),
-            Self::Helmet => write!(f, "{}", "helmet".cyan()),
-            Self::Hat => write!(f, "{}", "hat".cyan()),
-            Self::Breastplate => write!(f, "{}", "breastplate".cyan()),
-            Self::Robe => write!(f, "{}", "robe".cyan()),
-            Self::Gauntlet => write!(f, "{}", "gauntlet".cyan()),
-            Self::Glove => write!(f, "{}", "glove".cyan()),
-            Self::Bare => write!(f, "{}", "bare".cyan()),
+            Self::Fist => arm!("fist"),
+            Self::Axe => arm!("axe"),
+            Self::Sword => arm!("sword"),
+            Self::Wand => arm!("wand"),
+            Self::Staff => arm!("staff"),
+            Self::Helmet => arm!("helmet"),
+            Self::Hat => arm!("hat"),
+            Self::Breastplate => arm!("breastplate"),
+            Self::Robe => arm!("robe"),
+            Self::Gauntlet => arm!("gauntlet"),
+            Self::Glove => arm!("glove"),
+            Self::Bare => arm!("bare"),
         }
     }
 }
