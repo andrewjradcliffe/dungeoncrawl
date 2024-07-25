@@ -1,3 +1,7 @@
+use crate::encounter::*;
+use crate::maze::*;
+use crate::player::Player;
+use crate::spell::*;
 use once_cell::sync::Lazy;
 use regex::Regex;
 // use regex::{RegexSet, RegexSetBuilder};
@@ -105,6 +109,65 @@ pub fn adventure_menu() -> AdventureAction {
         let s = buf.trim();
         if let Ok(action) = s.parse::<AdventureAction>() {
             return action;
+        }
+    }
+}
+
+pub struct Adventure<'a> {
+    maze: Maze,
+    player: &'a mut Player,
+}
+
+impl<'a> Adventure<'a> {
+    pub fn new(player: &'a mut Player) -> Self {
+        Self {
+            player,
+            maze: Maze::new_demo(),
+        }
+    }
+    pub fn run(&mut self) {
+        'outer: loop {
+            match adventure_menu() {
+                AdventureAction::Movement => loop {
+                    match self.maze.action() {
+                        MazeEvent::Interact(Element::Monster(kind)) => {
+                            let mut enc = Encounter::new(kind, &mut self.player);
+                            match enc.run() {
+                                PlayerVictory => {
+                                    let xp = enc.monster.experience_points();
+                                    println!("You earned {xp} experience points!");
+                                    self.player.xp += xp;
+                                    self.player.update_level();
+                                }
+                                MonsterVictory => break 'outer,
+                                _ => (),
+                            }
+                        }
+                        MazeEvent::Quit => break,
+                        MazeEvent::Movement => (),
+                        _ => (),
+                    }
+                },
+                AdventureAction::Town => {
+                    break;
+                }
+                AdventureAction::Inventory => self.player.noncombat_inventory(),
+                AdventureAction::Equipment => self.player.noncombat_equipment(),
+                AdventureAction::Stats => {
+                    println!("{}", self.player.attribute_message())
+                }
+                AdventureAction::Cast => {
+                    if let Some(spell) = spell_menu(self.player.intellect()) {
+                        match self.player.cast_spell(spell) {
+                            Some(SpellCast::Offense(_)) => {
+                                println!("There is no target!")
+                            }
+                            Some(SpellCast::Defense(x)) => self.player.receive_defensive_spell(x),
+                            None => println!("Insufficient MP!"),
+                        }
+                    }
+                }
+            }
         }
     }
 }

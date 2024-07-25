@@ -1,9 +1,7 @@
 use crate::adventure::*;
 use crate::encounter::*;
-use crate::maze::*;
 use crate::player::*;
 use crate::scoreboard::*;
-use crate::spell::*;
 use crate::town::*;
 use crate::trade::Merchant;
 use rand::Rng;
@@ -71,52 +69,9 @@ pub fn game() {
                     gauntlet(&mut game, n_monster);
                 }
                 State::Adventure => {
-                    let mut maze = Maze::new_demo();
-                    loop {
-                        match adventure_menu() {
-                            AdventureAction::Movement => loop {
-                                match maze.action() {
-                                    MazeEvent::Interact(Element::Monster(kind)) => {
-                                        let mut enc = Encounter::new(kind, &mut game.player);
-                                        match enc.run() {
-                                            PlayerVictory => {
-                                                let xp = enc.monster.experience_points();
-                                                println!("You earned {xp} experience points!");
-                                                game.player.xp += xp;
-                                                game.player.update_level();
-                                            }
-                                            _ => (),
-                                        }
-                                    }
-                                    MazeEvent::Quit => break,
-                                    MazeEvent::Movement => (),
-                                    _ => (),
-                                }
-                            },
-                            AdventureAction::Town => {
-                                game.state = State::Town;
-                                break;
-                            }
-                            AdventureAction::Inventory => game.player.noncombat_inventory(),
-                            AdventureAction::Equipment => game.player.noncombat_equipment(),
-                            AdventureAction::Stats => {
-                                println!("{}", game.player.attribute_message())
-                            }
-                            AdventureAction::Cast => {
-                                if let Some(spell) = spell_menu(game.player.intellect()) {
-                                    match game.player.cast_spell(spell) {
-                                        Some(SpellCast::Offense(_)) => {
-                                            println!("There is no target!")
-                                        }
-                                        Some(SpellCast::Defense(x)) => {
-                                            game.player.receive_defensive_spell(x)
-                                        }
-                                        None => println!("Insufficient MP!"),
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    let mut adv = Adventure::new(&mut game.player);
+                    adv.run();
+                    game.state = State::Town;
                 }
             }
         } else {
