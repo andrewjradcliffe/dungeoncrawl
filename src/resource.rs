@@ -59,7 +59,7 @@ pub struct Mana {
 }
 
 impl Mana {
-    pub const MP: Painted<&'static str> = Painted::new("MP").bold().red();
+    pub const MP: Painted<&'static str> = Painted::new("MP").bold().green();
     pub fn new(max: i64) -> Self {
         Self { current: max, max }
     }

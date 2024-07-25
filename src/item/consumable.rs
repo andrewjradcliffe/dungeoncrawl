@@ -1,11 +1,11 @@
-use crate::utils::*;
-use ansi_term::Colour;
+use crate::resource::*;
 use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
 use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Consumable {
@@ -38,14 +38,14 @@ impl Consumable {
     }
     pub(crate) fn description_imp(&self) -> String {
         match self {
-            HealthPotion => format!("restores {} {}", self.healing(), *ANSI_HP),
-            ManaPotion => format!("restores {} {}", self.mana_restore(), *ANSI_MP),
+            HealthPotion => format!("restores {} {}", self.healing(), Health::HP),
+            ManaPotion => format!("restores {} {}", self.mana_restore(), Mana::MP),
             Food => format!(
                 "restores {} {} and {} {}",
                 self.healing(),
-                *ANSI_HP,
+                Health::HP,
                 self.mana_restore(),
-                *ANSI_MP
+                Mana::MP,
             ),
         }
     }
@@ -64,22 +64,14 @@ impl Consumable {
 
     pub(crate) fn combat_description_imp(&self) -> String {
         match self {
-            HealthPotion => format!(
-                "restores {} {}",
-                Colour::Purple.paint(format!("{}", self.healing())),
-                *ANSI_HP
-            ),
-            ManaPotion => format!(
-                "restores {} {}",
-                Colour::Purple.paint(format!("{}", self.mana_restore())),
-                *ANSI_MP
-            ),
+            HealthPotion => format!("restores {} {}", self.healing().magenta(), Health::HP),
+            ManaPotion => format!("restores {} {}", self.mana_restore().magenta(), Mana::MP),
             Food => format!(
                 "restores {} {} and {} {}",
-                Colour::Purple.paint(format!("{}", self.healing())),
-                *ANSI_HP,
-                Colour::Purple.paint(format!("{}", self.mana_restore())),
-                *ANSI_MP
+                self.healing().magenta(),
+                Health::HP,
+                self.mana_restore().magenta(),
+                Mana::MP,
             ),
         }
     }
@@ -150,9 +142,9 @@ impl FromStr for Consumable {
 impl fmt::Display for Consumable {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            HealthPotion => write!(f, "{}", Colour::Cyan.paint("Health potion")),
-            ManaPotion => write!(f, "{}", Colour::Cyan.paint("Mana potion")),
-            Food => write!(f, "{}", Colour::Cyan.paint("Food")),
+            HealthPotion => write!(f, "{}", "Health potion".cyan()),
+            ManaPotion => write!(f, "{}", "Mana potion".cyan()),
+            Food => write!(f, "{}", "Food".cyan()),
         }
     }
 }

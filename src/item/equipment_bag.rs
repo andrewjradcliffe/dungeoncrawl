@@ -1,12 +1,12 @@
 use crate::equipment::*;
 use crate::multiset::MultiSet;
 use crate::utils::*;
-use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum EquipmentAction {
@@ -104,7 +104,7 @@ impl EquipmentBag {
         println!("{}", msg);
         let n = msg.lines().count() + 2;
         loop {
-            buf.clear();
+            String::clear(&mut buf);
             print!("👜 ");
             io::Write::flush(&mut io::stdout()).unwrap();
             let stdin = io::stdin();
@@ -152,18 +152,15 @@ impl EquipmentBag {
         if self.is_empty() {
             writeln!(f, "EquipmentBag is empty!")?;
         } else {
-            writeln!(
-                f,
-                "{}:",
-                Style::new().bold().underline().paint("EquipmentBag")
-            )?;
+            writeln!(f, "{}:", "EquipmentBag".bold().underline(),)?;
             writeln!(
                 f,
                 "                          | {} |  {}  |  {}",
-                Style::new().underline().paint("available"),
-                Style::new().underline().paint(field2),
-                Style::new().underline().paint("effect"),
+                "available".underline(),
+                field2.underline(),
+                "effect".underline(),
             )?;
+            const GOLD: Painted<&'static str> = Painted::new("gold").bold().yellow();
             for (item, count) in
                 self.0.bag.iter().filter(|(kind, count)| {
                     **count > 0 && **kind != Gear::Fist && **kind != Gear::Bare
@@ -175,7 +172,7 @@ impl EquipmentBag {
                     format!("{}", item),
                     count,
                     item.cost(),
-                    Colour::Yellow.bold().paint("gold"),
+                    GOLD,
                     item.description(),
                 )?;
             }

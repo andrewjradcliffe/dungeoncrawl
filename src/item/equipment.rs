@@ -1,9 +1,9 @@
-use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
+use yansi::{Paint, Painted};
 
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 // pub enum Weapon {
@@ -216,13 +216,14 @@ impl Default for Equipment {
 
 impl fmt::Display for Equipment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{}:", Style::new().underline().paint("Equipment"))?;
+        writeln!(f, "{}:", "Equipment".underline())?;
         writeln!(
             f,
             "                                 |  {}  | {}",
-            Style::new().underline().paint("value"),
-            Style::new().underline().paint("effect"),
+            "value".underline(),
+            "effect".underline(),
         )?;
+        const GOLD: Painted<&'static str> = Painted::new("gold").bold().yellow();
         macro_rules! writeln_item {
             ($item:expr, $slot:literal) => {
                 writeln!(
@@ -231,7 +232,7 @@ impl fmt::Display for Equipment {
                     $slot,
                     format!("{}", $item),
                     $item.cost(),
-                    Colour::Yellow.bold().paint("gold"),
+                    GOLD,
                     $item.description(),
                 )?;
             };
@@ -361,18 +362,18 @@ impl FromStr for Gear {
 impl fmt::Display for Gear {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Fist => write!(f, "{}", Colour::Cyan.paint("fist")),
-            Self::Axe => write!(f, "{}", Colour::Cyan.paint("axe")),
-            Self::Sword => write!(f, "{}", Colour::Cyan.paint("sword")),
-            Self::Wand => write!(f, "{}", Colour::Cyan.paint("wand")),
-            Self::Staff => write!(f, "{}", Colour::Cyan.paint("staff")),
-            Self::Helmet => write!(f, "{}", Colour::Cyan.paint("helmet")),
-            Self::Hat => write!(f, "{}", Colour::Cyan.paint("hat")),
-            Self::Breastplate => write!(f, "{}", Colour::Cyan.paint("breastplate")),
-            Self::Robe => write!(f, "{}", Colour::Cyan.paint("robe")),
-            Self::Gauntlet => write!(f, "{}", Colour::Cyan.paint("gauntlet")),
-            Self::Glove => write!(f, "{}", Colour::Cyan.paint("glove")),
-            Self::Bare => write!(f, "{}", Colour::Cyan.paint("bare")),
+            Self::Fist => write!(f, "{}", "fist".cyan()),
+            Self::Axe => write!(f, "{}", "axe".cyan()),
+            Self::Sword => write!(f, "{}", "sword".cyan()),
+            Self::Wand => write!(f, "{}", "wand".cyan()),
+            Self::Staff => write!(f, "{}", "staff".cyan()),
+            Self::Helmet => write!(f, "{}", "helmet".cyan()),
+            Self::Hat => write!(f, "{}", "hat".cyan()),
+            Self::Breastplate => write!(f, "{}", "breastplate".cyan()),
+            Self::Robe => write!(f, "{}", "robe".cyan()),
+            Self::Gauntlet => write!(f, "{}", "gauntlet".cyan()),
+            Self::Glove => write!(f, "{}", "glove".cyan()),
+            Self::Bare => write!(f, "{}", "bare".cyan()),
         }
     }
 }

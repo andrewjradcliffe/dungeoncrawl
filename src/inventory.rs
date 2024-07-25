@@ -2,12 +2,12 @@ use crate::consumable::*;
 use crate::loot::Loot;
 use crate::multiset::MultiSet;
 use crate::utils::*;
-use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum InventoryAction {
@@ -92,7 +92,7 @@ impl Inventory {
             InventoryTransaction::Quit
         } else {
             loop {
-                buf.clear();
+                String::clear(&mut buf);
                 print!("👜 ");
                 io::Write::flush(&mut io::stdout()).unwrap();
                 let stdin = io::stdin();
@@ -138,14 +138,15 @@ impl Inventory {
         if self.is_empty() {
             writeln!(f, "Inventory is empty!")?;
         } else {
-            writeln!(f, "{}:", Style::new().bold().underline().paint("Inventory"))?;
+            writeln!(f, "{}:", "Inventory".bold().underline())?;
             writeln!(
                 f,
                 "                          | {} |  {}  |  {}",
-                Style::new().underline().paint("available"),
-                Style::new().underline().paint(field2),
-                Style::new().underline().paint("effect"),
+                "available".underline(),
+                field2.underline(),
+                "effect".underline(),
             )?;
+            const GOLD: Painted<&'static str> = Painted::new("gold").bold().yellow();
             for (item, count) in self.0.bag.iter().filter(|(_, count)| **count > 0) {
                 writeln!(
                     f,
@@ -153,7 +154,7 @@ impl Inventory {
                     format!("{}", item),
                     count,
                     item.cost(),
-                    Colour::Yellow.bold().paint("gold"),
+                    GOLD,
                     item.description(),
                 )?;
             }

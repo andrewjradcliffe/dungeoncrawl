@@ -1,10 +1,10 @@
-use crate::utils::*;
-use ansi_term::{Colour, Style};
+use crate::resource::*;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Melee {
@@ -69,9 +69,9 @@ impl FromStr for Melee {
 impl fmt::Display for Melee {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Basic => write!(f, "{}", Colour::RGB(0xb0, 0xc4, 0xde).paint("Basic")),
-            Power => write!(f, "{}", Colour::RGB(0x70, 0x80, 0x90).paint("Power")),
-            Super => write!(f, "{}", Colour::RGB(0x5f, 0x93, 0xa0).paint("Super")),
+            Basic => write!(f, "{}", "Basic".rgb(0xb0, 0xc4, 0xde)),
+            Power => write!(f, "{}", "Power".rgb(0x70, 0x80, 0x90)),
+            Super => write!(f, "{}", "Super".rgb(0x5f, 0x93, 0xa0)),
         }
     }
 }
@@ -82,9 +82,9 @@ pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
     println!("---- Entering melee menu... ----");
     println!(
         "                      |  {}   |  {} |  {}",
-        Style::new().underline().paint("damage"),
-        Style::new().underline().paint("cost"),
-        Style::new().underline().paint("gain"),
+        "damage".underline(),
+        "cost".underline(),
+        "gain".underline(),
     );
     let basic = MeleeAttack::new(Basic, strength);
     let power = MeleeAttack::new(Power, strength);
@@ -93,7 +93,7 @@ pub(crate) fn melee_menu(strength: i64) -> Option<MeleeAttack> {
     power.print_menu_item();
     sup.print_menu_item();
     loop {
-        buf.clear();
+        String::clear(&mut buf); // disambiguate due to `yansi::Paint`
 
         print!("🪓 ");
         io::Write::flush(&mut io::stdout()).unwrap();
@@ -149,9 +149,9 @@ impl MeleeAttack {
             format!("{}", self.kind),
             self.damage,
             self.cost(),
-            *ANSI_TP,
+            Technical::TP,
             self.gain(),
-            *ANSI_TP,
+            Technical::TP,
             width = 40 - self.kind.display_offset(),
         );
     }

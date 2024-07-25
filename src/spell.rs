@@ -1,11 +1,11 @@
+use crate::resource::*;
 use crate::utils::is_quit;
-use crate::utils::*;
-use ansi_term::{Colour, Style};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Offense {
@@ -43,8 +43,8 @@ impl Offense {
 impl fmt::Display for Offense {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Fire => write!(f, "{}", Colour::RGB(0xff, 0x45, 0x00).paint("Fire")),
-            Self::Stone => write!(f, "{}", Colour::RGB(0xa9, 0xa9, 0xa9).paint("Stone")),
+            Self::Fire => write!(f, "{}", "Fire".rgb(0xff, 0x45, 0x00)),
+            Self::Stone => write!(f, "{}", "Stone".rgb(0xa9, 0xa9, 0xa9)),
         }
     }
 }
@@ -91,19 +91,19 @@ impl OffenseSpell {
             format!("{}", self.kind),
             self.damage,
             self.cost(),
-            *ANSI_MP,
+            Mana::MP,
             self.mana_restore(),
-            *ANSI_MP,
+            Mana::MP,
             width = 40 - self.kind.display_offset()
         )
     }
     pub(crate) fn print_menu_preface() {
-        println!("{}", Style::new().underline().italic().paint("Offensive"));
+        println!("{}", "Offensive".underline().italic());
         println!(
             "                      |  {}   |  {} |  {}",
-            Style::new().underline().paint("damage"),
-            Style::new().underline().paint("cost"),
-            Style::new().underline().paint("gain"),
+            "damage".underline(),
+            "cost".underline(),
+            "gain".underline(),
         );
     }
 }
@@ -146,9 +146,9 @@ impl Defense {
 impl fmt::Display for Defense {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Cure1 => write!(f, "{}", Colour::RGB(0xff, 0xb6, 0xc1).paint("Cure I")),
-            Self::Cure2 => write!(f, "{}", Colour::RGB(0xff, 0xb6, 0xc1).paint("Cure II")),
-            Self::Meditate => write!(f, "{}", Colour::RGB(0x6a, 0x6a, 0xcd).paint("Meditate")),
+            Self::Cure1 => write!(f, "{}", "Cure I".rgb(0xff, 0xb6, 0xc1)),
+            Self::Cure2 => write!(f, "{}", "Cure II".rgb(0xff, 0xb6, 0xc1)),
+            Self::Meditate => write!(f, "{}", "Meditate".rgb(0x6a, 0x6a, 0xcd)),
         }
     }
 }
@@ -199,21 +199,21 @@ impl DefenseSpell {
             "    {:>width$} |{:>6} {}  | {:>2} {} | {:>2} {}",
             format!("{}", self.kind),
             self.healing,
-            *ANSI_HP,
+            Health::HP,
             self.cost(),
-            *ANSI_MP,
+            Mana::MP,
             self.mana_restore(),
-            *ANSI_MP,
+            Mana::MP,
             width = 40 - self.kind.display_offset()
         )
     }
     pub(crate) fn print_menu_preface() {
-        println!("{}", Style::new().underline().italic().paint("Defensive"));
+        println!("{}", "Defensive".underline().italic());
         println!(
             "                      |  {}  |  {} |  {}",
-            Style::new().underline().paint("healing"),
-            Style::new().underline().paint("cost"),
-            Style::new().underline().paint("gain"),
+            "healing".underline(),
+            "cost".underline(),
+            "gain".underline(),
         );
     }
 }
@@ -250,7 +250,7 @@ pub(crate) fn spell_menu(intellect: i64) -> Option<SpellCast> {
     meditate.print_menu_item();
 
     loop {
-        buf.clear();
+        String::clear(&mut buf);
 
         print!("🪄 ");
         io::Write::flush(&mut io::stdout()).unwrap();
