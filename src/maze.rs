@@ -11,6 +11,8 @@ pub enum Element {
     Monster,
     Tree,
     Rock,
+    Treasure,
+    Ladder,
     Empty,
 }
 use Element::*;
@@ -23,11 +25,13 @@ impl Element {
             // Tree => 't',    // '🌳',
             // Rock => 'r',    // '🪨',
             // Empty => '.',   // '🪜',
-            Player => '🧟',
+            Player => '🧝',
             Monster => '👾',
             Tree => '🌳',
             Rock => '🪨',
-            Empty => '🏽',
+            Treasure => '🎁',
+            Ladder => '🪜',
+            Empty => '⬜',
         }
     }
 }
@@ -75,12 +79,18 @@ impl FromStr for Direction {
     }
 }
 #[derive(Debug, Clone, PartialEq)]
-pub struct Map {
+pub struct Maze {
     pub(crate) grid: Grid<Element>,
     pub(crate) player: (usize, usize),
 }
-impl Map {
-    pub fn new() -> Self {
+impl Maze {
+    pub fn new_default(n_rows: usize, n_cols: usize) -> Self {
+        let mut grid = Grid::new_default(n_rows, n_cols);
+        let player = (n_rows / 2, n_cols / 2);
+        grid[player] = Player;
+        Self { grid, player }
+    }
+    pub fn new_demo() -> Self {
         let mut grid = Grid::new_default(10, 10);
         let player = (2, 2);
         grid[player] = Player;
@@ -100,21 +110,22 @@ impl Map {
             let stdin = io::stdin();
             let mut handle = stdin.lock();
             match handle.read_line(&mut buf) {
-                Ok(_) => (),
+                Ok(_) => {
+                    let _ = crate::readline::clear_last_n_lines(1);
+                }
                 Err(e) => println!("Error in map menu readline: {:#?}", e),
             }
 
             let s = buf.trim();
             if let Ok(action) = s.parse::<Direction>() {
+                // let _ = crate::readline::clear_last_n_lines(1);
                 return action;
             }
         }
     }
-    pub fn movement(&mut self) {
-        let (i_0, j_0) = self
-            .grid
-            .cartesian_index(self.grid.inner.iter().position(|x| *x == Player).unwrap());
-        let (i_1, j_1) = match Self::menu() {
+    pub(crate) fn movement_imp(&mut self, dir: Direction) {
+        let (i_0, j_0) = self.player.clone();
+        let (i_1, j_1) = match dir {
             Up => {
                 let i_1 = if i_0 == 0 { 0 } else { i_0 - 1 };
                 let j_1 = j_0;
@@ -139,17 +150,48 @@ impl Map {
         if self.grid[(i_1, j_1)] == Empty {
             self.grid[(i_0, j_0)] = Empty;
             self.grid[(i_1, j_1)] = Player;
+            self.player = (i_1, j_1);
         }
+    }
+    pub fn movement(&mut self) {
+        self.movement_imp(Self::menu());
     }
 }
 
 pub fn demo_movement() {
-    let mut map = Map::new();
+    let mut maze = Maze::new_demo();
+    let n = maze.grid.n_rows() + 1;
     loop {
-        println!("{}", map.grid);
-        map.movement();
-        let _ = crate::readline::clear_screen();
-        let _ = crate::readline::cursor_topleft();
-        // let _ = crate::readline::clear_last_n_lines(7);
+        println!("{}", maze.grid);
+        maze.movement();
+        // let _ = crate::readline::clear_screen();
+        // let _ = crate::readline::cursor_topleft();
+        let _ = crate::readline::clear_last_n_lines(n);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn movement() {
+        let mut maze = Maze::new_default(10, 10);
+        assert_eq!(maze.grid[(5, 5)], Player);
+        for _ in 0..5 {
+            maze.movement_imp(Up);
+        }
+        assert_eq!(maze.grid[(0, 5)], Player);
+        for _ in 0..5 {
+            maze.movement_imp(Down);
+        }
+        for _ in 0..5 {
+            maze.movement_imp(Forward);
+        }
+        assert_eq!(maze.grid[(5, 9)], Player);
+        for _ in 0..9 {
+            maze.movement_imp(Backward);
+        }
+        assert_eq!(maze.grid[(5, 0)], Player);
     }
 }

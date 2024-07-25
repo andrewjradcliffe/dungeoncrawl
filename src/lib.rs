@@ -7,10 +7,11 @@ pub mod grid;
 pub mod inventory;
 pub mod item;
 pub mod loot;
-pub mod map;
+pub mod maze;
 pub mod melee;
 pub mod monster;
 pub mod multiset;
+pub mod pathfinding;
 pub mod player;
 pub mod readline;
 pub mod resource;
@@ -18,7 +19,6 @@ pub mod scoreboard;
 pub mod spell;
 pub mod town;
 pub mod trade;
-pub mod pathfinding;
 
 pub(crate) mod utils;
 
