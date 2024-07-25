@@ -162,6 +162,7 @@ impl MonsterKind {
             _ => panic!(),
         }
     }
+
     pub fn gen<T: Rng>(rng: &mut T) -> Self {
         Self::from_index(rng.gen_range(0u8..8u8))
     }
@@ -192,6 +193,18 @@ impl MonsterKind {
             Orc => "orcs",
             Dragon => "dragons",
             Fairy => "fairies",
+        }
+    }
+    pub const fn symbol(&self) -> char {
+        match self {
+            Frog => '🐸',
+            Wolf => '🐺',
+            Bat => '🦇',
+            Goblin => '👺',
+            Bear => '🐻',
+            Orc => '👹',
+            Dragon => '🐉',
+            Fairy => '🧚',
         }
     }
     #[inline]
