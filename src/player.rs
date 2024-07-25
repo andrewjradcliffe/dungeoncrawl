@@ -240,7 +240,10 @@ impl Player {
         while self.visit_equipment() {}
     }
     pub fn acquire(&mut self, loot: Loot) {
-        self.inventory.push_loot(loot)
+        self.inventory.push_multiple(loot.item, loot.amount);
+        if let Some(gear) = loot.gear {
+            self.equipment_bag.push(gear);
+        }
     }
     pub fn status(&self) -> String {
         let mut buf = String::with_capacity(1 << 7);

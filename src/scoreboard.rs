@@ -1,7 +1,6 @@
 use crate::monster::*;
 use indexmap::{map::Entry, IndexMap};
 use std::fmt;
-use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Scoreboard(IndexMap<MonsterKind, usize>);
@@ -31,9 +30,9 @@ impl fmt::Display for Scoreboard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for (kind, count) in self.0.iter().filter(|(_, count)| **count > 0) {
             if *count == 1 {
-                writeln!(f, "You defeated 1 {}!", kind.singular().cyan())?;
+                writeln!(f, "You defeated 1 {}!", kind.singular_painted())?;
             } else {
-                writeln!(f, "You defeated {count} {}!", kind.plural().cyan())?;
+                writeln!(f, "You defeated {count} {}!", kind.plural_painted())?;
             }
         }
         Ok(())

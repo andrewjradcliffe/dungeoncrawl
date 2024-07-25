@@ -4,7 +4,7 @@ use crate::spell::*;
 use rand::Rng;
 use std::fmt;
 use std::hash::Hash;
-use yansi::Paint;
+use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Monster {
@@ -194,10 +194,20 @@ impl MonsterKind {
             Fairy => "fairies",
         }
     }
+    #[inline]
+    const fn painted(s: &'static str) -> Painted<&'static str> {
+        Painted::new(s).rgb(0xff, 0x1c, 0x00).bold()
+    }
+    pub const fn singular_painted(&self) -> Painted<&'static str> {
+        Self::painted(self.singular())
+    }
+    pub const fn plural_painted(&self) -> Painted<&'static str> {
+        Self::painted(self.plural())
+    }
 }
 
 impl fmt::Display for MonsterKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.singular().cyan())
+        write!(f, "{}", self.singular_painted())
     }
 }

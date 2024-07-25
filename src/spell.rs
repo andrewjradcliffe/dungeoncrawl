@@ -34,7 +34,7 @@ impl Offense {
     }
     pub(crate) const fn display_offset(&self) -> usize {
         match self {
-            Self::Fire => 3,
+            Self::Fire => 2,
             _ => 0,
         }
     }
@@ -43,7 +43,7 @@ impl Offense {
 impl fmt::Display for Offense {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Fire => write!(f, "{}", "Fire".rgb(0xff, 0x45, 0x00)),
+            Self::Fire => write!(f, "{}", "Fire".rgb(0xff, 0x8c, 0x00)),
             Self::Stone => write!(f, "{}", "Stone".rgb(0xa9, 0xa9, 0xa9)),
         }
     }
