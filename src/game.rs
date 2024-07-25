@@ -1,5 +1,6 @@
 use crate::adventure::*;
 use crate::encounter::*;
+use crate::maze::*;
 use crate::player::*;
 use crate::scoreboard::*;
 use crate::town::*;
@@ -16,14 +17,12 @@ pub enum State {
 pub struct Game {
     state: State,
     player: Player,
-    scoreboard: Scoreboard,
 }
 impl Game {
     pub fn new() -> Self {
         Self {
             state: State::Town,
             player: Player::new(),
-            scoreboard: Scoreboard::new(),
         }
     }
 }
@@ -40,7 +39,7 @@ pub fn game() {
     println!(
         "================================================================================\n\n\n"
     );
-    // crate::map::demo_movement();
+    // crate::maze::demo_movement();
     let mut rng = rand::thread_rng();
 
     let mut game = Game::new();
@@ -70,26 +69,41 @@ pub fn game() {
                     game.state = State::Town;
                     gauntlet(&mut game, n_monster);
                 }
-                State::Adventure => match adventure_menu() {
-                    AdventureAction::Encounter => {
-                        let mut enc = Encounter::new(&mut game.player);
-                        match enc.run() {
-                            PlayerVictory => {
-                                let xp = enc.monster.experience_points();
-                                println!("You earned {xp} experience points!");
-                                game.player.xp += xp;
-                                game.player.update_level();
+                State::Adventure => {
+                    let mut maze = Maze::new_demo();
+                    loop {
+                        match adventure_menu() {
+                            AdventureAction::Movement => loop {
+                                match maze.action() {
+                                    MazeEvent::Interact(Element::Monster(kind)) => {
+                                        let mut enc = Encounter::new(kind, &mut game.player);
+                                        match enc.run() {
+                                            PlayerVictory => {
+                                                let xp = enc.monster.experience_points();
+                                                println!("You earned {xp} experience points!");
+                                                game.player.xp += xp;
+                                                game.player.update_level();
+                                            }
+                                            _ => (),
+                                        }
+                                    }
+                                    MazeEvent::Quit => break,
+                                    MazeEvent::Movement => (),
+                                    _ => (),
+                                }
+                            },
+                            AdventureAction::Town => {
+                                game.state = State::Town;
+                                break;
                             }
-                            _ => (),
+                            AdventureAction::Inventory => game.player.noncombat_inventory(),
+                            AdventureAction::Equipment => game.player.noncombat_equipment(),
+                            AdventureAction::Stats => {
+                                println!("{}", game.player.attribute_message())
+                            }
                         }
                     }
-                    AdventureAction::Town => {
-                        game.state = State::Town;
-                    }
-                    AdventureAction::Inventory => game.player.noncombat_inventory(),
-                    AdventureAction::Equipment => game.player.noncombat_equipment(),
-                    AdventureAction::Stats => println!("{}", game.player.attribute_message()),
-                },
+                }
             }
         } else {
             game.state = State::Town;
@@ -112,7 +126,7 @@ pub fn gauntlet(game: &mut Game, n: usize) {
 
     let mut i = 0;
     while game.player.is_alive() && i < n {
-        let mut enc = Encounter::new(&mut game.player);
+        let mut enc = Encounter::rand(&mut game.player);
         let kind = enc.monster.kind.clone();
         match enc.run() {
             PlayerVictory => {

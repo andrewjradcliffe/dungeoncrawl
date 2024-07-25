@@ -7,7 +7,7 @@ use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum AdventureAction {
-    Encounter,
+    Movement,
     Town,
     Inventory,
     Equipment,
@@ -18,8 +18,8 @@ use AdventureAction::*;
 impl AdventureAction {
     pub fn description(&self) -> &'static str {
         match self {
-            Encounter => "Engage a random monster in combat",
-            Town => "Visit the town",
+            Movement => "Move freely about the world",
+            Town => "Return to town",
             Inventory => "Open inventory",
             Equipment => "Open equipment",
             Stats => "Display character statistics",
@@ -37,7 +37,7 @@ impl AdventureAction {
 impl fmt::Display for AdventureAction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Encounter => write!(f, "Encounter"),
+            Movement => write!(f, "Movement"),
             Town => write!(f, "Town"),
             Inventory => write!(f, "Inventory"),
             Equipment => write!(f, "Equipment"),
@@ -51,14 +51,14 @@ impl FromStr for AdventureAction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_ENC: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:encounter|e)$").unwrap());
+        static RE_MOVE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:movement|m)$").unwrap());
         static RE_TOWN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:town|t)$").unwrap());
         static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
         static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
         static RE_STATS: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
 
-        if RE_ENC.is_match(s) {
-            Ok(Encounter)
+        if RE_MOVE.is_match(s) {
+            Ok(Movement)
         } else if RE_TOWN.is_match(s) {
             Ok(Town)
         } else if RE_INV.is_match(s) {
@@ -76,13 +76,13 @@ impl FromStr for AdventureAction {
 pub fn adventure_menu() -> AdventureAction {
     let mut buf = String::with_capacity(1 << 10);
     println!("==== Entering the adventure... ====");
-    Encounter.print_menu_item();
+    Movement.print_menu_item();
     Town.print_menu_item();
     Inventory.print_menu_item();
     Equipment.print_menu_item();
     Stats.print_menu_item();
     loop {
-        buf.clear();
+        String::clear(&mut buf);
         print!("🍁 ");
         io::Write::flush(&mut io::stdout()).unwrap();
 
