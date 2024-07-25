@@ -25,16 +25,25 @@ pub struct Encounter<'a> {
 impl<'a> Encounter<'a> {
     pub fn try_new(player: &'a mut Player) -> Option<Self> {
         if player.is_alive() {
-            Some(Self::new(player))
+            Some(Self::rand(player))
         } else {
             None
         }
     }
-    pub fn new(player: &'a mut Player) -> Self {
+    pub fn rand(player: &'a mut Player) -> Self {
         let level = player.level();
         Self {
             player,
             monster: Monster::rand(level),
+            buf: String::with_capacity(1 << 7),
+            status: String::with_capacity(1 << 7),
+        }
+    }
+    pub fn new(kind: MonsterKind, player: &'a mut Player) -> Self {
+        let level = player.level();
+        Self {
+            player,
+            monster: Monster::rand_level(kind, level),
             buf: String::with_capacity(1 << 7),
             status: String::with_capacity(1 << 7),
         }

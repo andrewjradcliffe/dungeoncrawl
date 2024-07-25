@@ -40,12 +40,12 @@ impl Monster {
         buf
     }
 
-    pub fn rand(level: usize) -> Self {
+    pub fn rand_level(kind: MonsterKind, level: usize) -> Self {
         let mut rng = rand::thread_rng();
-        Monster::new(
-            MonsterKind::rand(),
-            rng.gen_range(1usize..=level.min(10usize)),
-        )
+        Self::new(kind, rng.gen_range(1usize..=level.min(10usize)))
+    }
+    pub fn rand(level: usize) -> Self {
+        Self::rand_level(MonsterKind::rand(), level)
     }
 
     pub fn is_alive(&self) -> bool {
