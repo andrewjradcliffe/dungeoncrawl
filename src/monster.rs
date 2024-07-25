@@ -1,19 +1,17 @@
 use crate::melee::*;
+use crate::resource::*;
 use crate::spell::*;
-use crate::utils::*;
-use ansi_term::{Colour, Style};
 use rand::Rng;
-use std::fmt::{self, Write};
+use std::fmt;
 use std::hash::Hash;
+use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Monster {
     pub(crate) kind: MonsterKind,
     pub(crate) strength: i64,
-    pub(crate) current_hp: i64,
-    pub(crate) max_hp: i64,
-    pub(crate) current_tp: i64,
-    pub(crate) max_tp: i64,
+    pub(crate) hp: Health,
+    pub(crate) tp: Technical,
     pub(crate) level: usize,
 }
 
@@ -22,10 +20,8 @@ impl Monster {
         Self {
             kind,
             strength: kind.strength() * level as i64,
-            current_hp: kind.max_hp() * level as i64,
-            max_hp: kind.max_hp() * level as i64,
-            current_tp: 0,
-            max_tp: 100,
+            hp: Health::new(kind.max_hp() * level as i64),
+            tp: Technical::default(),
             level,
         }
     }
@@ -33,38 +29,14 @@ impl Monster {
         self.strength
     }
     pub fn experience_points(&self) -> usize {
-        self.max_hp as usize / 2
+        self.hp.max as usize / 2
     }
-    pub fn write_hp(&self, buf: &mut String) {
-        let hp = format!("{}", self.current_hp);
-        write!(
-            buf,
-            "{}[{}/{}]",
-            *ANSI_HP,
-            Style::new().italic().paint(hp),
-            self.max_hp
-        )
-        .unwrap();
-    }
-    pub fn write_tp(&self, buf: &mut String) {
-        let tp = format!("{}", self.current_tp);
-        write!(
-            buf,
-            "{}[{}/{}]",
-            *ANSI_TP,
-            Style::new().italic().paint(tp),
-            self.max_tp
-        )
-        .unwrap();
-    }
-    pub fn write_status(&self, buf: &mut String) {
-        self.write_hp(buf);
-        write!(buf, " ").unwrap();
-        self.write_tp(buf);
+    pub fn write_status<T: fmt::Write>(&self, buf: &mut T) -> fmt::Result {
+        write!(buf, "{} {}", self.hp, self.tp)
     }
     pub fn status(&self) -> String {
         let mut buf = String::with_capacity(1 << 7);
-        self.write_status(&mut buf);
+        self.write_status(&mut buf).unwrap();
         buf
     }
 
@@ -77,10 +49,10 @@ impl Monster {
     }
 
     pub fn is_alive(&self) -> bool {
-        self.current_hp > 0
+        self.hp.is_alive()
     }
     pub fn receive_damage(&mut self, amount: i64) {
-        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
+        self.hp.receive_damage(amount)
     }
     pub fn receive_melee_attack(&mut self, melee: MeleeAttack) {
         let amount = melee.damage;
@@ -88,7 +60,7 @@ impl Monster {
             "Your {} attack hits the {} for {} damage!",
             melee.kind,
             self.kind,
-            Colour::Purple.paint(format!("{}", amount))
+            amount.magenta(),
         );
         self.receive_damage(amount);
     }
@@ -98,20 +70,20 @@ impl Monster {
         println!(
             "Your {kind} hits the {} for {} damage!",
             self.kind,
-            Colour::Purple.paint(format!("{}", amount))
+            amount.magenta(),
         );
         self.receive_damage(amount);
     }
     pub(crate) fn cast_melee(&mut self, melee: Melee) -> MeleeAttack {
         let cost = melee.cost();
         let gain = melee.gain();
-        self.current_tp = self.current_tp - cost + gain;
+        self.tp.current = self.tp.current - cost + gain;
         MeleeAttack::new(melee, self.strength())
     }
     pub fn produce_melee_attack(&mut self) -> MeleeAttack {
-        if self.current_tp >= Super.cost() {
+        if self.tp.current >= Super.cost() {
             self.cast_melee(Super)
-        } else if self.current_tp >= Power.cost() && self.current_hp <= 10 {
+        } else if self.tp.current >= Power.cost() && self.hp.current <= self.hp.pct_max(10) {
             self.cast_melee(Power)
         } else {
             self.cast_melee(Basic)
@@ -223,6 +195,6 @@ impl MonsterKind {
 
 impl fmt::Display for MonsterKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", Colour::Cyan.paint(self.singular()))
+        write!(f, "{}", self.singular().cyan())
     }
 }

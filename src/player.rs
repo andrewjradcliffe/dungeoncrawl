@@ -6,15 +6,12 @@ use crate::item::*;
 use crate::loot::Loot;
 use crate::melee::*;
 use crate::monster::*;
+use crate::resource::*;
 use crate::spell::*;
 use crate::trade::*;
-use crate::utils::*;
-use ansi_term::{Colour, Style};
-use std::fmt::Write;
+use std::fmt::{self, Write};
+use yansi::{Paint, Painted};
 
-pub(crate) const PLAYER_HP: i64 = 100;
-pub(crate) const PLAYER_MP: i64 = 100;
-pub(crate) const PLAYER_TP: i64 = 100;
 pub(crate) const PLAYER_GOLD: usize = 25;
 pub(crate) const PLAYER_STRENGTH: i64 = 1;
 pub(crate) const PLAYER_INTELLECT: i64 = 1;
@@ -23,12 +20,9 @@ pub(crate) const PLAYER_XP: usize = 0;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
-    pub(crate) current_hp: i64,
-    pub(crate) max_hp: i64,
-    pub(crate) current_mp: i64,
-    pub(crate) max_mp: i64,
-    pub(crate) current_tp: i64,
-    pub(crate) max_tp: i64,
+    pub(crate) hp: Health,
+    pub(crate) mp: Mana,
+    pub(crate) tp: Technical,
     pub(crate) inventory: Inventory,
     pub(crate) gold: usize,
     pub(crate) strength: i64,
@@ -63,12 +57,9 @@ pub(crate) fn xp_to_next_level(x: usize) -> usize {
 impl Player {
     pub fn new() -> Self {
         Self {
-            current_hp: PLAYER_HP,
-            max_hp: PLAYER_HP,
-            current_mp: PLAYER_MP,
-            max_mp: PLAYER_MP,
-            current_tp: 0,
-            max_tp: PLAYER_TP,
+            hp: Health::default(),
+            mp: Mana::default(),
+            tp: Technical::default(),
             inventory: Inventory::new_player(),
             gold: PLAYER_GOLD,
             strength: PLAYER_STRENGTH,
@@ -85,9 +76,8 @@ impl Player {
             println!("You are now level {}!", new_level);
             self.level = new_level;
             let new_hp = PLAYER_HP * self.level as i64;
-            self.current_hp = new_hp;
-            self.max_hp = new_hp;
-            self.current_mp = self.max_mp;
+            self.hp = Health::new(new_hp);
+            self.mp.restore_all();
             self.strength = PLAYER_STRENGTH * self.level as i64;
             self.intellect = PLAYER_INTELLECT * self.level as i64;
         }
@@ -96,13 +86,13 @@ impl Player {
         self.level
     }
     pub fn restore_hp(&mut self, amount: i64) {
-        self.current_hp = (self.current_hp + amount).clamp(0, self.max_hp);
+        self.hp.restore(amount);
     }
     pub fn restore_mp(&mut self, amount: i64) {
-        self.current_mp = (self.current_mp + amount).clamp(0, self.max_mp);
+        self.mp.restore(amount);
     }
     pub fn restore_tp(&mut self, amount: i64) {
-        self.current_tp = (self.current_tp + amount).clamp(0, self.max_tp);
+        self.tp.restore(amount);
     }
     pub fn strength(&self) -> i64 {
         self.strength + self.equipment.strength()
@@ -114,15 +104,15 @@ impl Player {
         self.equipment.armor()
     }
     pub fn is_alive(&self) -> bool {
-        self.current_hp > 0
+        self.hp.is_alive()
     }
     pub fn revive(&mut self) {
-        self.current_hp = self.max_hp;
-        self.current_mp = self.max_mp;
-        self.current_tp = 0;
+        self.hp.restore_all();
+        self.mp.restore_all();
+        self.tp.drain_all();
     }
     pub fn receive_damage(&mut self, amount: i64) {
-        self.current_hp = (self.current_hp - amount).clamp(0, self.max_hp);
+        self.hp.receive_damage(amount);
     }
     pub fn armor_reduction(&self, damage: i64) -> i64 {
         const U: i64 = 10; // maximum armor
@@ -135,8 +125,8 @@ impl Player {
                 println!(
                     "The {} heals you for {} {}!",
                     MonsterKind::Fairy,
-                    Colour::Purple.paint(format!("{}", monster.strength.abs())),
-                    *ANSI_HP
+                    monster.strength.abs().magenta(),
+                    Health::HP
                 );
                 self.receive_damage(monster.strength);
             }
@@ -146,7 +136,7 @@ impl Player {
                 let melee = attack.kind;
                 println!(
                     "The {kind}'s {melee} attack hits you for {} damage!",
-                    Colour::Purple.paint(format!("{}", amount)),
+                    amount.magenta()
                 );
                 self.receive_damage(amount);
             }
@@ -158,49 +148,52 @@ impl Player {
         match kind {
             Cure1 | Cure2 => {
                 let amount = spell.healing;
+                let prev = self.hp.current;
+                self.restore_hp(amount);
+                let amount = self.hp.current - prev;
                 println!(
                     "Your {kind} heals you for {} {}!",
-                    Colour::Purple.paint(format!("{}", amount)),
-                    *ANSI_HP
+                    amount.magenta(),
+                    Health::HP,
                 );
-                self.restore_hp(amount);
             }
             Meditate => {
                 let amount = spell.mana_restore();
+                let prev = self.mp.current;
+                self.restore_mp(amount);
+                let amount = self.mp.current - prev;
                 println!(
                     "Your {kind} restores {} of your {}!",
-                    Colour::Purple.paint(format!("{}", amount)),
-                    *ANSI_MP
+                    amount.magenta(),
+                    Mana::MP,
                 );
-                self.restore_mp(amount);
             }
         }
     }
 
     pub fn cast_spell(&mut self, spell: SpellCast) -> Option<SpellCast> {
-        let cost = spell.cost();
-        if self.current_mp >= cost {
-            self.current_mp = (self.current_mp - cost).clamp(0, self.max_mp);
-            Some(spell)
-        } else {
-            None
-        }
+        self.mp.cast_spell(spell)
     }
     pub fn cast_melee(&mut self, melee: MeleeAttack) -> Option<MeleeAttack> {
-        let cost = melee.cost();
-        let gain = melee.gain();
-        if self.current_tp >= cost {
-            self.current_tp = (self.current_tp - cost + gain).clamp(0, self.max_tp);
-            Some(melee)
-        } else {
-            None
-        }
+        self.tp.cast_melee(melee)
     }
 
     pub fn consume(&mut self, item: Consumable) {
-        self.restore_hp(item.healing());
-        self.restore_mp(item.mana_restore());
-        println!("Your {item} {}!", item.combat_description());
+        let prev_hp = self.hp.current;
+        let prev_mp = self.mp.current;
+        self.hp.restore(item.healing());
+        self.mp.restore(item.mana_restore());
+        let heal_amt = Painted::new(self.hp.current - prev_hp).magenta();
+        let mana_amt = Painted::new(self.mp.current - prev_mp).magenta();
+        match item {
+            Food => println!(
+                "Your {item} heals you for {heal_amt} {} and restores {mana_amt} of your {}!",
+                Health::HP,
+                Mana::MP
+            ),
+            HealthPotion => println!("Your {item} heals you for {heal_amt} {}!", Health::HP),
+            ManaPotion => println!("Your {item} heals you for {mana_amt} {}!", Mana::MP),
+        }
     }
     pub fn visit_inventory(&mut self) -> bool {
         match self.inventory.menu(&self.inventory_message()) {
@@ -251,48 +244,11 @@ impl Player {
     }
     pub fn status(&self) -> String {
         let mut buf = String::with_capacity(1 << 7);
-        self.write_status(&mut buf);
+        self.write_status(&mut buf).unwrap();
         buf
     }
-    pub fn write_hp(&self, buf: &mut String) {
-        let hp = format!("{}", self.current_hp);
-        write!(
-            buf,
-            "{}[{}/{}]",
-            *ANSI_HP,
-            Style::new().italic().paint(hp),
-            self.max_hp
-        )
-        .unwrap();
-    }
-    pub fn write_mp(&self, buf: &mut String) {
-        let mp = format!("{}", self.current_mp);
-        write!(
-            buf,
-            "{}[{}/{}]",
-            *ANSI_MP,
-            Style::new().italic().paint(mp),
-            self.max_mp
-        )
-        .unwrap();
-    }
-    pub fn write_tp(&self, buf: &mut String) {
-        let tp = format!("{}", self.current_tp);
-        write!(
-            buf,
-            "{}[{}/{}]",
-            *ANSI_TP,
-            Style::new().italic().paint(tp),
-            self.max_tp
-        )
-        .unwrap();
-    }
-    pub fn write_status(&self, buf: &mut String) {
-        self.write_hp(buf);
-        write!(buf, " ").unwrap();
-        self.write_mp(buf);
-        write!(buf, " ").unwrap();
-        self.write_tp(buf);
+    pub fn write_status<T: fmt::Write>(&self, buf: &mut T) -> fmt::Result {
+        write!(buf, "{} {} {}", self.hp, self.mp, self.tp)
     }
     pub fn sleep(&mut self) {
         self.revive();
@@ -300,13 +256,7 @@ impl Player {
     }
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
-        writeln!(
-            s,
-            "{}: {}",
-            Style::new().bold().underline().paint("Gold"),
-            self.gold
-        )
-        .unwrap();
+        writeln!(s, "{}: {}", "Gold".bold().underline(), self.gold).unwrap();
         writeln!(s, "{}", self.inventory).unwrap();
         s
     }
@@ -327,7 +277,7 @@ impl Player {
         )
         .unwrap();
         writeln!(s, "💰: {}", self.gold).unwrap();
-        self.write_status(&mut s);
+        self.write_status(&mut s).unwrap();
         s.push('\n');
         writeln!(s, "STR: {}", self.strength()).unwrap();
         writeln!(s, "INT: {}", self.intellect()).unwrap();

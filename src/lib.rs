@@ -13,6 +13,7 @@ pub mod monster;
 pub mod multiset;
 pub mod player;
 pub mod readline;
+pub mod resource;
 pub mod scoreboard;
 pub mod spell;
 pub mod town;

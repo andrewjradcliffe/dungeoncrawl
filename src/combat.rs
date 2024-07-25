@@ -1,6 +1,8 @@
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::fmt;
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum CombatAction {
@@ -35,6 +37,23 @@ impl FromStr for CombatAction {
             Ok(DoNothing)
         } else {
             Err(s.to_string())
+        }
+    }
+}
+
+impl fmt::Display for CombatAction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        macro_rules! arm {
+            ($fmt_str:literal, $ch:literal) => {
+                write!(f, $fmt_str, $ch.underline().bold())
+            };
+        }
+        match self {
+            Attack => arm!("{}ttack", "A"),
+            Run => arm!("{}un", "R"),
+            ShowInventory => arm!("{}nventory", "I"),
+            Cast => arm!("{}ast", "C"),
+            DoNothing => arm!("{}othing", "N"),
         }
     }
 }

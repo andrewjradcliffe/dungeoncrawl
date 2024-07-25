@@ -40,7 +40,6 @@ pub fn game() {
     println!(
         "================================================================================\n\n\n"
     );
-
     // crate::map::demo_movement();
     let mut rng = rand::thread_rng();
 

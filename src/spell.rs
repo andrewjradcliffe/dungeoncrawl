@@ -277,6 +277,7 @@ pub(crate) fn spell_menu(intellect: i64) -> Option<SpellCast> {
                     Fire => fire,
                 }));
             } else if let Ok(defense) = s.parse::<Defense>() {
+                let _ = crate::readline::clear_last_n_lines(N);
                 return Some(SpellCast::Defense(match defense {
                     Cure1 => cure1,
                     Cure2 => cure2,

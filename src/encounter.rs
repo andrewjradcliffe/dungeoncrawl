@@ -4,7 +4,6 @@ use crate::melee::*;
 use crate::monster::*;
 use crate::player::*;
 use crate::spell::*;
-use ansi_term::Style;
 use std::io::{self, BufRead, Write};
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
@@ -131,7 +130,7 @@ impl<'a> Encounter<'a> {
 
     pub fn update_status(&mut self) {
         self.status.clear();
-        self.player.write_status(&mut self.status);
+        self.player.write_status(&mut self.status).unwrap();
     }
 
     pub fn menu(&mut self) -> CombatAction {
@@ -142,12 +141,8 @@ impl<'a> Encounter<'a> {
             self.monster.status()
         );
         println!(
-            "{}TTACK, {}AST, {}UN, {}NVENTORY, or do {}OTHING?",
-            Style::new().underline().paint("A"),
-            Style::new().underline().paint("C"),
-            Style::new().underline().paint("R"),
-            Style::new().underline().paint("I"),
-            Style::new().underline().paint("N"),
+            "{}, {}, {}, {}, or do {}?",
+            Attack, Cast, ShowInventory, Run, DoNothing
         );
         loop {
             self.buf.clear();
@@ -157,10 +152,14 @@ impl<'a> Encounter<'a> {
             let stdin = io::stdin();
             let mut handle = stdin.lock();
             match handle.read_line(&mut self.buf) {
-                Ok(_) => (),
+                Ok(_) => {
+                    let _ = crate::readline::clear_last_n_lines(1);
+                }
                 Err(e) => println!("Error in combat menu readline: {:#?}", e),
             }
             if let Ok(action) = self.buf.parse::<CombatAction>() {
+                // let _ = crate::readline::clear_last_n_lines(2);
+                let _ = crate::readline::clear_last_n_lines(1);
                 break action;
             }
         }
