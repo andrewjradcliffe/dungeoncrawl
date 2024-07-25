@@ -3,6 +3,7 @@ use crate::encounter::*;
 use crate::maze::*;
 use crate::player::*;
 use crate::scoreboard::*;
+use crate::spell::*;
 use crate::town::*;
 use crate::trade::Merchant;
 use rand::Rng;
@@ -100,6 +101,19 @@ pub fn game() {
                             AdventureAction::Equipment => game.player.noncombat_equipment(),
                             AdventureAction::Stats => {
                                 println!("{}", game.player.attribute_message())
+                            }
+                            AdventureAction::Cast => {
+                                if let Some(spell) = spell_menu(game.player.intellect()) {
+                                    match game.player.cast_spell(spell) {
+                                        Some(SpellCast::Offense(_)) => {
+                                            println!("There is no target!")
+                                        }
+                                        Some(SpellCast::Defense(x)) => {
+                                            game.player.receive_defensive_spell(x)
+                                        }
+                                        None => println!("Insufficient MP!"),
+                                    }
+                                }
                             }
                         }
                     }

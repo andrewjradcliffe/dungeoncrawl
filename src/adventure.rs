@@ -10,6 +10,7 @@ pub enum AdventureAction {
     Movement,
     Town,
     Inventory,
+    Cast,
     Equipment,
     Stats,
 }
@@ -21,6 +22,7 @@ impl AdventureAction {
             Movement => "Move freely about the world",
             Town => "Return to town",
             Inventory => "Open inventory",
+            Cast => "Cast a spell",
             Equipment => "Open equipment",
             Stats => "Display character statistics",
         }
@@ -40,6 +42,7 @@ impl fmt::Display for AdventureAction {
             Movement => write!(f, "Movement"),
             Town => write!(f, "Town"),
             Inventory => write!(f, "Inventory"),
+            Cast => write!(f, "Cast"),
             Equipment => write!(f, "Equipment"),
             Stats => write!(f, "Stats"),
         }
@@ -54,6 +57,7 @@ impl FromStr for AdventureAction {
         static RE_MOVE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:movement|m)$").unwrap());
         static RE_TOWN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:town|t)$").unwrap());
         static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
+        static RE_CAST: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:cast|c)$").unwrap());
         static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
         static RE_STATS: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
 
@@ -63,6 +67,8 @@ impl FromStr for AdventureAction {
             Ok(Town)
         } else if RE_INV.is_match(s) {
             Ok(Inventory)
+        } else if RE_CAST.is_match(s) {
+            Ok(Cast)
         } else if RE_EQUIP.is_match(s) {
             Ok(Equipment)
         } else if RE_STATS.is_match(s) {
@@ -79,6 +85,7 @@ pub fn adventure_menu() -> AdventureAction {
     Movement.print_menu_item();
     Town.print_menu_item();
     Inventory.print_menu_item();
+    Cast.print_menu_item();
     Equipment.print_menu_item();
     Stats.print_menu_item();
     loop {
@@ -89,7 +96,9 @@ pub fn adventure_menu() -> AdventureAction {
         let stdin = io::stdin();
         let mut handle = stdin.lock();
         match handle.read_line(&mut buf) {
-            Ok(_) => (),
+            Ok(_) => {
+                let _ = crate::readline::clear_last_n_lines(1);
+            }
             Err(e) => println!("Error in adventure menu readline: {:#?}", e),
         }
 
