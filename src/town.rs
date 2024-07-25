@@ -8,7 +8,7 @@ use std::str::FromStr;
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum TownAction {
     Adventure,
-    Gauntlet,
+    Dungeon,
     Sleep,
     Trade,
     Inventory,
@@ -21,7 +21,7 @@ impl TownAction {
     pub fn description(&self) -> &'static str {
         match self {
             Adventure => "A free-form adventure",
-            Gauntlet => "A dungeon filled with a random number of monsters",
+            Dungeon => "A dungeon filled with a random number of monsters",
             Sleep => "Restore all HP and MP; lose any stored TP",
             Trade => "Visit the village merchant",
             Inventory => "Open inventory",
@@ -42,7 +42,7 @@ impl fmt::Display for TownAction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Adventure => write!(f, "Adventure"),
-            Gauntlet => write!(f, "Gauntlet"),
+            Dungeon => write!(f, "Dungeon"),
             Sleep => write!(f, "Sleep"),
             Trade => write!(f, "Trade"),
             Inventory => write!(f, "Inventory"),
@@ -92,7 +92,7 @@ impl FromStr for TownAction {
         } else if RE_ADV.is_match(s) {
             Ok(Adventure)
         } else if RE_GAUNTLET.is_match(s) {
-            Ok(Gauntlet)
+            Ok(Dungeon)
         } else if RE_INV.is_match(s) {
             Ok(Inventory)
         } else if RE_EQUIP.is_match(s) {
@@ -109,7 +109,7 @@ pub fn town_menu() -> TownAction {
     let mut buf = String::with_capacity(1 << 10);
     println!("==== Entering the town... ====");
     Adventure.print_menu_item();
-    Gauntlet.print_menu_item();
+    Dungeon.print_menu_item();
     Sleep.print_menu_item();
     Trade.print_menu_item();
     Inventory.print_menu_item();

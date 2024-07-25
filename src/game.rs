@@ -9,7 +9,7 @@ use rand::Rng;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum State {
     Town,
-    Gauntlet,
+    Dungeon,
     Adventure,
 }
 #[derive(Debug, Clone, PartialEq)]
@@ -54,8 +54,8 @@ pub fn game() {
                     TownAction::Adventure => {
                         game.state = State::Adventure;
                     }
-                    TownAction::Gauntlet => {
-                        game.state = State::Gauntlet;
+                    TownAction::Dungeon => {
+                        game.state = State::Dungeon;
                     }
                     TownAction::Sleep => {
                         game.player.sleep();
@@ -65,7 +65,7 @@ pub fn game() {
                     TownAction::Equipment => game.player.noncombat_equipment(),
                     TownAction::Stats => println!("{}", game.player.attribute_message()),
                 },
-                State::Gauntlet => {
+                State::Dungeon => {
                     let n_monster: usize = rng.gen_range(1..5);
                     game.state = State::Town;
                     gauntlet(&mut game, n_monster);
