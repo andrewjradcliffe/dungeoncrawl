@@ -119,6 +119,7 @@ impl Merchant {
     pub fn inventory_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
         self.inventory.fmt_imp(&mut s, "price").unwrap();
+        s.push('\n');
         self.equipment_bag.fmt_imp(&mut s, "price").unwrap();
         s
     }
@@ -165,39 +166,37 @@ impl Merchant {
             _ => (),
         }
     }
-    pub fn menu(&self, gold: usize) -> Transaction {
+    pub fn menu(&self, gold: usize, player_msg: &str) -> Transaction {
         let mut buf = String::with_capacity(1 << 7);
         println!("---- Browsing merchant's wares... ----");
-        if self.inventory.is_empty() {
-            println!("Inventory is empty!");
-            Transaction::Quit
-        } else {
-            let msg = self.inventory_message();
-            let n = msg.lines().count() + 2;
-            println!("{}", msg);
-            loop {
-                buf.clear();
+        let msg = self.inventory_message();
+        let n = msg.lines().count() + 2;
+        println!("{}", msg);
+        let n = n + player_msg.lines().count() + 2;
+        println!("---- Your items... ----");
+        println!("{}", player_msg);
+        loop {
+            buf.clear();
 
-                print!("(💰: {}) 🧞 ", gold);
-                io::Write::flush(&mut io::stdout()).unwrap();
+            print!("(💰: {}) 🧞 ", gold);
+            io::Write::flush(&mut io::stdout()).unwrap();
 
-                let stdin = io::stdin();
-                let mut handle = stdin.lock();
-                match handle.read_line(&mut buf) {
-                    Ok(_) => {
-                        let _ = crate::readline::clear_last_n_lines(1);
-                    }
-                    Err(e) => println!("Error in inventory menu readline: {:#?}", e),
+            let stdin = io::stdin();
+            let mut handle = stdin.lock();
+            match handle.read_line(&mut buf) {
+                Ok(_) => {
+                    let _ = crate::readline::clear_last_n_lines(1);
                 }
-                if let Ok(transaction) = buf.parse::<Transaction>() {
-                    let _ = crate::readline::clear_last_n_lines(n);
-                    break transaction;
-                }
+                Err(e) => println!("Error in inventory menu readline: {:#?}", e),
+            }
+            if let Ok(transaction) = buf.parse::<Transaction>() {
+                let _ = crate::readline::clear_last_n_lines(n);
+                break transaction;
             }
         }
     }
     pub fn visit(&mut self, player: &mut Player) -> bool {
-        let transaction = self.menu(player.gold.clone());
+        let transaction = self.menu(player.gold.clone(), &player.trade_msg());
         match transaction {
             Transaction::Quit => false,
             _ => {

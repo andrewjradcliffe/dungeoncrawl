@@ -270,6 +270,12 @@ impl Player {
         writeln!(s, "{}", self.equipment_bag).unwrap();
         s
     }
+    pub fn trade_msg(&self) -> String {
+        let mut s = String::with_capacity(1 << 10);
+        writeln!(s, "{}", self.inventory).unwrap();
+        writeln!(s, "{}", self.equipment_bag).unwrap();
+        s
+    }
     pub fn attribute_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
         writeln!(s, "{}: {}", LEVEL, self.level).unwrap();
