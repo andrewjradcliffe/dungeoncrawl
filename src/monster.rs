@@ -2,6 +2,7 @@ use crate::melee::*;
 use crate::resource::*;
 use crate::spell::*;
 use rand::Rng;
+use std::convert::TryFrom;
 use std::fmt;
 use std::hash::Hash;
 use yansi::{Paint, Painted};
@@ -223,5 +224,22 @@ impl MonsterKind {
 impl fmt::Display for MonsterKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.singular_painted())
+    }
+}
+
+impl TryFrom<char> for MonsterKind {
+    type Error = ();
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        Ok(match value {
+            '🐸' => Frog,
+            '🐺' => Wolf,
+            '🦇' => Bat,
+            '👺' => Goblin,
+            '🐻' => Bear,
+            '👹' => Orc,
+            '🐉' => Dragon,
+            '🧚' => Fairy,
+            _ => return Err(()),
+        })
     }
 }

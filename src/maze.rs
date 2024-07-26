@@ -2,6 +2,7 @@ use crate::grid::*;
 use crate::monster::MonsterKind;
 use crate::utils::is_quit;
 use regex::Regex;
+use std::convert::TryFrom;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
@@ -42,6 +43,24 @@ impl fmt::Display for Element {
 impl Default for Element {
     fn default() -> Self {
         Empty
+    }
+}
+
+impl TryFrom<char> for Element {
+    type Error = ();
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        Ok(match value {
+            '🧝' => Player,
+            '🌳' => Tree,
+            '🪨' => Rock,
+            '🎁' => Treasure,
+            '🪜' => Ladder,
+            '⬜' => Empty,
+            _ => match MonsterKind::try_from(value) {
+                Ok(kind) => Monster(kind),
+                Err(_) => return Err(()),
+            },
+        })
     }
 }
 

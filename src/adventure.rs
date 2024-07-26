@@ -2,6 +2,7 @@ use crate::encounter::*;
 use crate::loot::*;
 use crate::maze::*;
 use crate::player::Player;
+use crate::resource::Mana;
 use crate::spell::*;
 use regex::Regex;
 use std::sync::LazyLock;
@@ -173,7 +174,7 @@ impl<'a> Adventure<'a> {
                                 println!("There is no target!")
                             }
                             Some(SpellCast::Defense(x)) => self.player.receive_defensive_spell(x),
-                            None => println!("Insufficient MP!"),
+                            None => println!("Insufficient {}!", Mana::MP),
                         }
                     }
                 }
