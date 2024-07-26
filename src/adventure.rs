@@ -139,12 +139,7 @@ impl<'a> Adventure<'a> {
                         MazeEvent::Interact(Element::Monster(kind)) => {
                             let mut enc = Encounter::new(kind, &mut self.player);
                             match enc.run() {
-                                PlayerVictory => {
-                                    let xp = enc.monster.experience_points();
-                                    println!("You earned {} experience points!", xp.bold());
-                                    self.player.xp += xp;
-                                    self.player.update_level();
-                                }
+                                PlayerVictory => (),
                                 MonsterVictory => break 'outer,
                                 _ => (),
                             }

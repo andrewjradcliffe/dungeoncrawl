@@ -3,8 +3,11 @@ use crate::loot::*;
 use crate::melee::*;
 use crate::monster::*;
 use crate::player::*;
+use crate::resource::Mana;
+use crate::resource::Technical;
 use crate::spell::*;
 use std::io::{self, BufRead, Write};
+use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum EncounterOutcome {
@@ -68,6 +71,10 @@ impl<'a> Encounter<'a> {
                 let loot = Loot::rand_weighted(self.monster.kind);
                 loot.announce();
                 self.player.acquire(loot);
+                let xp = self.monster.experience_points();
+                println!("You earned {} experience points!", xp.bold());
+                self.player.xp += xp;
+                self.player.update_level();
             }
             PlayerRan => {
                 println!("---- You ran away! ----");
@@ -95,7 +102,7 @@ impl<'a> Encounter<'a> {
                         match self.player.cast_melee(melee) {
                             Some(melee) => self.monster.receive_melee_attack(melee),
                             None => {
-                                println!("Insufficient TP!");
+                                println!("Insufficient {}!", Technical::TP);
                                 continue;
                             }
                         }
@@ -111,7 +118,7 @@ impl<'a> Encounter<'a> {
                             Some(SpellCast::Offense(x)) => self.monster.receive_spell_attack(x),
                             Some(SpellCast::Defense(x)) => self.player.receive_defensive_spell(x),
                             None => {
-                                println!("Insufficient MP!");
+                                println!("Insufficient {}!", Mana::MP);
                                 continue;
                             }
                         }
@@ -138,7 +145,7 @@ impl<'a> Encounter<'a> {
     }
 
     pub fn update_status(&mut self) {
-        self.status.clear();
+        String::clear(&mut self.status);
         self.player.write_status(&mut self.status).unwrap();
     }
 
@@ -154,7 +161,7 @@ impl<'a> Encounter<'a> {
             Attack, Cast, ShowInventory, Run, DoNothing
         );
         loop {
-            self.buf.clear();
+            String::clear(&mut self.buf);
             print!("{} > ", self.status);
             io::stdout().flush().unwrap();
 
