@@ -124,16 +124,16 @@ impl EquipmentBag {
         }
     }
     pub fn pop_item(&mut self, kind: Gear) -> Option<Gear> {
-        self.0.pop_item(kind)
+        self.0.pop(kind)
     }
     pub fn pop_multiple(&mut self, kind: Gear, n: usize) -> Option<(Gear, usize)> {
         self.0.pop_multiple(kind, n)
     }
     pub fn drop_multiple(&mut self, kind: Gear, n: usize) {
-        self.0.drop_multiple(kind, n);
+        self.0.remove_multiple(kind, n);
     }
     pub fn drop_item(&mut self, kind: Gear) {
-        self.0.pop_item(kind);
+        self.0.pop(kind);
     }
     pub fn push_multiple(&mut self, kind: Gear, count: usize) {
         match kind {

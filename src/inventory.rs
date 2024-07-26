@@ -110,16 +110,16 @@ impl Inventory {
         }
     }
     pub fn pop_item(&mut self, kind: Consumable) -> Option<Consumable> {
-        self.0.pop_item(kind)
+        self.0.pop(kind)
     }
     pub fn pop_multiple(&mut self, kind: Consumable, n: usize) -> Option<(Consumable, usize)> {
         self.0.pop_multiple(kind, n)
     }
     pub fn drop_multiple(&mut self, kind: Consumable, n: usize) {
-        self.0.drop_multiple(kind, n);
+        self.0.remove_multiple(kind, n);
     }
     pub fn drop_item(&mut self, kind: Consumable) {
-        self.0.pop_item(kind);
+        self.0.pop(kind);
     }
     pub fn push_multiple(&mut self, kind: Consumable, count: usize) {
         self.0.push_multiple(kind, count);

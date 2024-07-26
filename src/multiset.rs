@@ -22,7 +22,7 @@ impl<T: fmt::Debug + Clone + Copy + PartialEq + Eq + PartialOrd + Ord + Hash> Mu
         self.sum == 0
     }
 
-    pub fn pop_item(&mut self, item: T) -> Option<T> {
+    pub fn pop(&mut self, item: T) -> Option<T> {
         match self.bag.entry(item) {
             Entry::Occupied(mut v) => {
                 if *v.get() > 0 {
@@ -54,11 +54,11 @@ impl<T: fmt::Debug + Clone + Copy + PartialEq + Eq + PartialOrd + Ord + Hash> Mu
             Entry::Vacant(_) => None,
         }
     }
-    pub fn drop_multiple(&mut self, item: T, n: usize) {
+    pub fn remove_multiple(&mut self, item: T, n: usize) {
         self.pop_multiple(item, n);
     }
-    pub fn drop_item(&mut self, item: T) {
-        self.pop_item(item);
+    pub fn remove(&mut self, item: T) {
+        self.pop(item);
     }
     pub fn push_multiple(&mut self, item: T, count: usize) {
         self.sum += count;
