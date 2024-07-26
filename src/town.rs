@@ -61,7 +61,7 @@ impl FromStr for TownAction {
         // static RE: LazyLock<RegexSet> = LazyLock::new(|| {
         //     RegexSetBuilder::new([
         //         "^(?:adventure|a)$",
-        //         "^(?:gauntlet|g)$",
+        //         "^(?:dungeon|d)$",
         //         "^(?:sleep|s)$",
         //         "^(?:trade|t)$",
         //     ])
@@ -72,7 +72,7 @@ impl FromStr for TownAction {
 
         // match RE.matches(s).into_iter().next() {
         //     Some(0) => Ok(Adventure),
-        //     Some(1) => Ok(Gauntlet),
+        //     Some(1) => Ok(Dungeon),
         //     Some(2) => Ok(Sleep),
         //     Some(3) => Ok(Trade),
         //      => Err(s.to_string()),
@@ -80,8 +80,8 @@ impl FromStr for TownAction {
 
         static RE_ADV: LazyLock<Regex> =
             LazyLock::new(|| Regex::new("(?i)^(?:adventure|a)$").unwrap());
-        static RE_GAUNTLET: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new("(?i)^(?:gauntlet|g)$").unwrap());
+        static RE_DUNGEON: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:dungeon|d)$").unwrap());
         static RE_SLEEP: LazyLock<Regex> =
             LazyLock::new(|| Regex::new("(?i)^(?:sleep|s)$").unwrap());
         static RE_TRADE: LazyLock<Regex> =
@@ -99,7 +99,7 @@ impl FromStr for TownAction {
             Ok(Trade)
         } else if RE_ADV.is_match(s) {
             Ok(Adventure)
-        } else if RE_GAUNTLET.is_match(s) {
+        } else if RE_DUNGEON.is_match(s) {
             Ok(Dungeon)
         } else if RE_INV.is_match(s) {
             Ok(Inventory)
