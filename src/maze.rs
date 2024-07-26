@@ -18,6 +18,10 @@ pub enum Element {
     Treasure,
     Ladder,
     Empty,
+    Dungeon,
+    Portal,
+    Fence,
+    Wall,
 }
 use Element::*;
 
@@ -31,6 +35,10 @@ impl Element {
             Treasure => '🎁',
             Ladder => '🪜',
             Empty => '⬜',
+            Dungeon => '🏰',
+            Portal => '🪞',
+            Fence => '🔶',
+            Wall => '⬛',
         }
     }
 }
@@ -56,6 +64,10 @@ impl TryFrom<char> for Element {
             '🎁' => Treasure,
             '🪜' => Ladder,
             '⬜' => Empty,
+            '🏰' => Dungeon,
+            '🪞' => Portal,
+            '🔶' => Fence,
+            '⬛' => Wall,
             _ => match MonsterKind::try_from(value) {
                 Ok(kind) => Monster(kind),
                 Err(_) => return Err(()),
@@ -137,6 +149,21 @@ impl Maze {
         grid[(4, 7)] = Monster(MonsterKind::Wolf);
         grid[(4, 8)] = Monster(MonsterKind::Goblin);
         grid[(8, 1)] = Treasure;
+
+        grid[(0, 0)] = Portal;
+        grid[(10, 10)] = Dungeon;
+
+        grid[(15, 15)] = Fence;
+        grid[(15, 16)] = Fence;
+        grid[(15, 17)] = Fence;
+        grid[(15, 18)] = Fence;
+        grid[(16, 18)] = Fence;
+        grid[(17, 18)] = Fence;
+        grid[(18, 18)] = Fence;
+        grid[(18, 15)] = Fence;
+        grid[(18, 16)] = Fence;
+        grid[(18, 17)] = Fence;
+
         Self { grid, player }
     }
     pub fn menu(&self) -> MazeAction {
@@ -227,12 +254,28 @@ impl Maze {
                     MazeEvent::Interact(Rock, new_pos)
                 }
                 Treasure => {
-                    println!("It's a treasure box");
+                    println!("It's a treasure box!");
                     MazeEvent::Interact(Treasure, new_pos)
                 }
                 Ladder => {
                     println!("You climb the ladder...");
                     MazeEvent::Interact(Ladder, new_pos)
+                }
+                Dungeon => {
+                    println!("You enter the dungeon...");
+                    MazeEvent::Interact(Dungeon, new_pos)
+                }
+                Portal => {
+                    println!("You step into the portal...");
+                    MazeEvent::Interact(Portal, new_pos)
+                }
+                Fence => {
+                    println!("It's a fence.");
+                    MazeEvent::Interact(Fence, new_pos)
+                }
+                Wall => {
+                    println!("It's a wall.");
+                    MazeEvent::Interact(Wall, new_pos)
                 }
                 Empty => {
                     println!("There's nothing there.");
