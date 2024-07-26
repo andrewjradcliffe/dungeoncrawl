@@ -1,5 +1,5 @@
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 // use regex::{RegexSet, RegexSetBuilder};
 use std::fmt;
 use std::io::{self, BufRead};
@@ -57,7 +57,7 @@ impl FromStr for TownAction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        // static RE: Lazy<RegexSet> = Lazy::new(|| {
+        // static RE: LazyLock<RegexSet> = LazyLock::new(|| {
         //     RegexSetBuilder::new([
         //         "^(?:adventure|a)$",
         //         "^(?:gauntlet|g)$",
@@ -77,13 +77,20 @@ impl FromStr for TownAction {
         //      => Err(s.to_string()),
         // }
 
-        static RE_ADV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:adventure|a)$").unwrap());
-        static RE_GAUNTLET: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:gauntlet|g)$").unwrap());
-        static RE_SLEEP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:sleep|s)$").unwrap());
-        static RE_TRADE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:trade|t)$").unwrap());
-        static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
-        static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
-        static RE_STATS: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
+        static RE_ADV: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:adventure|a)$").unwrap());
+        static RE_GAUNTLET: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:gauntlet|g)$").unwrap());
+        static RE_SLEEP: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:sleep|s)$").unwrap());
+        static RE_TRADE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:trade|t)$").unwrap());
+        static RE_INV: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
+        static RE_EQUIP: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
+        static RE_STATS: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
 
         if RE_SLEEP.is_match(s) {
             Ok(Sleep)

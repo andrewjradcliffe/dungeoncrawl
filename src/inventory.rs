@@ -1,11 +1,11 @@
 use crate::consumable::*;
 use crate::multiset::MultiSet;
 use crate::utils::*;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -20,8 +20,8 @@ impl FromStr for InventoryAction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_USE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:use|u)$").unwrap());
-        static RE_DROP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:drop|d)$").unwrap());
+        static RE_USE: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:use|u)$").unwrap());
+        static RE_DROP: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:drop|d)$").unwrap());
 
         if RE_USE.is_match(s) {
             Ok(InventoryAction::Use)

@@ -1,11 +1,11 @@
 use crate::grid::*;
 use crate::monster::MonsterKind;
 use crate::utils::is_quit;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Element {
@@ -56,10 +56,12 @@ use Direction::*;
 impl FromStr for Direction {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        static RE_UP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:up|u)$").unwrap());
-        static RE_DOWN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:down|d)$").unwrap());
-        static RE_FORWARD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:forward|f)$").unwrap());
-        static RE_BACKWARD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:backward|b)$").unwrap());
+        static RE_UP: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:up|u)$").unwrap());
+        static RE_DOWN: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:down|d)$").unwrap());
+        static RE_FORWARD: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:forward|f)$").unwrap());
+        static RE_BACKWARD: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:backward|b)$").unwrap());
 
         let s = s.trim();
         if RE_UP.is_match(s) {
@@ -235,7 +237,8 @@ pub enum MazeAction {
 impl FromStr for MazeAction {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        static RE_INTERACT: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:interact|i)$").unwrap());
+        static RE_INTERACT: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:interact|i)$").unwrap());
         let s = s.trim();
         if let Ok(dir) = s.parse::<Direction>() {
             return Ok(MazeAction::Movement(dir));

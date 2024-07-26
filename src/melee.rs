@@ -1,9 +1,9 @@
 use crate::resource::*;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -50,9 +50,12 @@ impl FromStr for Melee {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_BASIC: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:basic|b)$").unwrap());
-        static RE_POWER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:power|p)$").unwrap());
-        static RE_SUPER: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:super|s)$").unwrap());
+        static RE_BASIC: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:basic|b)$").unwrap());
+        static RE_POWER: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:power|p)$").unwrap());
+        static RE_SUPER: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:super|s)$").unwrap());
 
         if RE_BASIC.is_match(s) {
             Ok(Basic)

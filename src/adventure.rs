@@ -2,8 +2,8 @@ use crate::encounter::*;
 use crate::maze::*;
 use crate::player::Player;
 use crate::spell::*;
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 // use regex::{RegexSet, RegexSetBuilder};
 use std::fmt;
 use std::io::{self, BufRead};
@@ -58,12 +58,16 @@ impl FromStr for AdventureAction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_MOVE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:movement|m)$").unwrap());
-        static RE_TOWN: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:town|t)$").unwrap());
-        static RE_INV: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
-        static RE_CAST: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:cast|c)$").unwrap());
-        static RE_EQUIP: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
-        static RE_STATS: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
+        static RE_MOVE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:movement|m)$").unwrap());
+        static RE_TOWN: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:town|t)$").unwrap());
+        static RE_INV: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:inventory|i)$").unwrap());
+        static RE_CAST: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:cast|c)$").unwrap());
+        static RE_EQUIP: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:equipment|e)$").unwrap());
+        static RE_STATS: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:stats?)$").unwrap());
 
         if RE_MOVE.is_match(s) {
             Ok(Movement)

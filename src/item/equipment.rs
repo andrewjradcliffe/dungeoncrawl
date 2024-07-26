@@ -1,8 +1,8 @@
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::{Paint, Painted};
 
 // #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -341,7 +341,7 @@ impl FromStr for Gear {
         let s = s.trim();
         macro_rules! static_regex {
             { $var:ident, $regex:literal } => {
-                static $var: Lazy<Regex> = Lazy::new(|| Regex::new($regex).unwrap());
+                static $var: LazyLock<Regex> = LazyLock::new(|| Regex::new($regex).unwrap());
             }
         }
         static_regex! { RE_FIST, "(?i)^fist$" }

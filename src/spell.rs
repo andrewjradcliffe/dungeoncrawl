@@ -1,10 +1,10 @@
 use crate::resource::*;
 use crate::utils::is_quit;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -54,8 +54,9 @@ impl FromStr for Offense {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_STONE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:stone|s)$").unwrap());
-        static RE_FIRE: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:fire|f)$").unwrap());
+        static RE_STONE: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:stone|s)$").unwrap());
+        static RE_FIRE: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:fire|f)$").unwrap());
 
         if RE_STONE.is_match(s) {
             Ok(Self::Stone)
@@ -158,11 +159,12 @@ impl FromStr for Defense {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_CURE1: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"(?i)^(?:c\s*[1i]|cure\s*[1i])$").unwrap());
-        static RE_CURE2: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"(?i)^(?:c\s*(?:2|ii)|cure\s*(?:2|ii))$").unwrap());
-        static RE_MED: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:meditate|m)$").unwrap());
+        static RE_CURE1: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"(?i)^(?:c\s*[1i]|cure\s*[1i])$").unwrap());
+        static RE_CURE2: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"(?i)^(?:c\s*(?:2|ii)|cure\s*(?:2|ii))$").unwrap());
+        static RE_MED: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new("(?i)^(?:meditate|m)$").unwrap());
 
         if RE_CURE1.is_match(s) {
             Ok(Self::Cure1)

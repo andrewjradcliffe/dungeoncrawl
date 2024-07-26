@@ -1,10 +1,10 @@
 use crate::resource::*;
-use once_cell::sync::Lazy;
 use rand::Rng;
 use regex::Regex;
 use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -51,9 +51,9 @@ impl Consumable {
     }
 
     pub fn description(&self) -> &str {
-        static HEALTH_POTION: Lazy<String> = Lazy::new(|| HealthPotion.description_imp());
-        static MANA_POTION: Lazy<String> = Lazy::new(|| ManaPotion.description_imp());
-        static FOOD: Lazy<String> = Lazy::new(|| Food.description_imp());
+        static HEALTH_POTION: LazyLock<String> = LazyLock::new(|| HealthPotion.description_imp());
+        static MANA_POTION: LazyLock<String> = LazyLock::new(|| ManaPotion.description_imp());
+        static FOOD: LazyLock<String> = LazyLock::new(|| Food.description_imp());
 
         match self {
             HealthPotion => &*HEALTH_POTION,
@@ -77,9 +77,11 @@ impl Consumable {
     }
 
     pub fn combat_description(&self) -> &str {
-        static HEALTH_POTION: Lazy<String> = Lazy::new(|| HealthPotion.combat_description_imp());
-        static MANA_POTION: Lazy<String> = Lazy::new(|| ManaPotion.combat_description_imp());
-        static FOOD: Lazy<String> = Lazy::new(|| Food.combat_description_imp());
+        static HEALTH_POTION: LazyLock<String> =
+            LazyLock::new(|| HealthPotion.combat_description_imp());
+        static MANA_POTION: LazyLock<String> =
+            LazyLock::new(|| ManaPotion.combat_description_imp());
+        static FOOD: LazyLock<String> = LazyLock::new(|| Food.combat_description_imp());
 
         match self {
             HealthPotion => &*HEALTH_POTION,
@@ -121,11 +123,11 @@ impl FromStr for Consumable {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_HP: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"(?i)^(?:hp|health\s+potion)$").unwrap());
-        static RE_MP: Lazy<Regex> =
-            Lazy::new(|| Regex::new(r"(?i)^(?:mp|mana\s+potion)$").unwrap());
-        static RE_FOOD: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:food|f)$").unwrap());
+        static RE_HP: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"(?i)^(?:hp|health\s+potion)$").unwrap());
+        static RE_MP: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"(?i)^(?:mp|mana\s+potion)$").unwrap());
+        static RE_FOOD: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:food|f)$").unwrap());
 
         if RE_HP.is_match(s) {
             Ok(HealthPotion)

@@ -4,10 +4,10 @@ use crate::item::equipment_bag::EquipmentBag;
 use crate::item::*;
 use crate::player::Player;
 use crate::utils::*;
-use once_cell::sync::Lazy;
 use regex::Regex;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Merchant {
@@ -27,8 +27,8 @@ impl FromStr for TradeAction {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
 
-        static RE_BUY: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:buy|b)$").unwrap());
-        static RE_SELL: Lazy<Regex> = Lazy::new(|| Regex::new("(?i)^(?:sell|s)$").unwrap());
+        static RE_BUY: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:buy|b)$").unwrap());
+        static RE_SELL: LazyLock<Regex> = LazyLock::new(|| Regex::new("(?i)^(?:sell|s)$").unwrap());
 
         if RE_BUY.is_match(s) {
             Ok(TradeAction::Buy)
