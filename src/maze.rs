@@ -198,31 +198,28 @@ impl Maze {
     pub(crate) fn interact_imp(&mut self, dir: Direction) -> MazeEvent {
         if let Some(new_pos) = self.position(dir) {
             match self.grid[new_pos] {
-                Monster(kind) => MazeEvent::Interact(
-                    Monster(kind),
-                    Box::new(move |maze| maze.grid[new_pos] = Empty),
-                ),
+                Monster(kind) => MazeEvent::Interact(Monster(kind), new_pos),
                 Tree => {
                     println!("It's a shady tree!");
-                    MazeEvent::Interact(Tree, Box::new(move |_| ()))
+                    MazeEvent::Interact(Tree, new_pos)
                 }
                 Rock => {
                     println!("It's a warm rock!");
-                    MazeEvent::Interact(Rock, Box::new(move |_| ()))
+                    MazeEvent::Interact(Rock, new_pos)
                 }
                 Treasure => {
                     println!("It's a treasure box");
-                    MazeEvent::Interact(Treasure, Box::new(move |maze| maze.grid[new_pos] = Empty))
+                    MazeEvent::Interact(Treasure, new_pos)
                 }
                 Ladder => {
                     println!("You climb the ladder...");
-                    MazeEvent::Interact(Ladder, Box::new(move |_| ()))
+                    MazeEvent::Interact(Ladder, new_pos)
                 }
                 Empty => {
                     println!("There's nothing there.");
-                    MazeEvent::Interact(Empty, Box::new(move |_| ()))
+                    MazeEvent::Interact(Empty, new_pos)
                 }
-                _ => MazeEvent::Interact(Empty, Box::new(move |_| ())),
+                _ => MazeEvent::Interact(Empty, new_pos),
             }
         } else {
             MazeEvent::NoOp
@@ -276,9 +273,9 @@ impl FromStr for MazeAction {
     }
 }
 
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MazeEvent {
-    Interact(Element, Box<dyn Fn(&mut Maze)>),
+    Interact(Element, (usize, usize)),
     Movement,
     NoOp,
     Quit,
