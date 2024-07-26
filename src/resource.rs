@@ -103,7 +103,7 @@ pub struct Technical {
 }
 
 impl Technical {
-    pub const TP: Painted<&'static str> = Painted::new("MP").bold().blue();
+    pub const TP: Painted<&'static str> = Painted::new("TP").bold().blue();
     pub fn new(max: i64) -> Self {
         Self { current: 0, max }
     }
