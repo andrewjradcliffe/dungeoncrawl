@@ -6,6 +6,7 @@ use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
 use std::sync::LazyLock;
+use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Element {
@@ -77,6 +78,18 @@ impl FromStr for Direction {
         }
     }
 }
+
+impl fmt::Display for Direction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Up => write!(f, "{}p", "U".underline().bold()),
+            Down => write!(f, "{}own", "D".underline().bold()),
+            Forward => write!(f, "{}orward", "F".underline().bold()),
+            Backward => write!(f, "{}ackward", "B".underline().bold()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Maze {
     pub(crate) grid: Grid<Element>,
@@ -95,7 +108,7 @@ impl Maze {
         let mut grid = Grid::new_default(20, 20);
         let player = (2, 2);
         grid[player] = Player;
-        grid[(2, 3)] = Tree;
+        grid[(2, 1)] = Tree;
         grid[(3, 2)] = Rock;
         grid[(1, 2)] = Tree;
         grid[(5, 5)] = Monster(MonsterKind::Orc);
@@ -105,7 +118,10 @@ impl Maze {
     pub fn menu(&self) -> MazeAction {
         let mut buf = String::with_capacity(1 << 10);
         let n = self.grid.n_rows() + 1;
-        println!("==== Select a direction... ====");
+        println!(
+            "==== Select a direction... {}, {}, {}, or {} ====",
+            Up, Down, Forward, Backward
+        );
         println!("{}", self.grid);
         loop {
             String::clear(&mut buf);

@@ -53,6 +53,7 @@ pub(crate) fn xp_to_next_level(x: usize) -> usize {
         thresh - x + 1
     }
 }
+const LEVEL: Painted<&'static str> = Painted::new("Level").bold().underline();
 
 impl Player {
     pub fn new() -> Self {
@@ -73,7 +74,7 @@ impl Player {
     pub(crate) fn update_level(&mut self) {
         let new_level = level(self.xp);
         if self.level < new_level {
-            println!("You are now level {}!", new_level);
+            println!("You are now {} {}!", LEVEL, new_level);
             self.level = new_level;
             let new_hp = PLAYER_HP * self.level as i64;
             self.hp = Health::new(new_hp);
@@ -271,7 +272,7 @@ impl Player {
     }
     pub fn attribute_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
-        writeln!(s, "{}: {}", "Level".bold().underline(), self.level).unwrap();
+        writeln!(s, "{}: {}", LEVEL, self.level).unwrap();
         writeln!(
             s,
             "{}: {:<10}    ({} until next level)",
