@@ -4,6 +4,7 @@ use std::sync::LazyLock;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum TownAction {
@@ -41,13 +42,13 @@ impl TownAction {
 impl fmt::Display for TownAction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Adventure => write!(f, "Adventure"),
-            Dungeon => write!(f, "Dungeon"),
-            Sleep => write!(f, "Sleep"),
-            Trade => write!(f, "Trade"),
-            Inventory => write!(f, "Inventory"),
-            Equipment => write!(f, "Equipment"),
-            Stats => write!(f, "Stats"),
+            Adventure => write!(f, "{}dventure", "A".bold().underline()),
+            Dungeon => write!(f, "{}ungeon", "D".bold().underline()),
+            Sleep => write!(f, "{}leep", "S".bold().underline()),
+            Trade => write!(f, "{}rade", "T".bold().underline()),
+            Inventory => write!(f, "{}nventory", "I".bold().underline()),
+            Equipment => write!(f, "{}quipment", "E".bold().underline()),
+            Stats => write!(f, "{}s", "Stat".bold().underline()),
         }
     }
 }
@@ -123,19 +124,22 @@ pub fn town_menu() -> TownAction {
     Equipment.print_menu_item();
     Stats.print_menu_item();
     loop {
-        buf.clear();
+        String::clear(&mut buf);
         print!("🌆 ");
         io::Write::flush(&mut io::stdout()).unwrap();
 
         let stdin = io::stdin();
         let mut handle = stdin.lock();
         match handle.read_line(&mut buf) {
-            Ok(_) => (),
+            Ok(_) => {
+                let _ = crate::readline::clear_last_n_lines(1);
+            }
             Err(e) => println!("Error in town menu readline: {:#?}", e),
         }
 
         let s = buf.trim();
         if let Ok(action) = s.parse::<TownAction>() {
+            let _ = crate::readline::clear_last_n_lines(8);
             return action;
         }
     }

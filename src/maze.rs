@@ -108,7 +108,7 @@ impl Maze {
         println!("==== Select a direction... ====");
         println!("{}", self.grid);
         loop {
-            buf.clear();
+            String::clear(&mut buf);
 
             print!("👣 ");
             io::Write::flush(&mut io::stdout()).unwrap();

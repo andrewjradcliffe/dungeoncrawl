@@ -271,10 +271,11 @@ impl Player {
     }
     pub fn attribute_message(&self) -> String {
         let mut s = String::with_capacity(1 << 10);
-        writeln!(s, "Level: {}", self.level).unwrap();
+        writeln!(s, "{}: {}", "Level".bold().underline(), self.level).unwrap();
         writeln!(
             s,
-            "Experience: {:<10}    ({} until next level)",
+            "{}: {:<10}    ({} until next level)",
+            "Experience".bold().underline(),
             self.xp,
             xp_to_next_level(self.xp)
         )
@@ -282,9 +283,9 @@ impl Player {
         writeln!(s, "💰: {}", self.gold).unwrap();
         self.write_status(&mut s).unwrap();
         s.push('\n');
-        writeln!(s, "STR: {}", self.strength()).unwrap();
-        writeln!(s, "INT: {}", self.intellect()).unwrap();
-        writeln!(s, "ARMOR: {}", self.armor()).unwrap();
+        writeln!(s, "{}: {}", "STR".bold().underline(), self.strength()).unwrap();
+        writeln!(s, "{}: {}", "INT".bold().underline(), self.intellect()).unwrap();
+        writeln!(s, "{}: {}", "ARMOR".bold().underline(), self.armor()).unwrap();
         s
     }
 

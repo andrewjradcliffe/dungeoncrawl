@@ -8,6 +8,7 @@ use std::sync::LazyLock;
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum AdventureAction {
@@ -43,12 +44,12 @@ impl AdventureAction {
 impl fmt::Display for AdventureAction {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Movement => write!(f, "Movement"),
-            Town => write!(f, "Town"),
-            Inventory => write!(f, "Inventory"),
-            Cast => write!(f, "Cast"),
-            Equipment => write!(f, "Equipment"),
-            Stats => write!(f, "Stats"),
+            Movement => write!(f, "{}ovement", "M".bold().underline()),
+            Town => write!(f, "{}own", "T".bold().underline()),
+            Inventory => write!(f, "{}nventory", "I".bold().underline()),
+            Cast => write!(f, "{}ast", "C".bold().underline()),
+            Equipment => write!(f, "{}quipment", "E".bold().underline()),
+            Stats => write!(f, "{}s", "Stat".bold().underline()),
         }
     }
 }
@@ -89,7 +90,7 @@ impl FromStr for AdventureAction {
 
 pub fn adventure_menu() -> AdventureAction {
     let mut buf = String::with_capacity(1 << 10);
-    println!("==== Entering the adventure... ====");
+    println!("==== Entering the open world... ====");
     Movement.print_menu_item();
     Town.print_menu_item();
     Inventory.print_menu_item();
@@ -112,6 +113,7 @@ pub fn adventure_menu() -> AdventureAction {
 
         let s = buf.trim();
         if let Ok(action) = s.parse::<AdventureAction>() {
+            let _ = crate::readline::clear_last_n_lines(7);
             return action;
         }
     }
@@ -139,7 +141,7 @@ impl<'a> Adventure<'a> {
                             match enc.run() {
                                 PlayerVictory => {
                                     let xp = enc.monster.experience_points();
-                                    println!("You earned {xp} experience points!");
+                                    println!("You earned {} experience points!", xp.bold());
                                     self.player.xp += xp;
                                     self.player.update_level();
                                 }
