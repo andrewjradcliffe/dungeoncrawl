@@ -105,6 +105,7 @@ pub enum MonsterKind {
 pub use MonsterKind::*;
 
 impl MonsterKind {
+    pub const COUNT: u8 = 8;
     pub const fn max_hp(&self) -> i64 {
         match self {
             Frog => 20,
@@ -159,12 +160,12 @@ impl MonsterKind {
             ORC => Orc,
             DRAGON => Dragon,
             FAIRY => Fairy,
-            _ => panic!(),
+            _ => unreachable!(),
         }
     }
 
     pub fn gen<T: Rng>(rng: &mut T) -> Self {
-        Self::from_index(rng.gen_range(0u8..8u8))
+        Self::from_index(rng.gen_range(0u8..Self::COUNT))
     }
     pub fn rand() -> Self {
         let mut rng = rand::thread_rng();

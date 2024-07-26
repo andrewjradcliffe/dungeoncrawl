@@ -28,10 +28,8 @@ impl Loot {
             println!("You found a {x}!")
         }
     }
-    pub fn rand_weighted(kind: MonsterKind) -> Self {
-        let mut rng = rand::thread_rng();
-        let item = Consumable::gen(&mut rng);
-
+    pub(crate) fn gen_imp<T: Rng>(rng: &mut T, kind: MonsterKind) -> Self {
+        let item = Consumable::gen(rng);
         let (amount, gear) = match kind {
             Fairy => (0, None),
             _ => {
@@ -46,5 +44,16 @@ impl Loot {
         };
 
         Self { item, amount, gear }
+    }
+    pub fn gen<T: Rng>(rng: &mut T) -> Self {
+        let kind = MonsterKind::gen(rng);
+        Self::gen_imp(rng, kind)
+    }
+    pub fn rand_weighted(kind: MonsterKind) -> Self {
+        Self::gen_imp(&mut rand::thread_rng(), kind)
+    }
+
+    pub fn rand() -> Self {
+        Self::gen(&mut rand::thread_rng())
     }
 }
