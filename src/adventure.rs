@@ -137,21 +137,21 @@ impl<'a> Adventure<'a> {
             match adventure_menu() {
                 AdventureAction::Movement => loop {
                     match self.maze.action() {
-                        MazeEvent::Interact(Element::Monster(kind), monster_pos) => {
+                        MazeEvent::Interact(Element::Monster(kind), callback) => {
                             let mut enc = Encounter::new(kind, &mut self.player);
                             match enc.run() {
                                 PlayerVictory => {
-                                    self.maze.grid[monster_pos] = Element::Empty;
+                                    callback(&mut self.maze);
                                 }
                                 MonsterVictory => break 'outer,
                                 _ => (),
                             }
                         }
-                        MazeEvent::Interact(Element::Treasure, pos) => {
+                        MazeEvent::Interact(Element::Treasure, callback) => {
                             let loot = Loot::rand();
                             loot.announce();
                             self.player.acquire(loot);
-                            self.maze.grid[pos] = Element::Empty;
+                            callback(&mut self.maze);
                         }
                         MazeEvent::Quit => break,
                         MazeEvent::Movement => (),
