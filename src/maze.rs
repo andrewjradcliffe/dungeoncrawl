@@ -111,8 +111,13 @@ impl Maze {
         grid[(2, 1)] = Tree;
         grid[(3, 2)] = Rock;
         grid[(1, 2)] = Tree;
-        grid[(5, 5)] = Monster(MonsterKind::Orc);
+        grid[(2, 7)] = Monster(MonsterKind::Orc);
         grid[(7, 7)] = Monster(MonsterKind::Dragon);
+        grid[(4, 5)] = Monster(MonsterKind::Frog);
+        grid[(4, 6)] = Monster(MonsterKind::Bat);
+        grid[(4, 7)] = Monster(MonsterKind::Wolf);
+        grid[(4, 8)] = Monster(MonsterKind::Goblin);
+        grid[(8, 1)] = Treasure;
         Self { grid, player }
     }
     pub fn menu(&self) -> MazeAction {
@@ -193,34 +198,31 @@ impl Maze {
     pub(crate) fn interact_imp(&mut self, dir: Direction) -> MazeEvent {
         if let Some(new_pos) = self.position(dir) {
             match self.grid[new_pos] {
-                Monster(kind) => {
-                    println!("It's a {kind}!");
-                    MazeEvent::Interact(Monster(kind))
-                }
+                Monster(kind) => MazeEvent::Interact(Monster(kind), new_pos),
                 Tree => {
                     println!("It's a shady tree!");
-                    MazeEvent::Interact(Tree)
+                    MazeEvent::Interact(Tree, new_pos)
                 }
                 Rock => {
                     println!("It's a warm rock!");
-                    MazeEvent::Interact(Rock)
+                    MazeEvent::Interact(Rock, new_pos)
                 }
                 Treasure => {
                     println!("It's a treasure box");
-                    MazeEvent::Interact(Treasure)
+                    MazeEvent::Interact(Treasure, new_pos)
                 }
                 Ladder => {
                     println!("You climb the ladder...");
-                    MazeEvent::Interact(Ladder)
+                    MazeEvent::Interact(Ladder, new_pos)
                 }
                 Empty => {
                     println!("There's nothing there.");
-                    MazeEvent::Interact(Empty)
+                    MazeEvent::Interact(Empty, new_pos)
                 }
-                _ => MazeEvent::Interact(Empty),
+                _ => MazeEvent::Interact(Empty, new_pos),
             }
         } else {
-            MazeEvent::Interact(Empty)
+            MazeEvent::NoOp
         }
     }
     pub fn action(&mut self) -> MazeEvent {
@@ -273,8 +275,9 @@ impl FromStr for MazeAction {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MazeEvent {
-    Interact(Element),
+    Interact(Element, (usize, usize)),
     Movement,
+    NoOp,
     Quit,
 }
 
