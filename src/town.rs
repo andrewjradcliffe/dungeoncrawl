@@ -1,9 +1,8 @@
 use regex::Regex;
-use std::sync::LazyLock;
-// use regex::{RegexSet, RegexSetBuilder};
 use std::fmt;
 use std::io::{self, BufRead};
 use std::str::FromStr;
+use std::sync::LazyLock;
 use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
@@ -57,26 +56,6 @@ impl FromStr for TownAction {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.trim();
-
-        // static RE: LazyLock<RegexSet> = LazyLock::new(|| {
-        //     RegexSetBuilder::new([
-        //         "^(?:adventure|a)$",
-        //         "^(?:dungeon|d)$",
-        //         "^(?:sleep|s)$",
-        //         "^(?:trade|t)$",
-        //     ])
-        //     .case_insensitive(true)
-        //     .build()
-        //     .unwrap()
-        // });
-
-        // match RE.matches(s).into_iter().next() {
-        //     Some(0) => Ok(Adventure),
-        //     Some(1) => Ok(Dungeon),
-        //     Some(2) => Ok(Sleep),
-        //     Some(3) => Ok(Trade),
-        //      => Err(s.to_string()),
-        // }
 
         static RE_ADV: LazyLock<Regex> =
             LazyLock::new(|| Regex::new("(?i)^(?:adventure|a)$").unwrap());

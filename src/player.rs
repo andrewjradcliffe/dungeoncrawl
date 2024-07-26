@@ -296,25 +296,6 @@ impl Player {
         s
     }
 
-    // pub fn assess_transaction(&self, transaction: &Transaction) -> Assessment {
-    //     match transaction.kind {
-    //         TradeAction::Buy => {
-    //             if self.gold >= transaction.total_cost() {
-    //                 Assessment::SufficientGold
-    //             } else {
-    //                 Assessment::InsufficientGold
-    //             }
-    //         }
-    //         TradeAction::Sell => {
-    //             if self.inventory.n_available(&transaction.item) >= transaction.count {
-    //                 Assessment::SufficientInventory
-    //             } else {
-    //                 Assessment::InsufficientInventory
-    //             }
-    //         }
-    //         TradeAction::Quit => true,
-    //     }
-    // }
     pub fn can_perform(&self, transaction: &Transaction) -> bool {
         match transaction {
             Transaction::Buy { .. } => self.gold >= transaction.total_cost(),

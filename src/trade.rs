@@ -49,14 +49,6 @@ pub enum Transaction {
     Quit,
 }
 
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-// pub enum Assessment {
-//     SufficientGold,
-//     SufficientInventory,
-//     InsufficientInventory,
-//     InsufficientGold,
-// }
-
 impl Transaction {
     pub fn new(kind: TradeAction, item: Item, count: usize) -> Self {
         match kind {
