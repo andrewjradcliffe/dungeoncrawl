@@ -1,4 +1,6 @@
 use crate::{grid::*, monster::MonsterKind, utils::is_quit};
+use indexmap::IndexMap;
+use rand::Rng;
 use regex::Regex;
 use std::{
     convert::TryFrom,
@@ -125,6 +127,7 @@ impl fmt::Display for Direction {
 pub struct Maze {
     pub(crate) grid: Grid<Element>,
     pub(crate) player: (usize, usize),
+    pub(crate) monsters: IndexMap<(usize, usize), MonsterKind>,
 }
 impl Maze {
     pub fn new_default(n_rows: usize, n_cols: usize) -> Self {
@@ -133,7 +136,63 @@ impl Maze {
         let mut grid = Grid::new_default(n_rows, n_cols);
         let player = (n_rows / 2, n_cols / 2);
         grid[player] = Player;
-        Self { grid, player }
+        Self {
+            grid,
+            player,
+            monsters: IndexMap::new(),
+        }
+    }
+    pub fn spawn_monster(&mut self, kind: MonsterKind, pos: (usize, usize)) -> bool {
+        if self.grid.check_bounds(pos) && self.grid[pos] == Empty {
+            self.grid[pos] = Monster(kind);
+            self.monsters.insert(pos, kind);
+            true
+        } else {
+            false
+        }
+    }
+    pub fn remove_monster(&mut self, pos: (usize, usize)) -> Option<MonsterKind> {
+        if self.grid.check_bounds(pos) {
+            match self.grid[pos] {
+                Monster(_) => {
+                    self.grid[pos] = Empty;
+                    self.monsters.swap_remove(&pos)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        }
+    }
+    fn move_monster(&mut self, src: (usize, usize), dst: (usize, usize)) {
+        // Simplest implementation, but if anything more than MonsterKind is used
+        // in the future, then one should prefer the more nuanced implementation.
+        if let Some(kind) = self.remove_monster(src) {
+            self.spawn_monster(kind, dst);
+        }
+        // Direct implementation, without checks
+        // self.grid.swap(src, dst);
+        // let kind = self.monsters.swap_remove(&src).unwrap();
+        // self.monsters.insert(dst, kind);
+    }
+    pub(crate) fn monster_movement(&mut self) {
+        let mut rng = rand::thread_rng();
+        // We need a hard copy due to the fact that the monster storage
+        // needs to be updated after each movement.
+        let srcs: Vec<_> = self.monsters.keys().cloned().collect();
+        for pos in srcs {
+            let proposals: Vec<_> = [Up, Down, Forward, Backward]
+                .into_iter()
+                .filter_map(|dir| self.position_imp(pos, dir))
+                .filter(|new_pos| self.grid[*new_pos] == Empty)
+                .collect();
+            let n = proposals.len();
+            if n > 0 {
+                let i = rng.gen_range(0..n);
+                let dst = proposals[i];
+                self.move_monster(pos, dst);
+            }
+        }
     }
     pub fn new_demo() -> Self {
         let mut grid = Grid::new_default(20, 20);
@@ -142,12 +201,6 @@ impl Maze {
         grid[(2, 1)] = Tree;
         grid[(3, 2)] = Rock;
         grid[(1, 2)] = Tree;
-        grid[(2, 7)] = Monster(MonsterKind::Orc);
-        grid[(7, 7)] = Monster(MonsterKind::Dragon);
-        grid[(4, 5)] = Monster(MonsterKind::Frog);
-        grid[(4, 6)] = Monster(MonsterKind::Bat);
-        grid[(4, 7)] = Monster(MonsterKind::Wolf);
-        grid[(4, 8)] = Monster(MonsterKind::Goblin);
         grid[(8, 1)] = Treasure;
 
         grid[(0, 0)] = Portal;
@@ -164,7 +217,19 @@ impl Maze {
         grid[(18, 16)] = Fence;
         grid[(18, 17)] = Fence;
 
-        Self { grid, player }
+        let mut maze = Self {
+            grid,
+            player,
+            monsters: IndexMap::new(),
+        };
+
+        maze.spawn_monster(MonsterKind::Orc, (2, 7));
+        maze.spawn_monster(MonsterKind::Dragon, (7, 7));
+        maze.spawn_monster(MonsterKind::Frog, (4, 5));
+        maze.spawn_monster(MonsterKind::Bat, (4, 6));
+        maze.spawn_monster(MonsterKind::Wolf, (4, 7));
+        maze.spawn_monster(MonsterKind::Goblin, (4, 8));
+        maze
     }
     pub fn menu(&self) -> MazeAction {
         let mut buf = String::with_capacity(1 << 10);
@@ -196,8 +261,11 @@ impl Maze {
             }
         }
     }
-    pub fn position(&self, dir: Direction) -> Option<(usize, usize)> {
-        let (i_0, j_0) = self.player.clone();
+    pub(crate) fn position_imp(
+        &self,
+        (i_0, j_0): (usize, usize),
+        dir: Direction,
+    ) -> Option<(usize, usize)> {
         match dir {
             Up => {
                 if i_0 == 0 {
@@ -230,6 +298,9 @@ impl Maze {
                 }
             }
         }
+    }
+    pub fn position(&self, dir: Direction) -> Option<(usize, usize)> {
+        self.position_imp(self.player.clone(), dir)
     }
     pub(crate) fn movement_imp(&mut self, dir: Direction) -> MazeEvent {
         if let Some(new_pos) = self.position(dir) {
@@ -296,16 +367,16 @@ impl Maze {
     }
 }
 
-pub fn demo_movement() {
-    let mut maze = Maze::new_demo();
-    loop {
-        // println!("{}", maze.grid);
-        maze.action();
-        // let _ = crate::readline::clear_screen();
-        // let _ = crate::readline::cursor_topleft();
-        // let _ = crate::readline::clear_last_n_lines(n);
-    }
-}
+// pub fn demo_movement() {
+//     let mut maze = Maze::new_demo();
+//     loop {
+//         // println!("{}", maze.grid);
+//         maze.action();
+//         // let _ = crate::readline::clear_screen();
+//         // let _ = crate::readline::cursor_topleft();
+//         // let _ = crate::readline::clear_last_n_lines(n);
+//     }
+// }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MazeAction {

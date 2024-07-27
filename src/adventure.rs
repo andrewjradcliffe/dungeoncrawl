@@ -130,6 +130,7 @@ impl<'a> Adventure<'a> {
         }
     }
     pub fn run(&mut self) {
+        let mut should_move = false;
         'outer: loop {
             match adventure_menu() {
                 AdventureAction::Movement => loop {
@@ -138,7 +139,7 @@ impl<'a> Adventure<'a> {
                             let mut enc = Encounter::new(kind, &mut self.player);
                             match enc.run() {
                                 PlayerVictory => {
-                                    self.maze.grid[monster_pos] = Element::Empty;
+                                    self.maze.remove_monster(monster_pos);
                                 }
                                 MonsterVictory => break 'outer,
                                 _ => (),
@@ -151,7 +152,14 @@ impl<'a> Adventure<'a> {
                             self.maze.grid[pos] = Element::Empty;
                         }
                         MazeEvent::Quit => break,
-                        MazeEvent::Movement => (),
+                        MazeEvent::Movement => {
+                            if should_move {
+                                self.maze.monster_movement();
+                                should_move = false;
+                            } else {
+                                should_move = true;
+                            }
+                        }
                         _ => (),
                     }
                 },
