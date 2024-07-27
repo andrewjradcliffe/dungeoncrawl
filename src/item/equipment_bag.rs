@@ -76,7 +76,7 @@ impl EquipmentBag {
         Self(MultiSet::with_capacity(Gear::total_variants()))
     }
     pub fn new_player() -> Self {
-        [(Sword, 1), (Helmet, 1), (Breastplate, 1), (Gauntlet, 1)]
+        [(Axe, 1), (Helmet, 1), (Breastplate, 1), (Gauntlet, 1)]
             .into_iter()
             .collect()
     }
