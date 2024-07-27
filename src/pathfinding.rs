@@ -77,6 +77,8 @@ impl Algorithm {
                 dst,
                 self.grid.shape()
             );
+        } else if src == dst {
+            return vec![vec![src]];
         }
         let (m, n) = self.grid.shape();
         // self.reset();
@@ -194,26 +196,178 @@ impl Algorithm {
         }
         rs
     }
+
+    pub fn shorted_path(
+        &mut self,
+        src: (usize, usize),
+        dst: (usize, usize),
+    ) -> Option<Vec<(usize, usize)>> {
+        if !self.grid.check_bounds(src) || !self.grid.check_bounds(dst) {
+            panic!(
+                "out of bounds! got (src, dst, bounds): ({:?}, {:?}, {:?})",
+                src,
+                dst,
+                self.grid.shape()
+            );
+        } else if src == dst {
+            return Some(vec![src]);
+        }
+        let (m, n) = self.grid.shape();
+        // self.reset();
+        let mut ps = vec![vec![src]];
+        let mut qs = Vec::new();
+        let mut r: Option<Vec<(usize, usize)>> = None;
+        self.grid[(src.0, src.1)] = 0;
+
+        macro_rules! common {
+            //Single path
+            ($i:ident, $j:ident, $p:ident, $k:ident) => {
+                let a_ij = self.grid[($i, $j)];
+                if a_ij == -1 || a_ij > $k {
+                    self.grid[($i, $j)] = $k;
+                    let mut p = $p.clone();
+                    p.push(($i, $j));
+                    if ($i, $j) == dst {
+                        r = Some(p);
+                    } else {
+                        qs.push(p);
+                    }
+                }
+            };
+        }
+
+        loop {
+            while let Some(p) = ps.pop() {
+                let k = p.len();
+                let (i, j) = p[k - 1];
+                let k = k as isize;
+                // Forward
+                {
+                    let j = j + 1;
+                    if j < n {
+                        if !self.is_barrier(i, j) {
+                            common!(i, j, p, k);
+                        }
+                    }
+                }
+                // Backward
+                {
+                    if j > 0 {
+                        let j = j - 1;
+                        if !self.is_barrier(i, j) {
+                            common!(i, j, p, k);
+                        }
+                    }
+                }
+                // Up
+                {
+                    if i > 0 {
+                        let i = i - 1;
+                        if !self.is_barrier(i, j) {
+                            common!(i, j, p, k);
+                        }
+                    }
+                }
+                // Down
+                {
+                    let i = i + 1;
+                    if i < m {
+                        if !self.is_barrier(i, j) {
+                            common!(i, j, p, k);
+                        }
+                    }
+                }
+            }
+            if qs.is_empty() {
+                break;
+            } else {
+                mem::swap(&mut ps, &mut qs);
+            }
+        }
+        r
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn print_result(alg: &Algorithm, path: &Vec<(usize, usize)>, barrier: &Vec<(usize, usize)>) {
+        println!("{}", alg.grid);
+        println!("{:#?}", path);
+        let mut grid = alg.grid.clone();
+        grid.fill(0);
+        for p in path.iter().cloned() {
+            grid[p] = 1;
+        }
+        for p in barrier.iter().cloned() {
+            grid[p] = 2;
+        }
+        println!("{}\n", grid);
+    }
+
     #[test]
     fn five() {
-        // let barrier = vec![(2, 2), (3, 1), (1, 3)];
-        // let barrier = vec![(1, 0), (1, 1), (1, 2), (1, 3)];
-        // let barrier = vec![
-        //     (1, 0),
-        //     (1, 1),
-        //     (1, 2),
-        //     (1, 3),
-        //     (3, 1),
-        //     (3, 2),
-        //     (3, 3),
-        //     (3, 4),
-        // ];
+        let origin = (0, 0);
+        let dst = (4, 4);
+        let distances = [16, 8];
+        let barriers = vec![
+            vec![
+                (1, 0),
+                (1, 1),
+                (1, 2),
+                (1, 3),
+                (3, 1),
+                (3, 2),
+                (3, 3),
+                (3, 4),
+            ],
+            vec![
+                (1, 0),
+                (1, 1),
+                (1, 2),
+                (1, 3),
+                (3, 0),
+                (3, 1),
+                (3, 2),
+                (3, 3),
+            ],
+        ];
+        for (barrier, distance) in barriers.into_iter().zip(distances) {
+            let mut alg = Algorithm::new(5, 5);
+            for p in barrier.clone() {
+                alg.grid[p] = -2;
+            }
+            let path = alg.shorted_path(origin, dst).unwrap();
+            print_result(&alg, &path, &barrier);
+            assert_eq!(path.len() - 1, distance);
+        }
+    }
+
+    #[test]
+    fn diagonal_barrier() {
+        let n = 10;
+        let origin = (0, 0);
+        let barrier: Vec<_> = (0..n - 2)
+            .map(|offset| (1 + offset, n - 2 - offset))
+            .collect();
+        let distances = [9, 9, 18];
+        let dsts = [(0, 9), (9, 0), (9, 9)];
+        for (dst, distance) in dsts.into_iter().zip(distances) {
+            let mut alg = Algorithm::new(n, n);
+            for p in barrier.clone() {
+                alg.grid[p] = -2;
+            }
+            let path = alg.shorted_path(origin, dst).unwrap();
+            print_result(&alg, &path, &barrier);
+            assert_eq!(path.len() - 1, distance);
+        }
+    }
+
+    #[test]
+    fn horizontal_barrier() {
+        let n = 10;
+        let origin = (0, 0);
         let barrier = vec![
             (1, 0),
             (1, 1),
@@ -224,95 +378,57 @@ mod tests {
             (3, 2),
             (3, 3),
         ];
-        let mut alg = Algorithm::new(5, 5);
-        for p in barrier.clone() {
-            alg.grid[p] = -2;
-        }
-        let paths = alg.paths((0, 0), (4, 4));
-        let rhs = vec![
-            (0, 0),
-            (0, 1),
-            (0, 2),
-            (0, 3),
-            (0, 4),
-            (1, 4),
-            (2, 4),
-            (3, 4),
-            (4, 4),
-        ];
-        assert_eq!(paths[0], rhs);
-        println!("{}", alg.grid);
-        println!("{:#?}", paths);
-        for path in paths {
-            let mut grid = alg.grid.clone();
-            grid.fill(0);
-            for p in path {
-                grid[p] = 1;
-            }
+        let distances = [9, 17, 18];
+        let dsts = [(0, 9), (9, 0), (9, 9)];
+        for (dst, distance) in dsts.into_iter().zip(distances) {
+            let mut alg = Algorithm::new(n, n);
             for p in barrier.clone() {
-                grid[p] = 2;
+                alg.grid[p] = -2;
             }
-            println!("{}\n", grid);
+            let path = alg.shorted_path(origin, dst).unwrap();
+            print_result(&alg, &path, &barrier);
+            assert_eq!(path.len() - 1, distance);
         }
-        // panic!();
     }
 
     #[test]
-    fn ten() {
-        let n = 10;
-        // let barrier = vec![
-        //     (1, 0),
-        //     (1, 1),
-        //     (1, 2),
-        //     (1, 3),
-        //     (3, 0),
-        //     (3, 1),
-        //     (3, 2),
-        //     (3, 3),
-        // ];
-        let barrier: Vec<_> = (0..n - 2)
-            .map(|offset| (1 + offset, n - 2 - offset))
+    fn escape() {
+        let origin = (6, 4);
+        let distances = [10, 11, 13, 14, 12];
+        let dsts = [(0, 0), (0, 9), (9, 0), (9, 9), (8, 4)];
+        let barrier: Vec<_> = (0..4)
+            .map(|offset| (4 + offset, 3))
+            .into_iter()
+            .chain((0..4).map(|offset| (4 + offset, 5)))
+            .chain(std::iter::once((7, 4)))
             .collect();
-        let mut alg = Algorithm::new(n, n);
-        for p in barrier.clone() {
-            alg.grid[p] = -2;
+
+        for (dst, distance) in dsts.into_iter().zip(distances) {
+            let mut alg = Algorithm::new(10, 10);
+            for p in barrier.clone() {
+                alg.grid[p] = -2;
+            }
+            let path = alg.shorted_path(origin, dst).unwrap();
+
+            println!("{}", alg.grid);
+            println!("{:#?}", path);
+            print_result(&alg, &path, &barrier);
+            assert_eq!(path.len() - 1, distance);
         }
-        let paths = alg.paths((0, 0), (n - 1, n - 1));
-        let rhs = vec![
-            (0, 0),
-            (1, 0),
-            (2, 0),
-            (3, 0),
-            (4, 0),
-            (5, 0),
-            (6, 0),
-            (7, 0),
-            (8, 0),
-            (9, 0),
-            (9, 1),
-            (9, 2),
-            (9, 3),
-            (9, 4),
-            (9, 5),
-            (9, 6),
-            (9, 7),
-            (9, 8),
-            (9, 9),
-        ];
-        assert_eq!(paths[0], rhs);
-        // println!("{}", alg.grid);
-        // println!("{:#?}", paths);
-        // for path in paths {
-        //     let mut grid = alg.grid.clone();
-        //     grid.fill(0);
-        //     for p in path {
-        //         grid[p] = 1;
-        //     }
-        //     for p in barrier.clone() {
-        //         grid[p] = 2;
-        //     }
-        //     println!("{}\n", grid);
-        // }
-        // panic!();
+    }
+    #[test]
+    fn single_move() {
+        let origin = (6, 4);
+        let dst = (7, 4);
+        let mut alg = Algorithm::new(10, 10);
+        let path = alg.shorted_path(origin, dst);
+        assert_eq!(path.unwrap().len() - 1, 1);
+    }
+    #[test]
+    fn no_movement() {
+        let origin = (6, 4);
+        let mut alg = Algorithm::new(10, 10);
+        let path = alg.shorted_path(origin, origin);
+        assert_eq!(path.unwrap().len() - 1, 0);
     }
 }
