@@ -80,7 +80,7 @@ impl Monster {
     pub fn produce_melee_attack(&mut self) -> MeleeAttack {
         if self.tp.current >= Super.cost() {
             self.cast_melee(Super)
-        } else if self.tp.current >= Power.cost() && self.hp.current <= self.hp.pct_max(10) {
+        } else if self.tp.current >= Power.cost() && self.hp.current <= self.hp.pct_max(20) {
             self.cast_melee(Power)
         } else {
             self.cast_melee(Basic)
