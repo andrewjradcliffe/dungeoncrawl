@@ -225,6 +225,7 @@ impl Maze {
 
         maze.spawn_monster(MonsterKind::Frog, (4, 5));
         maze.spawn_monster(MonsterKind::Bat, (4, 6));
+        maze.spawn_monster(MonsterKind::Snake, (5, 6));
         maze.spawn_monster(MonsterKind::Wolf, (4, 7));
         maze.spawn_monster(MonsterKind::Goblin, (4, 8));
         maze.spawn_monster(MonsterKind::Bear, (6, 6));
@@ -232,7 +233,8 @@ impl Maze {
         maze.spawn_monster(MonsterKind::Orc, (2, 7));
         maze.spawn_monster(MonsterKind::Vampire, (9, 9));
         maze.spawn_monster(MonsterKind::Troll, (10, 15));
-        maze.spawn_monster(MonsterKind::Dragon, (7, 7));
+        maze.spawn_monster(MonsterKind::Mammoth, (7, 7));
+        maze.spawn_monster(MonsterKind::Dragon, (18, 7));
         maze
     }
     pub fn menu(&self) -> MazeAction {
