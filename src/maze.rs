@@ -1,12 +1,12 @@
-use crate::grid::*;
-use crate::monster::MonsterKind;
-use crate::utils::is_quit;
+use crate::{grid::*, monster::MonsterKind, utils::is_quit};
 use regex::Regex;
-use std::convert::TryFrom;
-use std::fmt;
-use std::io::{self, BufRead};
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{
+    convert::TryFrom,
+    fmt,
+    io::{self, BufRead},
+    str::FromStr,
+    sync::LazyLock,
+};
 use yansi::Paint;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

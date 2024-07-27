@@ -1,13 +1,13 @@
-use crate::consumable::*;
-use crate::inventory::*;
-use crate::item::equipment_bag::EquipmentBag;
-use crate::item::*;
-use crate::player::Player;
-use crate::utils::*;
+use crate::{
+    consumable::*, inventory::*, item::equipment_bag::EquipmentBag, item::*, player::Player,
+    utils::*,
+};
 use regex::Regex;
-use std::io::{self, BufRead};
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{
+    io::{self, BufRead},
+    str::FromStr,
+    sync::LazyLock,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Merchant {

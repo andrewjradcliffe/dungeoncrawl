@@ -1,6 +1,4 @@
-use std::io::BufRead;
-use std::io::Read;
-use std::io::{self, Write};
+use std::io::{self, BufRead, Read, Write};
 
 pub fn progress_bar() -> io::Result<()> {
     const N: usize = 10;

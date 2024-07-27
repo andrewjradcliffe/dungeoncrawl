@@ -1,6 +1,4 @@
-use crate::consumable::*;
-use crate::equipment::*;
-use crate::monster::MonsterKind;
+use crate::{consumable::*, equipment::*, monster::MonsterKind};
 use rand::Rng;
 
 use MonsterKind::*;

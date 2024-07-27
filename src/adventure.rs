@@ -1,15 +1,11 @@
-use crate::encounter::*;
-use crate::loot::*;
-use crate::maze::*;
-use crate::player::Player;
-use crate::resource::Mana;
-use crate::spell::*;
+use crate::{encounter::*, loot::*, maze::*, player::Player, resource::Mana, spell::*};
 use regex::Regex;
-use std::sync::LazyLock;
-// use regex::{RegexSet, RegexSetBuilder};
-use std::fmt;
-use std::io::{self, BufRead};
-use std::str::FromStr;
+use std::{
+    fmt,
+    io::{self, BufRead},
+    str::FromStr,
+    sync::LazyLock,
+};
 use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]

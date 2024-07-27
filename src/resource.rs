@@ -1,5 +1,4 @@
-use crate::melee::*;
-use crate::spell::*;
+use crate::{melee::*, spell::*};
 use std::fmt;
 use yansi::{Paint, Painted};
 

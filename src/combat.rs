@@ -1,7 +1,5 @@
 use regex::Regex;
-use std::fmt;
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{fmt, str::FromStr, sync::LazyLock};
 use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]

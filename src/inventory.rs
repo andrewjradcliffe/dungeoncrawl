@@ -1,11 +1,11 @@
-use crate::consumable::*;
-use crate::multiset::MultiSet;
-use crate::utils::*;
+use crate::{consumable::*, multiset::MultiSet, utils::*};
 use regex::Regex;
-use std::fmt;
-use std::io::{self, BufRead};
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{
+    fmt,
+    io::{self, BufRead},
+    str::FromStr,
+    sync::LazyLock,
+};
 use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

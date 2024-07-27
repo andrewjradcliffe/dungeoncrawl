@@ -1,10 +1,6 @@
-use crate::melee::*;
-use crate::resource::*;
-use crate::spell::*;
+use crate::{melee::*, resource::*, spell::*};
 use rand::Rng;
-use std::convert::TryFrom;
-use std::fmt;
-use std::hash::Hash;
+use std::{convert::TryFrom, fmt, hash::Hash};
 use yansi::{Paint, Painted};
 
 #[derive(Debug, Clone, PartialEq)]

@@ -1,5 +1,7 @@
-use std::fmt;
-use std::ops::{Index, IndexMut};
+use std::{
+    fmt,
+    ops::{Index, IndexMut},
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Grid<T> {

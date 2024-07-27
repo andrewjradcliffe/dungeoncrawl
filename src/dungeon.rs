@@ -1,5 +1,3 @@
-use core::str;
-
 use crate::{encounter::*, player::*, scoreboard::Scoreboard};
 
 #[derive(Debug, PartialEq)]

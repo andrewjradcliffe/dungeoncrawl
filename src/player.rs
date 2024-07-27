@@ -1,14 +1,7 @@
-use crate::consumable::*;
-use crate::equipment::*;
-use crate::inventory::*;
-use crate::item::equipment_bag::*;
-use crate::item::*;
-use crate::loot::Loot;
-use crate::melee::*;
-use crate::monster::*;
-use crate::resource::*;
-use crate::spell::*;
-use crate::trade::*;
+use crate::{
+    consumable::*, equipment::*, inventory::*, item::equipment_bag::*, item::*, loot::Loot,
+    melee::*, monster::*, resource::*, spell::*, trade::*,
+};
 use std::fmt::{self, Write};
 use yansi::{Paint, Painted};
 

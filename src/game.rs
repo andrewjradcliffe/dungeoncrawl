@@ -1,8 +1,4 @@
-use crate::adventure::*;
-use crate::dungeon::Dungeon;
-use crate::player::*;
-use crate::town::*;
-use crate::trade::Merchant;
+use crate::{adventure::*, dungeon::Dungeon, player::*, town::*, trade::Merchant};
 use rand::Rng;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

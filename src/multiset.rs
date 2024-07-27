@@ -1,6 +1,5 @@
 use indexmap::{map::Entry, IndexMap};
-use std::fmt;
-use std::hash::Hash;
+use std::{fmt, hash::Hash};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MultiSet<T: fmt::Debug + Clone + Copy + PartialEq + Eq + PartialOrd + Ord + Hash> {

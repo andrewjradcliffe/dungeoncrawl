@@ -1,8 +1,10 @@
 use regex::Regex;
-use std::fmt;
-use std::io::{self, BufRead};
-use std::str::FromStr;
-use std::sync::LazyLock;
+use std::{
+    fmt,
+    io::{self, BufRead},
+    str::FromStr,
+    sync::LazyLock,
+};
 use yansi::Paint;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]

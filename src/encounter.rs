@@ -1,11 +1,7 @@
-use crate::combat::*;
-use crate::loot::*;
-use crate::melee::*;
-use crate::monster::*;
-use crate::player::*;
-use crate::resource::Mana;
-use crate::resource::Technical;
-use crate::spell::*;
+use crate::{
+    combat::*, loot::*, melee::*, monster::*, player::*, resource::Mana, resource::Technical,
+    spell::*,
+};
 use std::io::{self, BufRead, Write};
 use yansi::Paint;
 
