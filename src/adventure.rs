@@ -1,4 +1,4 @@
-use crate::{encounter::*, loot::*, maze::*, player::Player, resource::Mana, spell::*};
+use crate::{dungeon::*, encounter::*, loot::*, maze::*, player::Player, resource::Mana, spell::*};
 use regex::Regex;
 use std::{
     fmt,
@@ -150,6 +150,13 @@ impl<'a> Adventure<'a> {
                             loot.announce();
                             self.player.acquire(loot);
                             self.maze.grid[pos] = Element::Empty;
+                        }
+                        MazeEvent::Interact(Element::Dungeon, _) => {
+                            let mut dungeon = Dungeon::new(&mut self.player, 5);
+                            dungeon.run();
+                            if !self.player.is_alive() {
+                                break 'outer;
+                            }
                         }
                         MazeEvent::Quit => break,
                         MazeEvent::Movement => {
