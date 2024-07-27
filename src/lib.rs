@@ -1,6 +1,7 @@
 pub mod adventure;
 pub mod attribute;
 pub mod combat;
+pub mod dungeon;
 pub mod encounter;
 pub mod game;
 pub mod grid;
