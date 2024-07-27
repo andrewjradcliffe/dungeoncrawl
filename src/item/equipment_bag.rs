@@ -76,9 +76,15 @@ impl EquipmentBag {
         Self(MultiSet::with_capacity(Gear::total_variants()))
     }
     pub fn new_player() -> Self {
-        [(Axe, 1), (Helmet, 1), (Breastplate, 1), (Gauntlet, 1)]
-            .into_iter()
-            .collect()
+        [
+            (Axe, 1),
+            (Helmet, 1),
+            (Breastplate, 1),
+            (Greaves, 1),
+            (Gauntlet, 1),
+        ]
+        .into_iter()
+        .collect()
     }
     pub fn new_merchant() -> Self {
         [
@@ -86,11 +92,13 @@ impl EquipmentBag {
             (Axe, 1),
             (Helmet, 1),
             (Breastplate, 1),
+            (Greaves, 1),
             (Gauntlet, 1),
             (Wand, 1),
             (Staff, 1),
             (Hat, 1),
             (Robe, 1),
+            (Breeches, 1),
             (Glove, 1),
         ]
         .into_iter()

@@ -127,21 +127,31 @@ pub struct Equipment {
     weapon: Gear,
     head: Gear,
     chest: Gear,
+    leg: Gear,
     hand: Gear,
 }
 pub use Gear::*;
 impl Equipment {
     pub const fn strength(&self) -> i64 {
-        self.weapon.strength() + self.head.strength() + self.chest.strength() + self.hand.strength()
+        self.weapon.strength()
+            + self.head.strength()
+            + self.chest.strength()
+            + self.leg.strength()
+            + self.hand.strength()
     }
     pub const fn intellect(&self) -> i64 {
         self.weapon.intellect()
             + self.head.intellect()
             + self.chest.intellect()
+            + self.leg.intellect()
             + self.hand.intellect()
     }
     pub const fn armor(&self) -> i64 {
-        self.weapon.armor() + self.head.armor() + self.chest.armor() + self.hand.armor()
+        self.weapon.armor()
+            + self.head.armor()
+            + self.chest.armor()
+            + self.leg.armor()
+            + self.hand.armor()
     }
     pub fn equip(&mut self, item: Gear) -> Gear {
         match item {
@@ -158,6 +168,11 @@ impl Equipment {
             Breastplate | Robe => {
                 let old = self.chest;
                 self.chest = item;
+                old
+            }
+            Greaves | Breeches => {
+                let old = self.leg;
+                self.leg = item;
                 old
             }
             Gauntlet | Glove => {
@@ -185,6 +200,11 @@ impl Equipment {
                 self.chest = Bare;
                 old
             }
+            Greaves | Breeches => {
+                let old = self.leg;
+                self.leg = Bare;
+                old
+            }
             Gauntlet | Glove => {
                 let old = self.hand;
                 self.hand = Bare;
@@ -209,6 +229,7 @@ impl Default for Equipment {
             weapon: Gear::Fist,
             head: Gear::Bare,
             chest: Gear::Bare,
+            leg: Gear::Bare,
             hand: Gear::Bare,
         }
     }
@@ -240,6 +261,7 @@ impl fmt::Display for Equipment {
         writeln_item!(self.weapon, "Weapon");
         writeln_item!(self.head, "Head");
         writeln_item!(self.chest, "Chest");
+        writeln_item!(self.leg, "Leg");
         writeln_item!(self.hand, "Hand");
         Ok(())
     }
@@ -266,6 +288,9 @@ pub enum Gear {
     // Chest
     Breastplate,
     Robe,
+    // Leg
+    Greaves,
+    Breeches,
     // Hand
     Gauntlet,
     Glove,
@@ -282,6 +307,7 @@ impl Gear {
             Self::Axe => 4,
             Self::Helmet => 3,
             Self::Breastplate => 3,
+            Self::Greaves => 3,
             Self::Gauntlet => 2,
             _ => 0,
         }
@@ -292,17 +318,20 @@ impl Gear {
             Self::Staff => 4,
             Self::Hat => 3,
             Self::Robe => 3,
+            Self::Breeches => 3,
             Self::Glove => 2,
             _ => 0,
         }
     }
     pub const fn armor(&self) -> i64 {
         match self {
-            Self::Helmet => 3,
+            Self::Helmet => 2,
             Self::Breastplate => 3,
+            Self::Greaves => 2,
             Self::Gauntlet => 2,
             Self::Hat => 1,
             Self::Robe => 1,
+            Self::Breeches => 1,
             Self::Glove => 1,
             _ => 0,
         }
@@ -330,7 +359,9 @@ impl Gear {
             5 => Self::Hat,
             6 => Self::Breastplate,
             7 => Self::Robe,
-            8 => Self::Gauntlet,
+            8 => Self::Greaves,
+            9 => Self::Breeches,
+            10 => Self::Gauntlet,
             _ => Self::Glove,
         }
     }
@@ -353,6 +384,8 @@ impl FromStr for Gear {
         static_regex! { RE_HAT, "(?i)^hat$" }
         static_regex! { RE_BREASTPLATE, "(?i)^breastplate$" }
         static_regex! { RE_ROBE, "(?i)^robe$" }
+        static_regex! { RE_GREAVES, "(?i)^greaves$" }
+        static_regex! { RE_BREECHES, "(?i)^breeches$" }
         static_regex! { RE_GAUNTLET, "(?i)^gauntlet$" }
         static_regex! { RE_GLOVE, "(?i)^glove$" }
 
@@ -369,6 +402,7 @@ impl FromStr for Gear {
         branches! { (RE_FIST, Fist) ; (RE_SWORD, Sword), (RE_AXE, Axe), (RE_WAND, Wand),
                      (RE_STAFF, Staff), (RE_HELMET, Helmet), (RE_HAT, Hat),
                      (RE_BREASTPLATE, Breastplate), (RE_ROBE, Robe),
+                     (RE_GREAVES, Greaves), (RE_BREECHES, Breeches),
                      (RE_GAUNTLET, Gauntlet), (RE_GLOVE, Glove),
         }
     }
@@ -390,6 +424,8 @@ impl fmt::Display for Gear {
             Self::Hat => arm!("hat"),
             Self::Breastplate => arm!("breastplate"),
             Self::Robe => arm!("robe"),
+            Self::Greaves => arm!("greaves"),
+            Self::Breeches => arm!("breeches"),
             Self::Gauntlet => arm!("gauntlet"),
             Self::Glove => arm!("glove"),
             Self::Bare => arm!("bare"),
@@ -407,6 +443,7 @@ mod tests {
             weapon: Gear::Fist,
             head: Gear::Bare,
             chest: Gear::Bare,
+            leg: Gear::Bare,
             hand: Gear::Bare,
         };
         assert_eq!(lhs, Equipment::default())
