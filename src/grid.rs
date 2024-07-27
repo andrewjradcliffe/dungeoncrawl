@@ -58,6 +58,13 @@ impl<T> Grid<T> {
             );
         }
     }
+    pub fn swap(&mut self, src: (usize, usize), dst: (usize, usize)) {
+        self.check_bounds_or_panic(src);
+        self.check_bounds_or_panic(dst);
+        let src = self.linear_index(src.0, src.1);
+        let dst = self.linear_index(dst.0, dst.1);
+        self.inner.swap(src, dst);
+    }
 }
 
 impl<T: fmt::Display> fmt::Display for Grid<T> {
