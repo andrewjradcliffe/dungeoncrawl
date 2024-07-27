@@ -95,14 +95,17 @@ pub enum MonsterKind {
     Wolf,
     Goblin,
     Bear,
+    Undead,
     Orc,
+    Vampire,
+    Troll,
     Dragon,
     Fairy,
 }
 pub use MonsterKind::*;
 
 impl MonsterKind {
-    pub const COUNT: u8 = 8;
+    pub const COUNT: u8 = 10;
     pub const fn max_hp(&self) -> i64 {
         match self {
             Frog => 20,
@@ -110,8 +113,11 @@ impl MonsterKind {
             Wolf => 35,
             Goblin => 50,
             Bear => 75,
+            Undead => 90,
             Orc => 100,
-            Dragon => 250,
+            Vampire => 125,
+            Troll => 150,
+            Dragon => 300,
             Fairy => 1,
         }
     }
@@ -122,9 +128,12 @@ impl MonsterKind {
             Bat => 1,
             Wolf => 2,
             Goblin => 3,
-            Bear => 4,
-            Orc => 6,
-            Dragon => 10,
+            Bear => 3,
+            Undead => 4,
+            Orc => 5,
+            Vampire => 6,
+            Troll => 7,
+            Dragon => 15,
             Fairy => -20,
         }
     }
@@ -138,13 +147,32 @@ impl MonsterKind {
         (self.max_hp() / 2) as usize
     }
 
+    pub const fn radius(&self) -> usize {
+        match self {
+            Frog => 1,
+            Bat => 1,
+            Wolf => 2,
+            Goblin => 3,
+            Bear => 4,
+            Undead => 2,
+            Orc => 5,
+            Vampire => 5,
+            Troll => 7,
+            Dragon => 10,
+            Fairy => 1,
+        }
+    }
+
     pub(crate) const fn from_index(i: u8) -> Self {
         const FROG: u8 = Frog as u8;
         const BAT: u8 = Bat as u8;
         const WOLF: u8 = Wolf as u8;
         const GOBLIN: u8 = Goblin as u8;
         const BEAR: u8 = Bear as u8;
+        const UNDEAD: u8 = Undead as u8;
         const ORC: u8 = Orc as u8;
+        const VAMPIRE: u8 = Vampire as u8;
+        const TROLL: u8 = Troll as u8;
         const DRAGON: u8 = Dragon as u8;
         const FAIRY: u8 = Fairy as u8;
 
@@ -154,7 +182,10 @@ impl MonsterKind {
             WOLF => Wolf,
             GOBLIN => Goblin,
             BEAR => Bear,
+            UNDEAD => Undead,
             ORC => Orc,
+            VAMPIRE => Vampire,
+            TROLL => Troll,
             DRAGON => Dragon,
             FAIRY => Fairy,
             _ => unreachable!(),
@@ -176,7 +207,10 @@ impl MonsterKind {
             Bat => "bat",
             Goblin => "goblin",
             Bear => "bear",
+            Undead => "undead",
             Orc => "orc",
+            Vampire => "vampire",
+            Troll => "troll",
             Dragon => "dragon",
             Fairy => "fairy",
         }
@@ -188,9 +222,24 @@ impl MonsterKind {
             Bat => "bats",
             Goblin => "goblins",
             Bear => "bears",
+            Undead => "undead",
             Orc => "orcs",
+            Vampire => "vampires",
+            Troll => "trolls",
             Dragon => "dragons",
             Fairy => "fairies",
+        }
+    }
+    pub const fn adjective(&self) -> &'static str {
+        match self {
+            Frog | Wolf | Bat | Bear => "wild",
+            Goblin => "wandering",
+            Undead => "vile",
+            Orc => "ferocious",
+            Vampire => "blood-sucking",
+            Troll => "hulking",
+            Dragon => "fire-breathing",
+            Fairy => "harmless",
         }
     }
     pub const fn symbol(&self) -> char {
@@ -200,7 +249,10 @@ impl MonsterKind {
             Bat => '🦇',
             Goblin => '👺',
             Bear => '🐻',
+            Undead => '🧟',
             Orc => '👹',
+            Vampire => '🧛',
+            Troll => '🧌',
             Dragon => '🐉',
             Fairy => '🧚',
         }
@@ -232,10 +284,27 @@ impl TryFrom<char> for MonsterKind {
             '🦇' => Bat,
             '👺' => Goblin,
             '🐻' => Bear,
+            '🧟' => Undead,
             '👹' => Orc,
+            '🧛' => Vampire,
+            '🧌' => Troll,
             '🐉' => Dragon,
             '🧚' => Fairy,
             _ => return Err(()),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn round_trip() {
+        for kind in [
+            Frog, Wolf, Bat, Goblin, Bear, Undead, Orc, Vampire, Troll, Dragon, Fairy,
+        ] {
+            assert_eq!(kind, MonsterKind::try_from(kind.symbol()).unwrap());
+        }
     }
 }

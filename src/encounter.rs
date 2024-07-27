@@ -57,7 +57,8 @@ impl<'a> Encounter<'a> {
     pub fn run(&mut self) -> EncounterOutcome {
         let kind = self.monster.kind.clone();
         println!(
-            "---- A wild {kind} (level {}) appeared! ----",
+            "---- A {} {kind} (level {}) appeared! ----",
+            kind.adjective(),
             self.monster.level
         );
         let res = self.dialogue();
