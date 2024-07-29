@@ -117,17 +117,14 @@ pub fn adventure_menu() -> AdventureAction {
     }
 }
 
-pub struct Adventure<'a> {
-    maze: Maze,
+pub struct Adventure<'a, 'b> {
     player: &'a mut Player,
+    maze: &'b mut Maze,
 }
 
-impl<'a> Adventure<'a> {
-    pub fn new(player: &'a mut Player) -> Self {
-        Self {
-            player,
-            maze: Maze::new_demo(),
-        }
+impl<'a, 'b> Adventure<'a, 'b> {
+    pub fn new(player: &'a mut Player, maze: &'b mut Maze) -> Self {
+        Self { player, maze }
     }
     pub fn run(&mut self) {
         let mut should_move = false;

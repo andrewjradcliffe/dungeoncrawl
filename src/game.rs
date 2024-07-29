@@ -1,4 +1,4 @@
-use crate::{adventure::*, dungeon::Dungeon, player::*, town::*, trade::Merchant};
+use crate::{adventure::*, dungeon::Dungeon, maze::Maze, player::*, town::*, trade::Merchant};
 use rand::Rng;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -28,6 +28,8 @@ pub fn game() {
 
     let mut merchant = Merchant::new();
 
+    let mut maze = Maze::new_demo();
+
     loop {
         if player.is_alive() {
             match state {
@@ -53,8 +55,10 @@ pub fn game() {
                     dungeon.run();
                 }
                 State::Adventure => {
-                    let mut adv = Adventure::new(&mut player);
+                    // let mut adv = Adventure::new(&mut player);
+                    let mut adv = Adventure::new(&mut player, &mut maze);
                     adv.run();
+
                     state = State::Town;
                 }
             }
