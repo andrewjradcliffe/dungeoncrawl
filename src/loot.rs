@@ -33,7 +33,7 @@ impl Loot {
             _ => {
                 let amount = rng.gen_range(0..kind.loot_weight());
                 let gear = if rng.gen_bool(kind.loot_prob()) {
-                    Some(Gear::from_index_trunc(rng.gen_range(0u8..10u8)))
+                    Some(Gear::from_index_trunc(rng.gen_range(0u8..=12u8)))
                 } else {
                     None
                 };
