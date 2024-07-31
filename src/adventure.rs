@@ -119,24 +119,29 @@ pub fn adventure_menu() -> AdventureAction {
 
 pub struct Adventure<'a, 'b> {
     player: &'a mut Player,
-    maze: &'b mut Maze,
+    graph: &'b mut MazeGraph,
+    node: usize,
 }
 
 impl<'a, 'b> Adventure<'a, 'b> {
-    pub fn new(player: &'a mut Player, maze: &'b mut Maze) -> Self {
-        Self { player, maze }
+    pub fn new(player: &'a mut Player, graph: &'b mut MazeGraph) -> Self {
+        Self {
+            player,
+            graph,
+            node: 0,
+        }
     }
     pub fn run(&mut self) {
         let mut should_move = false;
         'outer: loop {
             match adventure_menu() {
                 AdventureAction::Movement => loop {
-                    match self.maze.action() {
+                    match self.graph.0[self.node].action() {
                         MazeEvent::Interact(Element::Monster(kind), monster_pos) => {
                             let mut enc = Encounter::new(kind, &mut self.player);
                             match enc.run() {
                                 PlayerVictory => {
-                                    self.maze.remove_monster(monster_pos);
+                                    self.graph.0[self.node].remove_monster(monster_pos);
                                 }
                                 MonsterVictory => break 'outer,
                                 _ => (),
@@ -146,7 +151,7 @@ impl<'a, 'b> Adventure<'a, 'b> {
                             let loot = Loot::rand();
                             loot.announce();
                             self.player.acquire(loot);
-                            self.maze.grid[pos] = Element::Empty;
+                            self.graph.0[self.node].grid[pos] = Element::Empty;
                         }
                         MazeEvent::Interact(Element::Dungeon, _) => {
                             let mut dungeon = Dungeon::new(&mut self.player, 5);
@@ -158,11 +163,20 @@ impl<'a, 'b> Adventure<'a, 'b> {
                         MazeEvent::Quit => break,
                         MazeEvent::Movement => {
                             if should_move {
-                                self.maze.monster_movement();
+                                self.graph.0[self.node].monster_movement();
                                 should_move = false;
                             } else {
                                 should_move = true;
                             }
+                        }
+                        MazeEvent::Interact(Element::ActivePortal(dst), _) => {
+                            self.graph.0[self.node].hide_player_mark();
+                            self.node = dst.index;
+                            // Care should be taken to move any monsters that have
+                            // random walked to the fixed destination.
+                            self.graph.0[self.node].player = dst.position;
+                            self.graph.0[self.node].reconcile_monster_positions();
+                            self.graph.0[self.node].show_player_mark();
                         }
                         _ => (),
                     }

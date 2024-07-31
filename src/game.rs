@@ -1,4 +1,4 @@
-use crate::{adventure::*, dungeon::Dungeon, maze::Maze, player::*, town::*, trade::Merchant};
+use crate::{adventure::*, dungeon::Dungeon, maze::MazeGraph, player::*, town::*, trade::Merchant};
 use rand::Rng;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -28,7 +28,7 @@ pub fn game() {
 
     let mut merchant = Merchant::new();
 
-    let mut maze = Maze::new_demo();
+    let mut graph = MazeGraph::new_demo();
 
     loop {
         if player.is_alive() {
@@ -55,8 +55,7 @@ pub fn game() {
                     dungeon.run();
                 }
                 State::Adventure => {
-                    // let mut adv = Adventure::new(&mut player);
-                    let mut adv = Adventure::new(&mut player, &mut maze);
+                    let mut adv = Adventure::new(&mut player, &mut graph);
                     adv.run();
 
                     state = State::Town;

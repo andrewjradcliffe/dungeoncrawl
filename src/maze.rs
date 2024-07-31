@@ -21,7 +21,8 @@ pub enum Element {
     Ladder,
     Empty,
     Dungeon,
-    Portal,
+    InactivePortal,
+    ActivePortal(Destination),
     Fence,
     Wall,
 }
@@ -38,7 +39,7 @@ impl Element {
             Ladder => '🪜',
             Empty => '⬜',
             Dungeon => '🏰',
-            Portal => '🪞',
+            InactivePortal | ActivePortal(_) => '🪞',
             Fence => '🔶',
             Wall => '⬛',
         }
@@ -67,7 +68,7 @@ impl TryFrom<char> for Element {
             '🪜' => Ladder,
             '⬜' => Empty,
             '🏰' => Dungeon,
-            '🪞' => Portal,
+            '🪞' => InactivePortal,
             '🔶' => Fence,
             '⬛' => Wall,
             _ => match MonsterKind::try_from(value) {
@@ -128,8 +129,33 @@ pub struct Maze {
     pub(crate) grid: Grid<Element>,
     pub(crate) player: (usize, usize),
     pub(crate) monsters: IndexMap<(usize, usize), MonsterKind>,
+    pub(crate) active_portals: Vec<(usize, usize)>,
 }
 impl Maze {
+    pub fn hide_player_mark(&mut self) {
+        self.grid[self.player] = Empty;
+    }
+    pub fn show_player_mark(&mut self) {
+        self.grid[self.player] = Player;
+    }
+    pub fn reconcile_monster_positions(&mut self) {
+        let pos = self.player.clone();
+        let mut state = self.monsters.contains_key(&pos);
+        loop {
+            if state {
+                let proposals = self.movement_proposals(pos);
+                if let Some(dst) = proposals.into_iter().next() {
+                    self.move_monster(pos, dst);
+                    state = false;
+                } else {
+                    self.monster_movement();
+                    state = self.monsters.contains_key(&pos);
+                }
+            } else {
+                break;
+            }
+        }
+    }
     pub fn new_default(n_rows: usize, n_cols: usize) -> Self {
         assert_ne!(n_rows, 0);
         assert_ne!(n_cols, 0);
@@ -140,6 +166,18 @@ impl Maze {
             grid,
             player,
             monsters: IndexMap::new(),
+            active_portals: Vec::new(),
+        }
+    }
+    pub(crate) fn create_portal(&mut self, src_position: (usize, usize), dst: Destination) {
+        match &mut self.grid[src_position] {
+            ActivePortal(old_dst) => {
+                *old_dst = dst;
+            }
+            x => {
+                *x = ActivePortal(dst);
+                self.active_portals.push(src_position);
+            }
         }
     }
     pub fn spawn_monster(&mut self, kind: MonsterKind, pos: (usize, usize)) -> bool {
@@ -181,11 +219,7 @@ impl Maze {
         // needs to be updated after each movement.
         let srcs: Vec<_> = self.monsters.keys().cloned().collect();
         for pos in srcs {
-            let proposals: Vec<_> = [Up, Down, Forward, Backward]
-                .into_iter()
-                .filter_map(|dir| self.position_imp(pos, dir))
-                .filter(|new_pos| self.grid[*new_pos] == Empty)
-                .collect();
+            let proposals = self.movement_proposals(pos);
             let n = proposals.len();
             if n > 0 {
                 let i = rng.gen_range(0..n);
@@ -203,7 +237,8 @@ impl Maze {
         grid[(1, 2)] = Tree;
         grid[(8, 1)] = Treasure;
 
-        grid[(0, 0)] = Portal;
+        grid[(0, 0)] = InactivePortal;
+        grid[(8, 8)] = InactivePortal;
         grid[(10, 10)] = Dungeon;
 
         grid[(15, 15)] = Fence;
@@ -221,6 +256,7 @@ impl Maze {
             grid,
             player,
             monsters: IndexMap::new(),
+            active_portals: Vec::new(),
         };
 
         maze.spawn_monster(MonsterKind::Frog, (4, 5));
@@ -236,6 +272,34 @@ impl Maze {
         maze.spawn_monster(MonsterKind::Mammoth, (7, 7));
         maze.spawn_monster(MonsterKind::Dragon, (18, 7));
         maze
+    }
+    pub fn new_room() -> Self {
+        let mut grid = Grid::new_default(5, 5);
+        let player = (1, 2);
+        grid[player] = Player;
+        grid[(2, 2)] = Treasure;
+        grid[(0, 0)] = Wall;
+        grid[(0, 1)] = Wall;
+        grid[(0, 2)] = InactivePortal;
+        grid[(0, 3)] = Wall;
+        grid[(0, 4)] = Wall;
+        grid[(1, 0)] = Wall;
+        grid[(2, 0)] = Wall;
+        grid[(3, 0)] = Wall;
+        grid[(4, 0)] = Wall;
+        grid[(4, 1)] = Wall;
+        grid[(4, 2)] = Wall;
+        grid[(4, 3)] = Wall;
+        grid[(4, 4)] = Wall;
+        grid[(3, 4)] = Wall;
+        grid[(2, 4)] = Wall;
+        grid[(1, 4)] = Wall;
+        Self {
+            grid,
+            player,
+            monsters: IndexMap::new(),
+            active_portals: Vec::new(),
+        }
     }
     pub fn menu(&self) -> MazeAction {
         let mut buf = String::with_capacity(1 << 10);
@@ -318,6 +382,13 @@ impl Maze {
         }
         MazeEvent::Movement
     }
+    fn movement_proposals(&self, pos: (usize, usize)) -> Vec<(usize, usize)> {
+        [Up, Down, Forward, Backward]
+            .into_iter()
+            .filter_map(|dir| self.position_imp(pos, dir))
+            .filter(|new_pos| self.grid[*new_pos] == Empty)
+            .collect()
+    }
     pub(crate) fn interact_imp(&mut self, dir: Direction) -> MazeEvent {
         if let Some(new_pos) = self.position(dir) {
             match self.grid[new_pos] {
@@ -342,9 +413,13 @@ impl Maze {
                     println!("You enter the dungeon...");
                     MazeEvent::Interact(Dungeon, new_pos)
                 }
-                Portal => {
+                InactivePortal => {
+                    println!("The portal is inactive.");
+                    MazeEvent::Interact(InactivePortal, new_pos)
+                }
+                ActivePortal(x) => {
                     println!("You step into the portal...");
-                    MazeEvent::Interact(Portal, new_pos)
+                    MazeEvent::Interact(ActivePortal(x), new_pos)
                 }
                 Fence => {
                     println!("It's a fence.");
@@ -418,6 +493,75 @@ pub enum MazeEvent {
     Movement,
     NoOp,
     Quit,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Destination {
+    pub(crate) index: usize,
+    pub(crate) position: (usize, usize),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MazeGraph(pub(crate) Vec<Maze>);
+
+impl MazeGraph {
+    pub fn single_connect(
+        &mut self,
+        i: usize,
+        src_position: (usize, usize),
+        j: usize,
+        dst_position: (usize, usize),
+    ) {
+        let n = self.0.len();
+        assert!(i < n);
+        assert!(j < n);
+        self.0[i].create_portal(
+            src_position,
+            Destination {
+                index: j,
+                position: dst_position,
+            },
+        );
+    }
+    pub fn remove(&mut self, i_star: usize) {
+        self.0.remove(i_star);
+        let mut t = Vec::new();
+        for node in self.0.iter_mut() {
+            for pos in node.active_portals.drain(..) {
+                let e = &mut node.grid[pos];
+                match e {
+                    ActivePortal(dst) => {
+                        if dst.index < i_star {
+                            t.push(pos);
+                        } else if dst.index > i_star {
+                            dst.index -= 1;
+                            t.push(pos);
+                        } else
+                        /* dst.index == i_star */
+                        {
+                            *e = InactivePortal;
+                        }
+                    }
+                    _ => unreachable!(),
+                }
+            }
+            node.active_portals.append(&mut t);
+        }
+    }
+}
+
+impl MazeGraph {
+    pub fn new_demo() -> Self {
+        let starting_area = Maze::new_demo();
+        let room1 = Maze::new_room();
+        let room2 = Maze::new_room();
+        let mut graph = Self(vec![starting_area, room1, room2]);
+        graph.single_connect(0, (0, 0), 1, (1, 2));
+        graph.single_connect(1, (0, 2), 0, (0, 1));
+        graph.single_connect(0, (8, 8), 2, (1, 2));
+        graph.single_connect(2, (0, 2), 0, (8, 9));
+        graph
+    }
 }
 
 #[cfg(test)]
