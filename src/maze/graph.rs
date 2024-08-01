@@ -61,6 +61,7 @@ impl MazeGraph {
         graph.single_connect(1, (0, 2), 0, (0, 1));
         graph.single_connect(0, (8, 8), 2, (1, 2));
         graph.single_connect(2, (0, 2), 0, (8, 9));
+        graph.single_connect(2, (4, 2), 0, (9, 8));
         graph
     }
 }
