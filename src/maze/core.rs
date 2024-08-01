@@ -77,8 +77,7 @@ impl Maze {
         let mut state = self.monsters.contains_key(&pos);
         loop {
             if state {
-                let proposals = self.movement_proposals(pos);
-                if let Some(dst) = proposals.into_iter().next() {
+                if let Some(dst) = self.first_movement_proposal(pos) {
                     self.move_monster(pos, dst);
                     state = false;
                 } else {
@@ -316,12 +315,35 @@ impl Maze {
         }
         MazeEvent::Movement
     }
-    fn movement_proposals(&self, pos: (usize, usize)) -> Vec<(usize, usize)> {
+    fn movement_proposals_imp(
+        &self,
+        pos: (usize, usize),
+    ) -> impl Iterator<Item = (usize, usize)> + '_ {
         [Up, Down, Forward, Backward]
             .into_iter()
-            .filter_map(|dir| self.position_imp(pos, dir))
-            .filter(|new_pos| self.grid[*new_pos] == Empty)
-            .collect()
+            .filter_map(move |dir| self.position_imp(pos, dir))
+            .filter(move |new_pos| self.grid[*new_pos] == Empty)
+    }
+    pub(crate) fn movement_proposals(&self, pos: (usize, usize)) -> Vec<(usize, usize)> {
+        self.movement_proposals_imp(pos).collect()
+    }
+    pub(crate) fn first_movement_proposal(&self, pos: (usize, usize)) -> Option<(usize, usize)> {
+        self.movement_proposals_imp(pos).next()
+    }
+    fn portal_proposals_imp(
+        &self,
+        pos: (usize, usize),
+        other: (usize, usize),
+    ) -> impl Iterator<Item = (usize, usize)> + '_ {
+        self.movement_proposals_imp(pos)
+            .filter(move |new_pos| *new_pos != other)
+    }
+    pub(crate) fn first_portal_proposal(
+        &self,
+        pos: (usize, usize),
+        other: (usize, usize),
+    ) -> Option<(usize, usize)> {
+        self.portal_proposals_imp(pos, other).next()
     }
     pub(crate) fn interact_imp(&mut self, dir: Direction) -> MazeEvent {
         if let Some(new_pos) = self.position(dir) {
